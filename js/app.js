@@ -1,6 +1,7 @@
 const sidebar = document.getElementById('sidebar');
 const btnOpen = document.getElementById('btnOpen');
 const loggerBody = document.getElementById('loggerBody');
+const video = document.getElementById("video");
 
 let menuVisible = true;
 
@@ -34,6 +35,29 @@ function log(text)
 
     loggerBody.scrollTop = loggerBody.scrollHeight;
 }
+
+video.addEventListener("loadedmetadata", () =>
+{
+    log("Відео: " +
+        video.videoWidth +
+        " × " +
+        video.videoHeight);
+})
+
+video.addEventListener("playing", () =>
+{
+    log("Відтворення відео розпочато.");
+});
+
+video.addEventListener("ended", () =>
+{
+    log("Відтворення завершено.");
+});
+
+video.addEventListener("error", () =>
+{
+    log("Помилка відтворення відео.");
+});
 
 log("Програму запущено.");
 log("Інтерфейс готовий.");
