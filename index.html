@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<link rel="stylesheet" href="css/style.css">
+
+<title>Remote Client</title>
+
+</head>
+
+
+<body>
+
+<div id="app">
+
+
+<aside id="sidebar">
+
+
+<div class="title">
+    <span>Налаштування</span>
+</div>
+
+
+
+<div class="panelBlock">
+
+
+<div class="blockTitle">
+    Підключення до сервера
+</div>
+
+
+<div class="formGroup">
+<label for="txtServerPassword">
+    Пароль сервера
+</label>
+<input id="txtServerPassword" type="password">
+</div>
+
+
+<div class="formGroup">
+<label for="txtServerIP">
+    IP сервера
+</label>
+<input id="txtServerIP" type="text">
+</div>
+
+
+<div class="formGroup">
+<label for="txtServerPort">
+    Порт
+</label>
+<input id="txtServerPort" type="number">
+</div>
+
+
+<div class="formGroup">
+<label for="txtUserLogin">
+    Логін
+</label>
+<input id="txtUserLogin" type="text">
+</div>
+
+
+<div class="formGroup">
+<label for="txtUserPassword">
+    Пароль
+</label>
+<input id="txtUserPassword" type="password">
+</div>
+
+
+
+<div class="buttonRow">
+<button id="btnConnectServer">
+    Підключитися
+</button>
+</div>
+
+
+</div>
+
+
+
+
+<div class="panelBlock">
+
+
+<div class="blockTitle">
+    Пошук клієнта
+</div>
+
+
+<div class="formGroup">
+
+<label for="txtFindClient">
+    Логін клієнта
+</label>
+
+<input id="txtFindClient" type="text">
+
+</div>
+
+
+
+<div class="formGroup">
+
+<label for="lstClients">
+    Знайдені клієнти
+</label>
+
+<select id="lstClients" size="6">
+</select>
+
+</div>
+
+
+
+<div class="formGroup">
+
+<label for="txtClientPassword">
+    Пароль клієнта
+</label>
+
+<input id="txtClientPassword" type="password">
+
+</div>
+
+
+
+<div class="buttonRow">
+
+<button id="btnConnectClient">
+    Підключитися
+</button>
+
+</div>
+
+
+</div>
+
+
+</aside>
+
+
+
+
+<main id="main">
+
+<button id="btnOpen">
+❯
+</button>
+
+
+<div id="playerArea">
+
+<video id="video" autoplay playsinline></video>
+
+</div>
+
+
+</main>
+
+
+
+
+<footer id="logger">
+
+
+<div id="loggerHeader">
+
+<span>
+Логи
+</span>
+
+<button id="btnClear">
+Очистити
+</button>
+
+</div>
+
+
+<div id="loggerBody"></div>
+
+
+</footer>
+
+
+</div>
+
+
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
