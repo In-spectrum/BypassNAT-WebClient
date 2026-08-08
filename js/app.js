@@ -10,10 +10,52 @@ const playerState =
     videoReady: false
 };
 
+let wsClient = new WebSocketClient();
+let clientId = "";
+
 let menuVisible = true;
 let lastMouseLogTime = 0;
 let mouseInsidePlayer = false;
 let keyboardCapture = false;
+
+
+const generatedLogin =
+    Protocol.generateLogin();
+
+const generatedPassword =
+    Protocol.generatePassword();
+
+
+document.getElementById(
+    "txtUserLogin"
+).value =
+    generatedLogin;
+
+
+document.getElementById(
+    "txtUserPassword"
+).value =
+    generatedPassword;
+
+
+document.getElementById(
+    "txtServerPort"
+).value =
+    "1236";
+
+
+document.getElementById(
+    "txtServerIP"
+).value =
+    "127.0.0.1";
+
+
+document.getElementById(
+    "txtServerPassword"
+).value =
+    "1111";
+
+
 
 btnOpen.onclick = () => {
 
@@ -28,9 +70,11 @@ btnOpen.onclick = () => {
     }
 };
 
+
 document.getElementById('btnClear').onclick = () => {
     loggerBody.innerHTML = "";
 };
+
 
 function log(text)
 {
@@ -46,7 +90,517 @@ function log(text)
     loggerBody.scrollTop = loggerBody.scrollHeight;
 }
 
-playerArea.addEventListener("loadedmetadata", () =>
+
+
+/*
+    --------------------------------------------------
+    WebSocket
+    --------------------------------------------------
+*/
+
+
+wsClient.onConnected =
+function()
+{
+
+    log(
+        "WebSocket: підключення успішне."
+    );
+
+
+    sendLogin();
+
+};
+
+
+
+wsClient.onDisconnected =
+function()
+{
+
+    log(
+        "WebSocket: з'єднання закрито."
+    );
+
+};
+
+
+
+wsClient.onError =
+function(error)
+{
+
+    log(
+        "WebSocket: помилка."
+    );
+
+};
+
+
+
+wsClient.onData =
+function(data)
+{
+
+    handleServerData(data);
+
+};
+
+wsClient.onSend =
+function(data)
+{
+    logSentData(data);
+};
+
+function logSentData(data)
+{
+    /*
+        ArrayBuffer
+    */
+
+    if(data instanceof ArrayBuffer)
+    {
+        const bytes =
+            new Uint8Array(data);
+
+
+        let hex = "";
+
+        for(let i = 0; i < bytes.length; i++)
+        {
+            hex +=
+                bytes[i]
+                .toString(16)
+                .padStart(2, "0")
+                .toUpperCase();
+
+            if(i < bytes.length - 1)
+                hex += " ";
+        }
+
+
+        log(
+            "CLIENT SEND: " +
+            bytes.length +
+            " bytes"
+        );
+
+
+        log(
+            "CLIENT HEX: " +
+            hex
+        );
+
+
+        try
+        {
+            const text =
+                new TextDecoder(
+                    "utf-8"
+                ).decode(bytes);
+
+
+            if(text !== "")
+            {
+                log(
+                    "CLIENT TEXT: " +
+                    text
+                );
+            }
+        }
+        catch(e)
+        {
+            /*
+                Дані не є UTF-8 текстом.
+            */
+        }
+
+        return;
+    }
+
+
+    /*
+        Uint8Array
+    */
+
+    if(data instanceof Uint8Array)
+    {
+        const bytes =
+            data;
+
+
+        let hex = "";
+
+        for(let i = 0; i < bytes.length; i++)
+        {
+            hex +=
+                bytes[i]
+                .toString(16)
+                .padStart(2, "0")
+                .toUpperCase();
+
+            if(i < bytes.length - 1)
+                hex += " ";
+        }
+
+
+        log(
+            "CLIENT SEND: " +
+            bytes.length +
+            " bytes"
+        );
+
+
+        log(
+            "CLIENT HEX: " +
+            hex
+        );
+
+
+        try
+        {
+            const text =
+                new TextDecoder(
+                    "utf-8"
+                ).decode(bytes);
+
+
+            if(text !== "")
+            {
+                log(
+                    "CLIENT TEXT: " +
+                    text
+                );
+            }
+        }
+        catch(e)
+        {
+        }
+
+        return;
+    }
+
+
+    /*
+        Звичайний текст.
+    */
+
+    if(typeof data === "string")
+    {
+        log(
+            "CLIENT SEND TEXT: " +
+            data
+        );
+
+        return;
+    }
+
+
+    /*
+        Інший тип даних.
+    */
+
+    log(
+        "CLIENT SEND: дані невідомого типу."
+    );
+}
+
+function sendLogin()
+{
+
+    const serverPassword =
+        document.getElementById(
+            "txtServerPassword"
+        ).value;
+
+
+    const login =
+        document.getElementById(
+            "txtUserLogin"
+        ).value.trim();
+
+
+    const password =
+        document.getElementById(
+            "txtUserPassword"
+        ).value;
+
+
+    const packet =
+        Protocol.createLogin(
+            serverPassword,
+            login,
+            password,
+            clientId
+        );
+
+
+    if(wsClient.send(packet))
+    {
+
+        log(
+            "Авторизаційні дані відправлено."
+        );
+
+    }
+    else
+    {
+
+        log(
+            "Помилка: не вдалося відправити авторизаційні дані."
+        );
+
+    }
+
+}
+
+
+
+function handleServerData(data)
+{
+
+    /*
+        Відповідь сервера.
+        Вивід виконується тільки тут.
+    */
+
+    try
+    {
+
+        const text =
+            new TextDecoder(
+                "utf-8"
+            ).decode(data);
+
+
+        log(
+            "SERVER: " + text
+        );
+
+
+        /*
+            Тимчасово очікуємо JSON.
+            Пізніше тут буде Protocol.parsePacket().
+        */
+
+        try
+        {
+
+            const response =
+                JSON.parse(text);
+
+
+            if(
+                response.clientId !== undefined &&
+                response.clientId !== null &&
+                response.clientId !== ""
+            )
+            {
+
+                clientId =
+                    String(
+                        response.clientId
+                    );
+
+
+                log(
+                    "Client ID збережено: " +
+                    clientId
+                );
+
+            }
+
+        }
+        catch(e)
+        {
+            /*
+                Відповідь не JSON.
+                Вона вже виведена у лог.
+            */
+        }
+
+    }
+    catch(e)
+    {
+
+        log(
+            "SERVER: помилка перетворення binary у текст."
+        );
+
+    }
+
+}
+
+
+
+/*
+    --------------------------------------------------
+    Підключення до сервера
+    --------------------------------------------------
+*/
+
+
+document.getElementById(
+    "btnConnectServer"
+)
+.onclick = function()
+{
+
+    const ip =
+        document.getElementById(
+            "txtServerIP"
+        ).value.trim();
+
+
+    const port =
+        document.getElementById(
+            "txtServerPort"
+        ).value.trim();
+
+
+    const serverPassword =
+        document.getElementById(
+            "txtServerPassword"
+        ).value;
+
+
+    const login =
+        document.getElementById(
+            "txtUserLogin"
+        ).value.trim();
+
+
+    const password =
+        document.getElementById(
+            "txtUserPassword"
+        ).value;
+
+
+
+    /*
+        Перевірка всіх полів.
+    */
+
+    if(ip === "")
+    {
+        log(
+            "Помилка: не вказаний IP сервера."
+        );
+
+        return;
+    }
+
+
+    if(port === "")
+    {
+        log(
+            "Помилка: не вказаний порт сервера."
+        );
+
+        return;
+    }
+
+
+    const portNumber =
+        Number(port);
+
+
+    if(
+        !Number.isInteger(portNumber) ||
+        portNumber < 1 ||
+        portNumber > 65535
+    )
+    {
+        log(
+            "Помилка: некоректний порт сервера."
+        );
+
+        return;
+    }
+
+
+    if(serverPassword === "")
+    {
+        log(
+            "Помилка: не вказаний пароль сервера."
+        );
+
+        return;
+    }
+
+
+    if(login === "")
+    {
+        log(
+            "Помилка: не вказаний логін."
+        );
+
+        return;
+    }
+
+
+    if(password === "")
+    {
+        log(
+            "Помилка: не вказаний пароль."
+        );
+
+        return;
+    }
+
+
+
+    /*
+        Якщо підключення вже активне —
+        робимо disconnect.
+
+        Саме нове підключення виконає
+        WebSocketClient.connect().
+    */
+
+    if(
+        wsClient.socket &&
+        (
+            wsClient.socket.readyState ===
+            WebSocket.OPEN ||
+
+            wsClient.socket.readyState ===
+            WebSocket.CONNECTING
+        )
+    )
+    {
+
+        log(
+            "Активне підключення. Виконується disconnect."
+        );
+
+
+        wsClient.disconnect();
+
+    }
+
+
+
+    const url =
+        "ws://" +
+        ip +
+        ":" +
+        portNumber;
+
+
+    log(
+        "Підключення до " + url
+    );
+
+
+    wsClient.connect(url);
+
+};
+
+
+
+
+video.addEventListener("loadedmetadata", () =>
 {
     playerState.frameWidth = video.videoWidth;
     playerState.frameHeight = video.videoHeight;
@@ -59,6 +613,7 @@ playerArea.addEventListener("loadedmetadata", () =>
         playerState.frameHeight
     );
 })
+
 
 playerArea.addEventListener("playing", () =>
 {
@@ -82,7 +637,7 @@ playerArea.addEventListener("mouseenter", () =>
 
     playerArea.focus();
 
-    log("Курсор увійшов у плеєр.");
+    // log("Курсор увійшов у плеєр.");
 });
 
 
@@ -91,7 +646,7 @@ playerArea.addEventListener("mouseleave", () =>
     mouseInsidePlayer = false;
     keyboardCapture = false;
 
-    log("Курсор покинув плеєр.");
+    // log("Курсор покинув плеєр.");
 });
 
 playerArea.addEventListener("mousedown", (event) =>
@@ -162,14 +717,14 @@ function onVideoMouseWheel(delta, x, y)
         sendMouseWheel(delta, x, y);
     */
 
-    log(
-        "Mouse WHEEL  delta=" +
-        delta +
-        "  x=" +
-        x +
-        "  y=" +
-        y
-    );
+    // log(
+    //     "Mouse WHEEL  delta=" +
+    //     delta +
+    //     "  x=" +
+    //     x +
+    //     "  y=" +
+    //     y
+    // );
 }
 
 function mouseButtonName(button)
@@ -192,14 +747,14 @@ function onVideoMouseButton(button, pressed, x, y)
         sendMouseButton(button, pressed, x, y);
     */
 
-    log(
-        "Mouse " +
-        (pressed ? "DOWN" : "UP") +
-        "  " +
-        mouseButtonName(button) +
-        "  x=" + x +
-        "  y=" + y
-    );
+    // log(
+    //     "Mouse " +
+    //     (pressed ? "DOWN" : "UP") +
+    //     "  " +
+    //     mouseButtonName(button) +
+    //     "  x=" + x +
+    //     "  y=" + y
+    // );
 }
 
 function getVideoCoordinates(event)
@@ -288,7 +843,7 @@ function onVideoMouseMove(x, y)
     {
         lastMouseLogTime = now;
 
-        log("Mouse: x=" + x + "  y=" + y);
+        // log("Mouse: x=" + x + "  y=" + y);
     }
 }
 
@@ -304,6 +859,9 @@ video.addEventListener("mousemove", (event) =>
 
     onVideoMouseMove(p.x, p.y);
 });
+
+
+
 
 log("Програму запущено.");
 log("Інтерфейс готовий.");
