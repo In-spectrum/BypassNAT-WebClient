@@ -14,7 +14,11 @@ class WebSocketClient
         this.onError = null;
         this.onData = null;
 
-        // Новий callback для відправлених даних
+        // Логування виконується зовнішнім кодом.
+        // У нашому випадку app.js передає сюди функцію log().
+        this.onLog = null;
+
+        // Callback для реально відправлених даних.
         this.onSend = null;
     }
 
@@ -157,18 +161,89 @@ class WebSocketClient
         this.socket.onmessage =
         (event) =>
         {
+            /*
+                Усі отримані binary data спочатку
+                фіксуємо у вікні логів.
+
+                ParserData отримує саме ті самі
+                сирі дані, які прийшли від WebSocket.
+            */
+
+            this.log(
+                "WebSocket: отримано binary data: " +
+                WebSocketClient.toHex(event.data)
+            );
+
+
+            const data =
+                ParserData.parse(
+                    event.data
+                );
+
 
             if(this.onData)
             {
-                this.onData(
-                    event.data
-                );
+                this.onData(data);
             }
-
         };
 
     }
 
+
+
+    log(text)
+    {
+        if(this.onLog)
+        {
+            this.onLog(text);
+        }
+    }
+
+
+    static toHex(data)
+    {
+        let bytes = null;
+
+
+        if(data instanceof ArrayBuffer)
+        {
+            bytes = new Uint8Array(data);
+        }
+        else
+        if(data instanceof Uint8Array)
+        {
+            bytes = data;
+        }
+        else
+        if(data instanceof Blob)
+        {
+            return "[Blob]";
+        }
+
+
+        if(bytes === null)
+        {
+            return "[unknown type]";
+        }
+
+
+        let hex = "";
+
+        for(let i = 0; i < bytes.length; i++)
+        {
+            if(i > 0)
+                hex += " ";
+
+            hex +=
+                bytes[i]
+                    .toString(16)
+                    .padStart(2, "0")
+                    .toUpperCase();
+        }
+
+
+        return hex;
+    }
 
 
     disconnect()

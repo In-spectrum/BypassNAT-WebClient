@@ -3,27 +3,15 @@
 const Protocol =
 {
 
-    TYPE_LOGIN: 1,
+    TYPE_LOGIN: 0x01,
 
-
-    /*
-        Повне значення потрібно взяти
-        з MyProtocol::m_sPrefix
-    */
     PREFIX: "56Q47TYUAWERSDFGHJK",
 
 
-
     /*
-        Аналог:
-
-        MyProtocol::fIdGenerator(
-            MyProtocol::m_sPrefix,
-            "",
-            8,
-            10
-        );
+        Генерація логіну.
     */
+
     generateLogin()
     {
         return this.fIdGenerator(
@@ -36,15 +24,9 @@ const Protocol =
 
 
     /*
-        Аналог:
-
-        MyProtocol::fIdGenerator(
-            MyProtocol::m_sPrefix,
-            "",
-            6,
-            8
-        );
+        Генерація пароля.
     */
+
     generatePassword()
     {
         return this.fIdGenerator(
@@ -57,12 +39,11 @@ const Protocol =
 
 
     /*
-        Перенесення алгоритму
-        MyProtocol::fIdGenerator()
+        Аналог MyProtocol::fIdGenerator()
     */
+
     fIdGenerator(sIn, sPref, iMin, iMax)
     {
-
         let out = "";
 
 
@@ -78,12 +59,6 @@ const Protocol =
             sIn = "1234567890";
 
 
-        /*
-            QRandomGenerator::bounded(min, max)
-            має верхню межу exclusive.
-
-            Math.random() * (max - min)
-        */
         const size =
             Math.floor(
                 Math.random() *
@@ -91,18 +66,8 @@ const Protocol =
             ) + iMin;
 
 
-
         for(let i = 0; i < size; i++)
         {
-
-            /*
-                В оригінальному C++:
-
-                bounded(_sIn.length()-1)
-
-                тобто останній символ
-                фактично не використовується.
-            */
             const index =
                 Math.floor(
                     Math.random() *
@@ -110,14 +75,6 @@ const Protocol =
                 );
 
 
-            /*
-                Оригінал:
-
-                if(bounded(...) % 2 == 0)
-                    toLower()
-                else
-                    original
-            */
             const lower =
                 Math.floor(
                     Math.random() * 2
@@ -133,24 +90,17 @@ const Protocol =
 
 
             out += ch;
-
         }
-
 
 
         if(sPref.length > 6)
         {
-
             const userLength =
-                Math.floor(
-                    out.length / 4
-                );
+                Math.floor(out.length / 4);
 
 
             const idLength =
-                Math.floor(
-                    sPref.length / 3
-                );
+                Math.floor(sPref.length / 3);
 
 
             let temp = "";
@@ -205,7 +155,6 @@ const Protocol =
 
 
             out = temp;
-
         }
 
 
@@ -213,52 +162,231 @@ const Protocol =
     },
 
 
+    /*
+        CRC.
+
+        Аналог:
+
+        MyProtocol::fGetCRC()
+
+        Сума всіх байтів modulo 256.
+    */
+
+    getCRC(data, size)
+    {
+        if(size > data.length)
+            return 0;
+
+
+        let crc = 0;
+
+
+        for(let i = 0; i < size; i++)
+        {
+            crc =
+                (crc + data[i]) & 0xFF;
+        }
+
+
+        return crc;
+    },
+
 
     /*
-        Пакет авторизації.
+        Формування пакета:
 
-        Поки передаємо дані як UTF-8 JSON
-        всередині binary WebSocket packet.
-
-        Реальний бінарний формат замінимо
-        після узгодження структури протоколу.
+        MyProtocol::fSendUserLoginPassword()
     */
+
     createLogin(
-        serverPassword,
         login,
         password,
-        clientId
+        clientId,
+        key,
+        serverPassword
     )
     {
-
-        const obj =
-        {
-            type: "LOGIN",
-
-            serverPassword:
-                serverPassword,
-
-            login:
-                login,
-
-            password:
-                password,
-
-            clientId:
-                clientId || ""
-        };
+        const encoder =
+            new TextEncoder();
 
 
-        const json =
-            JSON.stringify(obj);
+        const loginBytes =
+            encoder.encode(login);
 
 
-        return new TextEncoder()
-            .encode(json)
-            .buffer;
+        const passwordBytes =
+            encoder.encode(password);
 
+
+        const idBytes =
+            encoder.encode(clientId || "");
+
+
+        const keyBytes =
+            encoder.encode(key || "");
+
+
+        const serverPasswordBytes =
+            encoder.encode(
+                serverPassword
+            );
+
+
+        /*
+            Повний розмір:
+
+            FF
+            01
+
+            login size + login
+            password size + password
+            id size + id
+            key size + key
+            server password size + server password
+
+            CRC
+        */
+
+        const totalSize =
+            2 +
+
+            1 + loginBytes.length +
+            1 + passwordBytes.length +
+            1 + idBytes.length +
+            1 + keyBytes.length +
+            1 + serverPasswordBytes.length +
+
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            FF
+        */
+
+        packet[offset++] =
+            0xFF;
+
+
+        /*
+            TYPE
+        */
+
+        packet[offset++] =
+            0x01;
+
+
+        /*
+            LOGIN
+        */
+
+        packet[offset++] =
+            loginBytes.length;
+
+        packet.set(
+            loginBytes,
+            offset
+        );
+
+        offset +=
+            loginBytes.length;
+
+
+        /*
+            PASSWORD
+        */
+
+        packet[offset++] =
+            passwordBytes.length;
+
+        packet.set(
+            passwordBytes,
+            offset
+        );
+
+        offset +=
+            passwordBytes.length;
+
+
+        /*
+            CLIENT ID
+        */
+
+        packet[offset++] =
+            idBytes.length;
+
+        packet.set(
+            idBytes,
+            offset
+        );
+
+        offset +=
+            idBytes.length;
+
+
+        /*
+            KEY
+        */
+
+        packet[offset++] =
+            keyBytes.length;
+
+        packet.set(
+            keyBytes,
+            offset
+        );
+
+        offset +=
+            keyBytes.length;
+
+
+        /*
+            SERVER PASSWORD
+        */
+
+        packet[offset++] =
+            serverPasswordBytes.length;
+
+        packet.set(
+            serverPasswordBytes,
+            offset
+        );
+
+        offset +=
+            serverPasswordBytes.length;
+
+
+        /*
+            CRC.
+
+            У C++:
+
+            fGetCRC(
+                a_baRequest.mid(1),
+                a_baRequest.size() - 1
+            )
+
+            Тобто FF НЕ входить у CRC.
+
+            CRC записуємо останнім байтом.
+        */
+
+        packet[offset] =
+            this.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
-
-
 
 };
