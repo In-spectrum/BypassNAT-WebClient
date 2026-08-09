@@ -506,11 +506,27 @@ const ParserData =
         }
 
 
+        /*
+            Зберігаємо ID сервера у спільному стані.
+
+            Від цього моменту всі наступні LOGIN
+            використовуватимуть саме цей ID.
+        */
+        AppState.clientId =
+            newClientId;
+
+
         this.log(
             "ParserData::parseNewId: пакет NEW_ID успішно розібрано. " +
             "ID=" + newClientId +
             ", DEV=" + devVariant +
             ", size=" + (pos + 1)
+        );
+
+
+        this.log(
+            "ParserData: AppState.clientId = " +
+            AppState.clientId
         );
 
 

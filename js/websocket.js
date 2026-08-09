@@ -83,6 +83,19 @@ class WebSocketClient
         this.socket.onopen =
         () =>
         {
+            /*
+                WebSocket працює з тим самим спільним станом,
+                що й app.js та parserdata.js.
+
+                На момент нового підключення тут уже буде
+                ID, отриманий від сервера під час попередньої
+                авторизації.
+            */
+            this.log(
+                "WebSocket: Client ID = " +
+                (AppState.clientId || "<порожній>")
+            );
+
 
             if(this.onConnected)
             {

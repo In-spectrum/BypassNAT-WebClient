@@ -16,8 +16,6 @@ let mouseInsidePlayer = false;
 let keyboardCapture = false;
 
 let wsClient = new WebSocketClient();
-let clientId = "";
-let keyDevServer = "";
 
 
 const generatedLogin =
@@ -538,6 +536,16 @@ function toHex(data)
 function sendLogin()
 {
 
+    log(
+        "LOGIN: використовується Client ID = " +
+        (AppState.clientId || "<порожній>")
+    );
+
+     const keyDevServer = "";
+        // document.getElementById(
+        //     "txtDevServerKey"
+        // ).value;
+
     const serverPassword =
         document.getElementById(
             "txtServerPassword"
@@ -560,7 +568,7 @@ function sendLogin()
         Protocol.createLogin(
             login,
             password,
-            clientId,
+            AppState.clientId,
             keyDevServer,
             serverPassword
         );
@@ -616,7 +624,7 @@ function handleServerData(data)
                 log(
                     "app.handleServerData: SERVER: NEW_ID. " +
                     "ID=" +
-                    (packet.clientId || "") +
+                    (AppState.clientId || "") +
                     ", DEV=" +
                     (packet.devVariant !== undefined ?
                         packet.devVariant :
@@ -664,6 +672,10 @@ document.getElementById(
 )
 .onclick = function()
 {
+    const keyDevServer = "";
+        // document.getElementById(
+        //     "txtDevServerKey"
+        // ).value;
 
     const ip =
         document.getElementById(
