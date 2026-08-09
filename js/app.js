@@ -354,12 +354,30 @@ video.addEventListener("mousemove", (event) =>
     --------------------------------------------------
 */
 
+wsClient.slControl =
+(
+    sId,
+    iVar,
+    sData,
+    baIn
+) =>
+{
 
-/*
-    --------------------------------------------------
-    WebSocket
-    --------------------------------------------------
-*/
+    log("app.wsClient.slControl 0:");
+
+    log(
+        "slControl: " +
+        "Id=" + sId +
+        ", Var=" + iVar +
+        ", Data=" + sData +
+        ", baIn=" + toHex(baIn)
+    );
+
+    /*
+        Тут буде подальша обробка
+        події на рівні app.js.
+    */
+};
 
 
 /*

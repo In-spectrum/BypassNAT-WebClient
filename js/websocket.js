@@ -20,6 +20,27 @@ class WebSocketClient
 
         // Callback для реально відправлених даних.
         this.onSend = null;
+
+        this.slControl = null;
+
+        ParserData.slControl =
+        (
+            sId,
+            iVar,
+            sData,
+            baIn
+        ) =>
+        {
+            log("WebSocketClient.ParserData.slControl 0:");
+
+            this.sgControl( sId, iVar, sData, baIn );
+            // this.sgControl(
+            //     sId,
+            //     iVar,
+            //     sData,
+            //     baIn
+            // );
+        };
     }
 
 
@@ -209,6 +230,26 @@ class WebSocketClient
         if(this.onLog)
         {
             this.onLog(text);
+        }
+    }
+
+    sgControl(
+        sId,
+        iVar,
+        sData,
+        baIn
+    )
+    {
+        log("WebSocketClient.sgControl 0:");
+
+        if(this.slControl)
+        {
+            this.slControl(
+                sId,
+                iVar,
+                sData,
+                baIn
+            );
         }
     }
 

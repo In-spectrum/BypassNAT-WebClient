@@ -2,6 +2,12 @@
 
 const ParserData =
 {
+    /*
+        Callback для передачі події
+        у WebSocketClient.
+    */
+    slControl: null,
+
 
     /*
         Буфер вхідних binary даних.
@@ -16,6 +22,28 @@ const ParserData =
     */
 
     onLog: null,
+
+    sgControl(
+        sId,
+        iVar,
+        sData,
+        baIn
+    )
+    {
+        log("ParserData.sgControl 0:");
+
+        if(ParserData.slControl)
+        {
+            log("ParserData.slControl 1:");
+
+            ParserData.slControl(
+                sId,
+                iVar,
+                sData,
+                baIn
+            );
+        }
+    },
 
 
     log(text)
@@ -360,6 +388,8 @@ const ParserData =
             return null;
         }
 
+        this.sgControl("test-0", 1, "test-2", data);
+
 
         let pos = 0;
 
@@ -595,10 +625,8 @@ const ParserData =
                     AppState.clientId =
                         clientId;
 
-
-                    /*
-                        TODO / SGCONTROL
-                    */
+                    //переконнектится к серверу с новым Id
+                    sgControl("0", 22, "", "");
                 }
                 else
                 if(devServer === 2)
