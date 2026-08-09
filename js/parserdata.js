@@ -74,7 +74,7 @@ const ParserData =
     */
 
     append(bytes)
-    {        
+    {
         const buffer =
             new Uint8Array(
                 this.buffer.length +
@@ -265,6 +265,51 @@ const ParserData =
 
 
                     /*
+                        Message Status
+                    */
+
+                    case 0x10:
+                    {
+                        const packet =
+                            this.parseMessageStatus(
+                                data
+                            );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        /*
+                            Аналог:
+
+                            a_iPos += fMessageStatus(...)
+                        */
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        break;
+                    }
+
+
+                    /*
                         Невідомий тип.
 
                         Як і у C++ версії,
@@ -310,61 +355,53 @@ const ParserData =
 
     parseNewId(data)
     {
-        /*
-            Вхідні дані функції.
-            Аналог Qt:
-
-            qDebug() << data.toHex(':');
-        */
-
-        this.log(
-            "ParserData::parseNewId: вхідні дані HEX: " +
-            this.toHex(data)
-        );
-
-
-        /*
-            C++:
-
-            if(_baIn.length() < 4)
-                return 0;
-        */
-
         if(data.length < 4)
         {
-            this.log(
-                "ParserData::parseNewId: недостатньо даних для заголовка."
-            );
-
             return null;
         }
 
 
-        let pos = 2;
+        let pos = 0;
+
+        const data1Length =
+            data[2];
+
+        pos++;
 
 
-        /*
-            a_iData_1 =
-                _baIn.at(2)
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
 
-            Розмір ID.
-        */
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
 
-        const idLength =
-            data[pos];
 
         pos++;
 
 
         /*
-            Перевірка.
+            Перевірка повного пакета.
         */
 
         if(
             data.length <
             2 +
-            idLength +
-            1 +
+            data1Length +
+            data2Length +
+            pos +
             1
         )
         {
@@ -373,167 +410,246 @@ const ParserData =
 
 
         /*
-            ID.
+            CRC.
+
+            Структура:
+
+            FF
+            TYPE
+            SZ-1
+            DATA-1
+            SZ-2
+            DATA-2
+            CRC
+
+            CRC рахується від TYPE
+            до останнього байта DATA-2.
+
+            У C++:
+
+            fCRC_isOk(
+                _baIn.mid(
+                    1,
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iPlasPos
+                ),
+                ...
+            )
+
+            Важливо:
+
+            QByteArray::mid(start, length)
+
+            у JS:
+
+            slice(start, start + length)
+
+            Тому end у slice()
+            повинен містити +1.
         */
 
-        const idBytes =
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const crcData =
             data.slice(
-                pos,
-                pos + idLength
+                1,
+                1 +
+                crcDataLength
             );
 
 
-        const clientId =
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseNewId: CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x07,
+
+                name:
+                    "NEW_ID",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        pos = 0;
+
+
+        const idBytes =
+            data.slice(
+                3,
+                3 +
+                data1Length
+            );
+
+
+        let clientId =
             this.decodeUtf8(
                 idBytes
             );
 
 
-        pos +=
-            idLength;
-
-
-        /*
-            Розмір DEV.
-        */
-
-        const devLength =
-            data[pos];
-
         pos++;
 
 
-        /*
-            Перевірка повного DEV.
-        */
-
-        if(
-            data.length <
-            2 +
-            idLength +
-            devLength +
-            2
-        )
-        {
-            return null;
-        }
+        const devDataStart =
+            3 +
+            data1Length +
+            pos;
 
 
-        /*
-            DEV data.
-        */
+        const devDataEnd =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
 
-        const devData =
+
+        const devServerData =
             data.slice(
-                pos,
-                pos + devLength
+                devDataStart,
+                devDataEnd
             );
 
 
-        pos +=
-            devLength;
 
-
-        /*
-            CRC.
-        */
-
-        if(pos >= data.length)
-            return null;
-
-
-        const receivedCRC =
-            data[pos];
-
-
-        /*
-            CRC.
-        */
-
-        const calculatedCRC =
-            this.getCRC(
-                data.slice(
-                    1,
-                    pos
-                )
-            );
-
-
-        const validCRC =
-            calculatedCRC ===
-            receivedCRC;
-
-
-        if(!validCRC)
+        if(clientId.length === 0)
         {
-            this.log(
-                "ParserData::parseNewId: CRC ПОМИЛКА. " +
-                "отримано=" + receivedCRC +
-                ", розраховано=" + calculatedCRC
-            );
+            clientId = "0";
+        }
+        else
+        {
+            
+            if(devServerData.length > 0)
+            {
+                const devServer =
+                    devServerData[0];
 
-            return {
 
-                size: 0,
+                if(devServer === 1)
+                {
+                    
+                    clientId +=
+                        Protocol.fIdGenerator(
+                            Protocol.PREFIX,
+                            "",
+                            16,
+                            26
+                        );
 
-                type: 0x07,
 
-                name: "NEW_ID",
+                    clientId +=
+                        String(
+                            Date.now()
+                        );
 
-                validCRC: false
 
-            };
+                    clientId +=
+                        "_uds";
+
+
+                    /*
+                        Зберігаємо новий ID.
+                    */
+
+                    AppState.clientId =
+                        clientId;
+
+
+                    /*
+                        TODO / SGCONTROL
+                    */
+                }
+                else
+                if(devServer === 2)
+                {
+                    /*
+                        TODO / SGCONTROL
+                    */
+                }
+            }
         }
 
 
-        let devVariant = 0;
-
-
-        if(devData.length > 0)
-        {
-            devVariant =
-                devData[0];
-        }
-
-
-        let newClientId =
+        AppState.clientId =
             clientId;
 
 
-        if(newClientId.length === 0)
-        {
-            newClientId = "0";
-        }
+        this.log(
+            "ParserData::parseNewId: " +
+            "ID=" +
+            clientId +
+            ", DEV=" +
+            (
+                devServerData.length > 0
+                    ? devServerData[0]
+                    : 0
+            )
+        );
 
 
         /*
-            Зберігаємо ID сервера у спільному стані.
+            C++:
 
-            Від цього моменту всі наступні LOGIN
-            використовуватимуть саме цей ID.
+            a_iPlasPos++;
+
+            return
+                3 +
+                a_iData_1 +
+                a_iData_2 +
+                a_iPlasPos;
         */
-        AppState.clientId =
-            newClientId;
 
-
-        this.log(
-            "ParserData::parseNewId: пакет NEW_ID успішно розібрано. " +
-            "ID=" + newClientId +
-            ", DEV=" + devVariant +
-            ", size=" + (pos + 1)
-        );
-
-
-        this.log(
-            "ParserData: AppState.clientId = " +
-            AppState.clientId
-        );
+        pos++;
 
 
         return {
 
             size:
-                pos + 1,
+                3 +
+                data1Length +
+                data2Length +
+                pos,
 
             type:
                 0x07,
@@ -545,10 +661,21 @@ const ParserData =
                 true,
 
             clientId:
-                newClientId,
+                clientId,
 
-            devVariant:
-                devVariant,
+            devServer:
+                devServerData.length > 0
+                    ? devServerData[0]
+                    : 0,
+
+            devData:
+                devServerData,
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
 
             receivedCRC:
                 receivedCRC,
@@ -557,37 +684,355 @@ const ParserData =
                 calculatedCRC,
 
             reconnect:
-                devVariant === 1 ||
-                devVariant === 2
-
+                devServerData.length > 0 &&
+                (
+                    devServerData[0] === 1 ||
+                    devServerData[0] === 2
+                )
         };
     },
 
 
     /*
-        CRC:
+        Аналог:
 
-        проста сума байтів
-        modulo 256.
-
-        Аналог fGetCRC().
+        ParserSocketData::fMessageStatus()
     */
 
-    getCRC(bytes)
+    parseMessageStatus(data)
+    {
+        if(data.length < 4)
+        {
+            return null;
+        }
+
+
+        let pos = 0;
+
+        const data1Length =
+            data[2];
+
+        pos++;
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        /*
+            Перевірка повного пакета.
+
+            Для нашого прикладу:
+
+            2 + 1 + 41 + 2 + 1 = 47
+
+            FF + TYPE + SZ1 + VAR + SZ2 + DATA + CRC
+        */
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1;
+
+
+        if(data.length < packetSize)
+        {
+            return null;
+        }
+
+
+        /*
+            CRC.
+
+            Важливий момент:
+
+            crcData має містити:
+
+            TYPE
+            SZ-1
+            VAR
+            SZ-2
+            DATA
+
+            Для нашого пакета:
+
+            10 01 D1 29
+            44 69 73 63 6F ...
+            ... 2E
+
+            Всього 45 байт.
+
+            CRC знаходиться після них.
+        */
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseMessageStatus: CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x10,
+
+                name:
+                    "MESSAGE_STATUS",
+
+                validCRC:
+                    false
+            };
+        }
+
+        let a_baId;
+
+        pos = 0;
+
+        const variable =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+        const messageDataStart =
+            3 +
+            data1Length +
+            pos;
+
+
+        const messageDataEnd =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const messageData =
+            data.slice(
+                messageDataStart,
+                messageDataEnd
+            );
+
+
+        /*
+            C++:
+
+            emit sgControl(
+                QString::number(a_iVar),
+                18,
+                a_baData,
+                ""
+            );
+
+            TODO / SGCONTROL
+        */
+
+        this.log(
+            "ParserData::parseMessageStatus: " +
+            "VAR=0x" +
+            variable
+                .toString?.(16)
+                ?.padStart(2, "0")
+                ?.toUpperCase() ||
+            "VAR=" +
+            variable +
+            ", DATA=" +
+            this.toHex(messageData)
+        );
+
+
+        pos++;
+
+
+        return {
+
+            size:
+                3 +
+                data1Length +
+                data2Length +
+                pos,
+
+            type:
+                0x10,
+
+            name:
+                "MESSAGE_STATUS",
+
+            validCRC:
+                true,
+
+            variable:
+                variable,
+
+            data:
+                messageData,
+
+            dataText:
+                this.decodeUtf8(
+                    messageData
+                ),
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+
+    /*
+        Аналог:
+
+        bool MyProtocol::fCRC_isOk(
+            const QByteArray& data,
+            uint8_t _iCRC
+        )
+    */
+
+    fCRC_isOk(data, crc)
+    {
+        if(
+            this.getCRC(
+                data,
+                data.length
+            ) === crc
+        )
+        {
+            return true;
+        }
+
+
+        return false;
+    },
+
+
+    /*
+        Аналог:
+
+        uint8_t MyProtocol::fGetCRC(
+            const QByteArray& data,
+            int _iSize
+        )
+    */
+
+    getCRC(data, size)
     {
         let crc = 0;
 
 
+        /*
+            C++:
+
+            if(_iSize > data.size())
+                return a_chCRC;
+        */
+
+        if(size > data.length)
+        {
+            return crc;
+        }
+
+
+        /*
+            C++:
+
+            quint8 a_chCRC = 0;
+
+            for(int i = 0;
+                i < _iSize;
+                i++)
+            {
+                a_chCRC +=
+                    static_cast<quint8>(
+                        data.at(i)
+                    );
+            }
+        */
+
         for(
             let i = 0;
-            i < bytes.length;
+            i < size;
             i++
         )
         {
             crc =
                 (
                     crc +
-                    bytes[i]
+                    data[i]
                 ) & 0xFF;
         }
 
@@ -615,14 +1060,25 @@ const ParserData =
     },
 
 
+    /*
+        Перетворення binary data
+        у HEX.
+    */
+
     toHex(bytes)
     {
         let hex = "";
 
-        for(let i = 0; i < bytes.length; i++)
+
+        for(
+            let i = 0;
+            i < bytes.length;
+            i++
+        )
         {
             if(i > 0)
                 hex += " ";
+
 
             hex +=
                 bytes[i]
@@ -630,6 +1086,7 @@ const ParserData =
                     .padStart(2, "0")
                     .toUpperCase();
         }
+
 
         return hex;
     },
@@ -654,5 +1111,4 @@ const ParserData =
 
         return -1;
     }
-
 };

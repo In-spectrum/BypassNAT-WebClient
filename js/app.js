@@ -619,15 +619,30 @@ function handleServerData(data)
                 continue;
 
 
-            if(packet.type === 0x07)
+            if(packet.type === 0x10)
+            {
+                log(
+                    "app.handleServerData: SERVER: MESSAGE_STATUS. " +
+                    "VAR=" + packet.variable +
+                    ", DATA=" + (packet.dataText || "")
+                );
+
+                if(packet.validCRC === false)
+                {
+                    log(
+                        "app.handleServerData: SERVER: MESSAGE_STATUS — CRC ПОМИЛКА."
+                    );
+                }
+            }
+            else if(packet.type === 0x07)
             {
                 log(
                     "app.handleServerData: SERVER: NEW_ID. " +
                     "ID=" +
                     (AppState.clientId || "") +
                     ", DEV=" +
-                    (packet.devVariant !== undefined ?
-                        packet.devVariant :
+                    (packet.devServer !== undefined ?
+                        packet.devServer :
                         "")
                 );
 
