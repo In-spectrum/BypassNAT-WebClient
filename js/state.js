@@ -22,4 +22,5 @@ const AppState =
         сюди ID, який надіслав сервер.
     */
     clientId: ""
+    , sDeskId: ""
 };

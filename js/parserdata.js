@@ -30,11 +30,11 @@ const ParserData =
         baIn
     )
     {
-        log("ParserData.sgControl 0:");
+        //log("ParserData.sgControl 0:");
 
         if(ParserData.slControl)
         {
-            log("ParserData.slControl 1:");
+            //log("ParserData.slControl 1:");
 
             ParserData.slControl(
                 sId,
@@ -388,7 +388,7 @@ const ParserData =
             return null;
         }
 
-        this.sgControl("test-0", 1, "test-2", data);
+        //this.sgControl("test-0", 1, "test-2", data);
 
 
         let pos = 0;
@@ -626,14 +626,13 @@ const ParserData =
                         clientId;
 
                     //переконнектится к серверу с новым Id
-                    sgControl("0", 22, "", "");
+                    this.sgControl("0", 22, "", "");
                 }
                 else
                 if(devServer === 2)
                 {
-                    /*
-                        TODO / SGCONTROL
-                    */
+                   //переконнектится к серверу с новым префикс-Id
+                    this.sgControl("0", 22, "", "");
                 }
             }
         }
@@ -922,18 +921,25 @@ const ParserData =
             TODO / SGCONTROL
         */
 
-        this.log(
-            "ParserData::parseMessageStatus: " +
-            "VAR=0x" +
-            variable
-                .toString?.(16)
-                ?.padStart(2, "0")
-                ?.toUpperCase() ||
-            "VAR=" +
-            variable +
-            ", DATA=" +
-            this.toHex(messageData)
-        );
+            this.sgControl(
+                String(variable),
+                18,
+                this.decodeUtf8(messageData),
+                messageData
+            );
+      
+        // this.log(
+        //     "ParserData::parseMessageStatus: " +
+        //     "VAR=0x" +
+        //     variable
+        //         .toString?.(16)
+        //         ?.padStart(2, "0")
+        //         ?.toUpperCase() ||
+        //     "VAR=" +
+        //     variable +
+        //     ", DATA=" +
+        //     this.toHex(messageData)
+        // );
 
 
         pos++;

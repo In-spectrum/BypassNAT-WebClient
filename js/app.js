@@ -89,6 +89,103 @@ function log(text)
     loggerBody.scrollTop = loggerBody.scrollHeight;
 }
 
+function showMessage(id, sData)
+{
+    //  log(
+    //     "app.showMessage: " +
+    //     "Id=" + id +
+    //     ", Data=" + sData
+    // );
+
+    // Якщо повідомлення вже існує — видаляємо його
+    const oldMessage = document.getElementById("clientMessage");
+    if (oldMessage)
+        oldMessage.remove();
+
+    // Затемнення сторінки
+    const overlay = document.createElement("div");
+    overlay.id = "clientMessage";
+
+    overlay.style.position = "fixed";
+    overlay.style.left = "0";
+    overlay.style.top = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+
+    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.45)";
+
+    overlay.style.display = "flex";
+    overlay.style.alignItems = "center";
+    overlay.style.justifyContent = "center";
+
+    overlay.style.zIndex = "10000";
+
+
+    // Вікно повідомлення
+    const messageBox = document.createElement("div");
+
+    messageBox.style.minWidth = "300px";
+    messageBox.style.maxWidth = "600px";
+
+    messageBox.style.backgroundColor = "#ffffff";
+    messageBox.style.borderRadius = "8px";
+
+    messageBox.style.padding = "25px";
+
+    messageBox.style.boxShadow =
+        "0 4px 20px rgba(0, 0, 0, 0.35)";
+
+    messageBox.style.textAlign = "center";
+
+
+    // Текст повідомлення
+    const messageText = document.createElement("div");
+
+    messageText.style.fontSize = "16px";
+    messageText.style.color = "#222222";
+    messageText.style.whiteSpace = "pre-wrap";
+
+    messageText.textContent = sData;
+
+
+    // ID повідомлення
+    const messageId = document.createElement("div");
+
+    messageId.style.marginTop = "10px";
+    messageId.style.fontSize = "12px";
+    messageId.style.color = "#888888";
+
+    //messageId.textContent = "ID: " + id;
+
+
+    // Кнопка OK
+    const button = document.createElement("button");
+
+    button.textContent = "OK";
+
+    button.style.marginTop = "20px";
+    button.style.padding = "8px 25px";
+
+    button.style.border = "none";
+    button.style.borderRadius = "4px";
+
+    button.style.cursor = "pointer";
+
+    button.onclick = function()
+    {
+        overlay.remove();
+    };
+
+
+    messageBox.appendChild(messageText);
+    messageBox.appendChild(messageId);
+    messageBox.appendChild(button);
+
+    overlay.appendChild(messageBox);
+
+    document.body.appendChild(overlay);
+}
+
 video.addEventListener("loadedmetadata", () =>
 {
     playerState.frameWidth = video.videoWidth;
@@ -358,25 +455,74 @@ wsClient.slControl =
 (
     sId,
     iVar,
-    sData,
-    baIn
+    sData
 ) =>
 {
-
-    log("app.wsClient.slControl 0:");
-
     log(
-        "slControl: " +
+        "app.slControl: " +
         "Id=" + sId +
         ", Var=" + iVar +
-        ", Data=" + sData +
-        ", baIn=" + toHex(baIn)
+        ", Data=" + sData
     );
 
-    /*
-        Тут буде подальша обробка
-        події на рівні app.js.
-    */
+        switch(iVar)
+        {
+            case 12:
+            {
+                const id = parseInt(sId, 10);
+
+                if (id > 200)
+                {
+                    m_bErrStream = true;
+
+                    if (id === 200 + 2
+                        || id === 200 + 5
+                        || id === 200 + 7
+                        || id === 200 + 9
+                        || id === 200 + 10)
+                    {
+                        //slDisConnectDesktop(1);
+
+                        if (id === 200 + 9)
+                        {
+                            //fClientDisconnect();
+
+                            // if (m_obMenu)
+                            // {
+                            //     m_obMenu.fConnectServer("0");
+                            // }
+                        }
+                    }
+                }
+
+                if (AppState.sDeskId.length !== 0
+                    || id === 200 + 2
+                    || id === 200 + 4
+                    || id === 200 + 5
+                    || id === 200 + 6
+                    || id === 200 + 7
+                    || id === 200 + 8
+                    || id === 200 + 9
+                    || id === 200 + 10
+                    || id === 200 + 11)
+                {
+
+                    showMessage(sId, sData);
+
+                    //сообщение низкой активности клиента
+                    if (id === 200 + 11)
+                    {
+                        //sgControl("", 24, "", "");
+                    }
+                }
+                break;
+            }
+
+            case 16: //переконнектится к серверу с новым Id
+            {               
+                break;
+            }
+        }
 };
 
 

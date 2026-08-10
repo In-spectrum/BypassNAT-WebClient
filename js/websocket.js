@@ -31,15 +31,9 @@ class WebSocketClient
             baIn
         ) =>
         {
-            log("WebSocketClient.ParserData.slControl 0:");
+            //log("WebSocketClient.ParserData.slControl 0:");
 
             this.sgControl( sId, iVar, sData, baIn );
-            // this.sgControl(
-            //     sId,
-            //     iVar,
-            //     sData,
-            //     baIn
-            // );
         };
     }
 
@@ -240,16 +234,37 @@ class WebSocketClient
         baIn
     )
     {
-        log("WebSocketClient.sgControl 0:");
+        log(
+            "WebSocketClient.sgControl: " +
+            "Id=" + sId +
+            ", Var=" + iVar +
+            ", Data=" + sData +
+            ", baIn=" + toHex(baIn)
+        );
 
-        if(this.slControl)
+        switch(iVar)
         {
-            this.slControl(
-                sId,
-                iVar,
-                sData,
-                baIn
-            );
+            case 18:
+            {
+                if(this.slControl)
+                {
+                    log("WebSocketClient.sgControl 18: ");
+
+
+                    this.slControl(sId, 12, sData);
+                    //this.slControl("", 4, "");
+                }
+                break;
+            }           
+            case 22: //переконнектится к серверу с новым Id
+            {
+                if(this.slControl)
+                {
+                    this.slControl(_sId, 16, "");
+                }
+
+                break;
+            }
         }
     }
 
