@@ -89,6 +89,34 @@ function log(text)
     loggerBody.scrollTop = loggerBody.scrollHeight;
 }
 
+function setConnectionStatus(connected)
+{
+    const indicator =
+        document.getElementById("connectionStatusIndicator");
+
+    if (!indicator)
+        return;
+
+    if (connected)
+    {
+        // Підключено
+        indicator.style.backgroundColor = "#4da6ff";
+    }
+    else
+    {
+        // Не підключено
+        indicator.style.backgroundColor = "#808080";
+    }
+}
+
+function fClientDisconnect()
+{
+    if (wsClient)
+    {
+        wsClient.disconnect();
+    }
+}
+
 function showMessage(id, sData)
 {
     //  log(
@@ -485,7 +513,7 @@ wsClient.slControl =
 
                         if (id === 200 + 9)
                         {
-                            //fClientDisconnect();
+                            fClientDisconnect();
 
                             // if (m_obMenu)
                             // {
@@ -557,6 +585,7 @@ function()
         "WebSocket: підключення успішне."
     );
 
+    setConnectionStatus(true);
 
     sendLogin();
 };
@@ -568,6 +597,7 @@ function()
     log(
         "WebSocket: з'єднання закрито."
     );
+    setConnectionStatus(false);
 };
 
 
@@ -577,6 +607,7 @@ function(error)
     log(
         "WebSocket: помилка."
     );
+    setConnectionStatus(false);
 };
 
 

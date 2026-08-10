@@ -152,3 +152,40 @@ button {
     font: 12px Consolas;
     background: #0d0d0d;
 }
+
+#connectionStatus
+{
+    position: fixed;
+
+    top: 8px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    border-radius: 4px;
+
+    z-index: 99999;
+
+    box-shadow: 0 1px 4px rgba(255, 255, 255, 0.5);
+
+    pointer-events: none;
+}
+
+#connectionStatusIndicator
+{
+    width: 12px;
+    height: 12px;
+
+    border-radius: 2px;
+
+    background-color: #808080;
+}
