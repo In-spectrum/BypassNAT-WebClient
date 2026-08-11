@@ -291,6 +291,43 @@ const ParserData =
                         break;
                     }
 
+                    case 0x0A:
+                    {
+                        const packet =
+                            this.parseMaybeMyLogin(data);
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        /*
+                            Аналог:
+
+                            a_iPos += fGetActiveClient(...)
+                        */
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        break;
+                    }
+
 
                     /*
                         Message Status
@@ -972,6 +1009,380 @@ const ParserData =
                 this.decodeUtf8(
                     messageData
                 ),
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+    parseMaybeMyLogin(data)
+    {
+        /*
+            Аналог:
+
+            ParserSocketData::fMaybeMyLogin()
+        */
+
+        if(data.length < 4)
+        {
+            return null;
+        }
+
+
+        let pos = 0;
+
+
+        /*
+            SIZE-1
+
+            C++:
+
+            int a_iData_1 =
+                static_cast<quint8>(
+                    _baIn.at(2)
+                );
+        */
+
+        const data1Length =
+            data[2];
+
+
+        pos++;
+
+
+        /*
+            Перевіряємо, чи присутній
+            перший рядок.
+        */
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            SIZE-2
+
+            C++:
+
+            _baIn.at(
+                3 +
+                a_iData_1 +
+                a_iPlasPos -
+                1
+            )
+        */
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        /*
+            Перевірка повного пакета.
+
+            FF
+            TYPE
+            SIZE-1
+            DATA-1
+            SIZE-2
+            DATA-2
+            CRC
+        */
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            CRC.
+
+            C++:
+
+            MyProtocol::fCRC_isOk(
+                _baIn.mid(
+                    1,
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iPlasPos
+                ),
+                _baIn.at(
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iPlasPos +
+                    1
+                )
+            )
+
+            FF у CRC НЕ входить.
+        */
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseMaybeMyLogin: CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+                size: 0,
+
+                type:
+                    data[1],
+
+                name:
+                    "MAYBE_MY_LOGIN",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            DATA-1
+
+            C++:
+
+            for(
+                int i = 3;
+                i < 3 + a_iData_1 + a_iPlasPos;
+                i++
+            )
+            {
+                a_baDesktopLogin.append(
+                    _baIn[i]
+                );
+            }
+
+            Тут a_iPlasPos == 0.
+        */
+
+        pos = 0;
+
+
+        const desktopLoginStart =
+            3;
+
+
+        const desktopLoginEnd =
+            3 +
+            data1Length +
+            pos;
+
+
+        const desktopLoginBytes =
+            data.slice(
+                desktopLoginStart,
+                desktopLoginEnd
+            );
+
+
+        /*
+            DATA-2
+
+            C++:
+
+            a_iPlasPos++;
+
+            for(
+                int i =
+                    3 +
+                    a_iData_1 +
+                    a_iPlasPos;
+
+                i <
+                    3 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iPlasPos;
+
+                i++
+            )
+            {
+                a_baDesktopId.append(
+                    _baIn[i]
+                );
+            }
+        */
+
+        pos++;
+
+
+        const desktopIdStart =
+            3 +
+            data1Length +
+            pos;
+
+
+        const desktopIdEnd =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const desktopIdBytes =
+            data.slice(
+                desktopIdStart,
+                desktopIdEnd
+            );
+
+
+        const desktopLogin =
+            this.decodeUtf8(
+                desktopLoginBytes
+            );
+
+
+        const desktopId =
+            this.decodeUtf8(
+                desktopIdBytes
+            );
+
+
+        /*
+            C++:
+
+            emit sgControl(
+                QString::fromStdString(
+                    a_baDesktopLogin.toStdString()
+                ),
+                5,
+                QString::fromStdString(
+                    a_baDesktopId.toStdString()
+                ),
+                ""
+            );
+        */
+
+        this.sgControl(
+            desktopLogin,
+            5,
+            desktopId,
+            ""
+        );
+
+
+        /*
+            C++:
+
+            a_iPlasPos++;
+
+            return
+                3 +
+                a_iData_1 +
+                a_iData_2 +
+                a_iPlasPos;
+        */
+
+        pos++;
+
+
+        return {
+
+            size:
+                3 +
+                data1Length +
+                data2Length +
+                pos,
+
+            type:
+                data[1],
+
+            name:
+                "MAYBE_MY_LOGIN",
+
+            validCRC:
+                true,
+
+            desktopLogin:
+                desktopLogin,
+
+            desktopLoginBytes:
+                desktopLoginBytes,
+
+            desktopId:
+                desktopId,
+
+            desktopIdBytes:
+                desktopIdBytes,
 
             data1Length:
                 data1Length,

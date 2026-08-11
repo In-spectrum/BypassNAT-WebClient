@@ -1,6 +1,8 @@
 const sidebar = document.getElementById('sidebar');
 const btnOpen = document.getElementById('btnOpen');
 const loggerBody = document.getElementById('loggerBody');
+const txtFindClient = document.getElementById("txtFindClient");
+const lstClients = document.getElementById("lstClients");
 const video = document.getElementById("video");
 const playerArea = document.getElementById("playerArea");
 const playerState =
@@ -74,6 +76,47 @@ document.getElementById('btnClear').onclick = () => {
     loggerBody.innerHTML = "";
 };
 
+txtFindClient.addEventListener("input", () => {
+
+    lstClients.innerHTML = "";
+
+    const desktopLogin = txtFindClient.value;
+
+    if (desktopLogin.length === 0)
+        return;
+
+     const packet =
+            Protocol.createSearchDesktop(
+                AppState.clientId,
+                desktopLogin
+            );
+
+    // try
+    // {
+    //     const packet =
+    //         Protocol.createSearchDesktop(
+    //             AppState.clientId,
+    //             desktopLogin
+    //         );
+
+    //     log("SearchDesktop 2: " + desktopLogin);
+    // }
+    // catch(error)
+    // {
+    //     log(
+    //         "SearchDesktop ERROR: " +
+    //         error.message
+    //     );
+
+    //     console.error(
+    //         "SearchDesktop ERROR:",
+    //         error
+    //     );
+    // }
+
+    wsClient.send(packet);
+
+});
 
 function log(text)
 {
@@ -495,6 +538,35 @@ wsClient.slControl =
 
         switch(iVar)
         {
+            case 5:
+            {
+                const option =
+                    document.createElement("option");
+
+
+                /*
+                    Відображається логін клієнта.
+                */
+
+                option.textContent =
+                    sData;
+
+
+                /*
+                    Зберігаємо його ID.
+                */
+
+                option.value =
+                    sId;
+
+
+                lstClients.appendChild(
+                    option
+                );
+
+                
+                break;
+            }   
             case 12:
             {
                 const id = parseInt(sId, 10);

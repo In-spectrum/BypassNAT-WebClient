@@ -387,6 +387,195 @@ const Protocol =
 
 
         return packet.buffer;
-    }
+    },
+
+    createSearchDesktop(
+    userId,
+    desktopLogin
+)
+{
+    const encoder =
+        new TextEncoder();
+
+
+    /*
+        C++:
+
+        QByteArray a_baRequest;
+        a_baRequest.append(0xFF);
+        a_baRequest.append(0x09);
+    */
+
+    const userIdText =
+        userId === undefined ||
+        userId === null
+            ? ""
+            : String(userId);
+
+
+    const desktopLoginText =
+        desktopLogin === undefined ||
+        desktopLogin === null
+            ? ""
+            : String(desktopLogin);
+
+
+    const userIdBytes =
+        encoder.encode(
+            userIdText
+        );
+
+
+    const desktopLoginBytes =
+        encoder.encode(
+            desktopLoginText
+        );
+
+
+    /*
+        C++:
+
+        unsigned int a_iSz =
+            a_baTemp.length();
+
+        a_baSz.append(
+            (a_iSz >> 24) & 0xFF
+        );
+        a_baSz.append(
+            (a_iSz >> 16) & 0xFF
+        );
+        a_baSz.append(
+            (a_iSz >> 8) & 0xFF
+        );
+        a_baSz.append(
+            (a_iSz >> 0) & 0xFF
+        );
+
+        a_baRequest.append(
+            a_baSz.at(3)
+        );
+    */
+
+    const userIdSize =
+        userIdBytes.length & 0xFF;
+
+
+    const desktopLoginSize =
+        desktopLoginBytes.length & 0xFF;
+
+
+    /*
+        Повний пакет:
+
+        FF
+        09
+
+        1 byte + userId
+        1 byte + desktopLogin
+
+        CRC
+    */
+
+    const totalSize =
+        2 +
+        1 + userIdBytes.length +
+        1 + desktopLoginBytes.length +
+        1;
+
+
+    const packet =
+        new Uint8Array(
+            totalSize
+        );
+
+
+    let offset = 0;
+
+
+    /*
+        FF
+    */
+
+    packet[offset++] =
+        0xFF;
+
+
+    /*
+        TYPE = 09
+    */
+
+    packet[offset++] =
+        0x09;
+
+
+    /*
+        USER ID SIZE
+
+        C++ використовує тільки
+        молодший байт розміру.
+    */
+
+    packet[offset++] =
+        userIdSize;
+
+
+    /*
+        USER ID
+    */
+
+    packet.set(
+        userIdBytes,
+        offset
+    );
+
+    offset +=
+        userIdBytes.length;
+
+
+    /*
+        DESKTOP LOGIN SIZE
+    */
+
+    packet[offset++] =
+        desktopLoginSize;
+
+
+    /*
+        DESKTOP LOGIN
+    */
+
+    packet.set(
+        desktopLoginBytes,
+        offset
+    );
+
+    offset +=
+        desktopLoginBytes.length;
+
+
+    /*
+        CRC
+
+        C++:
+
+        fGetCRC(
+            a_baRequest.mid(1),
+            a_baRequest.size() - 1
+        )
+
+        Тобто:
+
+        FF НЕ входить у CRC.
+    */
+
+    packet[offset] =
+        Protocol.getCRC(
+            packet.subarray(1, offset),
+            offset - 1
+        );
+
+
+    return packet.buffer;
+}
 
 };
