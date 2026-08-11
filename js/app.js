@@ -564,7 +564,7 @@ wsClient.slControl =
                     option
                 );
 
-                
+
                 break;
             }   
             case 12:
@@ -1108,6 +1108,125 @@ document.getElementById(
 
     wsClient.connect(url);
 
+};
+
+document.getElementById(
+    "btnConnectClient"
+)
+.onclick = function()
+{
+    /*
+        Перевіряємо наявність елементів
+        у списку.
+    */
+
+    if(lstClients.options.length === 0)
+    {
+        log(
+            "ConnectClient: список клієнтів порожній"
+        );
+
+        return;
+    }
+
+
+    /*
+        Перевіряємо, чи вибраний елемент.
+    */
+
+    if(lstClients.selectedIndex < 0)
+    {
+        log(
+            "ConnectClient: клієнт не вибраний"
+        );
+
+        return;
+    }
+
+
+    /*
+        Отримуємо вибраний елемент.
+    */
+
+    const selectedOption =
+        lstClients.options[
+            lstClients.selectedIndex
+        ];
+
+
+    /*
+        Login = текст елемента списку.
+    */
+
+    const login =
+        selectedOption.textContent;
+
+
+    /*
+        ID = value елемента списку.
+    */
+
+    const id =
+        selectedOption.value;
+
+
+    /*
+        Пароль.
+    */
+
+    const password =
+        txtClientPassword.value;
+
+
+    /*
+        Перевірка паролю.
+    */
+
+    if(password.length < 4)
+    {
+        log(
+            "ConnectClient: пароль повинен містити більше 3 символів"
+        );
+
+        return;
+    }
+
+
+    /*
+        Формуємо пакет.
+    */
+
+    const packet =
+        Protocol.createConnectToDesktop(
+            login,
+            password,
+            id,
+            true
+        );
+
+
+    /*
+        Відправляємо на сервер.
+    */
+
+    if(
+        wsClient.send(packet)
+    )
+    {
+        log(
+            "ConnectClient: пакет відправлено. " +
+            "login=" +
+            login +
+            ", id=" +
+            id
+        );
+    }
+    else
+    {
+        log(
+            "ConnectClient: не вдалося відправити пакет"
+        );
+    }
 };
 
 

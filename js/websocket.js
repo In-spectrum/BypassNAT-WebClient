@@ -248,7 +248,7 @@ class WebSocketClient
             {
                 if(this.slControl)
                 {
-                    log("WebSocketClient.sgControl 5: ");
+                    //log("WebSocketClient.sgControl 5: ");
                     this.slControl(sId, 5, sData);
                 }
                 break;
@@ -257,7 +257,7 @@ class WebSocketClient
             {
                 if(this.slControl)
                 {
-                    log("WebSocketClient.sgControl 18: ");
+                    //log("WebSocketClient.sgControl 18: ");
                     this.slControl(sId, 12, sData);
                     //this.slControl("", 4, "");
                 }
