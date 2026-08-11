@@ -244,6 +244,15 @@ class WebSocketClient
 
         switch(iVar)
         {
+            case 2:
+            {
+                if(this.slControl)
+                {
+                    //log("WebSocketClient.sgControl 2: ");
+                    this.slControl(sId, 2, sData);
+                }
+                break;
+            }   
             case 5:
             {
                 if(this.slControl)

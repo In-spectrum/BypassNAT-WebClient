@@ -538,6 +538,28 @@ wsClient.slControl =
 
         switch(iVar)
         {
+            case 2:
+            {
+                if(AppState.sWithoutStream === sData)
+                {
+                    showMessage(sId, sData);
+                }
+                else
+                {
+
+                    if(AppState.sStreamNewUrl !== sData)
+                    {
+                        AppState.sStreamNewUrl = sData;                        
+                    }
+
+                    log(
+                        "app.slControl 2.2: " +
+                        "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
+                    );
+                }
+                
+                break;
+            }  
             case 5:
             {
                 const option =
