@@ -23,4 +23,7 @@ const AppState =
     */
     clientId: ""
     , sDeskId: ""
+    , sDeskLogin: ""
+    , sStreamNewUrl: ""
+    , sWithoutStream: "WITHOUT_STREAM"
 };

@@ -542,7 +542,11 @@ wsClient.slControl =
             {
                 if(AppState.sWithoutStream === sData)
                 {
-                    showMessage(sId, sData);
+                    const mes = "User '" + AppState.sDeskLogin
+                                         + "' not support screen capture."
+                                         + "\nOnly command line use."  
+                                         ;
+                    showMessage(sId, mes);
                 }
                 else
                 {
@@ -552,9 +556,18 @@ wsClient.slControl =
                         AppState.sStreamNewUrl = sData;                        
                     }
 
+                    const url =
+                            "http://localhost:8889/live/" +
+                            AppState.sStreamNewUrl +
+                            "/whep";
+
+                    setTimeout(function() {
+                        startPlayer(url);
+                    }, 2000);
+
                     log(
                         "app.slControl 2.2: " +
-                        "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
+                        "AppState.sStreamNewUrl = " + url
                     );
                 }
                 
@@ -1218,9 +1231,11 @@ document.getElementById(
         Формуємо пакет.
     */
 
+    AppState.sDeskLogin = login;
+
     const packet =
         Protocol.createConnectToDesktop(
-            login,
+            AppState.sDeskLogin,
             password,
             id,
             true
