@@ -1,23 +1,31 @@
 <!DOCTYPE html>
 <html lang="uk">
 
+
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
+
 <link rel="stylesheet" href="css/style.css">
 
+
 <title>Remote Client</title>
+
 
 </head>
 
 
+
 <body>
+
 
 <div id="app">
 
 
+
 <aside id="sidebar">
+
 
 
 <div class="title">
@@ -26,12 +34,15 @@
 
 
 
+
 <div class="panelBlock">
+
 
 
 <div class="blockTitle">
     Server connection
 </div>
+
 
 
 <div class="formGroup">
@@ -42,12 +53,14 @@
 </div>
 
 
+
 <div class="formGroup">
 <label for="txtServerIP">
     Server IP
 </label>
 <input id="txtServerIP" type="text">
 </div>
+
 
 
 <div class="formGroup">
@@ -58,12 +71,14 @@
 </div>
 
 
+
 <div class="formGroup">
 <label for="txtUserLogin">
     Login
 </label>
 <input id="txtUserLogin" type="text">
 </div>
+
 
 
 <div class="formGroup">
@@ -75,6 +90,7 @@
 
 
 
+
 <div class="buttonRow">
 <button id="btnConnectServer">
     Server connect
@@ -82,7 +98,9 @@
 </div>
 
 
+
 </div>
+
 
 
 
@@ -90,58 +108,76 @@
 <div class="panelBlock">
 
 
+
 <div class="blockTitle">
     Search devices
 </div>
 
 
+
 <div class="formGroup">
+
 
 <label for="txtFindClient">
     Device Login
 </label>
 
+
 <input id="txtFindClient" type="text">
+
 
 </div>
 
 
 
+
 <div class="formGroup">
+
 
 <label for="lstClients">
     Found devices
 </label>
 
+
 <select id="lstClients" size="6">
 </select>
 
+
 </div>
+
 
 
 
 <div class="formGroup">
 
+
 <label for="txtClientPassword">
     Device Password
 </label>
 
+
 <input id="txtClientPassword" type="text">
 
+
 </div>
+
 
 
 
 <div class="buttonRow">
 
+
 <button id="btnConnectClient">
     Device connect
 </button>
 
+
 </div>
 
 
+
 </div>
+
 
 
 </aside>
@@ -149,25 +185,38 @@
 
 
 
+
 <main id="main">
+
 
 <button id="btnOpen">
 ❮
 </button>
 
 
+
 <div id="playerArea" tabindex="0">
 
+
 <video id="video" autoplay playsinline></video>
+
 
 <div id="connectionStatus">
     <div id="connectionStatusIndicator"></div>
 </div>
 
+
 </div>
 
 
+
 </main>
+
+
+<!-- Кнопка відкриття / закриття логів -->
+<button id="btnLogger">
+    ❯
+</button>
 
 
 
@@ -175,26 +224,31 @@
 <footer id="logger">
 
 
-<div id="loggerHeader">
-
-<span>
-Логи
-</span>
-
-<button id="btnClear">
-Очистити
-</button>
-
-</div>
+    <div id="loggerHeader">
 
 
-<div id="loggerBody"></div>
+        <span>
+            Логи
+        </span>
+
+
+        <button id="btnClear">
+            Очистити
+        </button>
+
+
+    </div>
+
+
+    <div id="loggerBody"></div>
 
 
 </footer>
 
 
+
 </div>
+
 
 
 <script src="js/protocol.js"></script>
@@ -205,6 +259,8 @@
 <script src="js/player.js"></script>
 <script src="js/app.js"></script>
 
+
 </body>
+
 
 </html>

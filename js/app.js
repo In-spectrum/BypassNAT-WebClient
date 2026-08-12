@@ -1,5 +1,8 @@
 const sidebar = document.getElementById('sidebar');
-const btnOpen = document.getElementById('btnOpen');
+const btnOpen = document.getElementById("btnOpen");
+const main = document.getElementById("main");;
+const logger = document.getElementById("logger");
+const btnLogger = document.getElementById("btnLogger");
 const loggerBody = document.getElementById('loggerBody');
 const txtFindClient = document.getElementById("txtFindClient");
 const lstClients = document.getElementById("lstClients");
@@ -12,6 +15,7 @@ const playerState =
     videoReady: false
 };
 
+let loggerVisible = true;
 let menuVisible = true;
 let lastMouseLogTime = 0;
 let mouseInsidePlayer = false;
@@ -56,7 +60,31 @@ document.getElementById(
 ).value =
     "1111";
 
+btnLogger.onclick = () => {
 
+    loggerVisible = !loggerVisible;
+
+    if (loggerVisible) {
+
+        logger.classList.remove("hidden");
+
+        main.classList.remove("fullscreen");
+        sidebar.classList.remove("fullscreen");
+        btnLogger.classList.remove("fullscreen");
+
+        btnLogger.innerHTML = "▼";
+
+    } else {
+
+        logger.classList.add("hidden");
+
+        main.classList.add("fullscreen");
+        sidebar.classList.add("fullscreen");
+        btnLogger.classList.add("fullscreen");
+
+        btnLogger.innerHTML = "▲";
+    }
+};
 
 btnOpen.onclick = () => {
 
@@ -64,10 +92,20 @@ btnOpen.onclick = () => {
 
     if (menuVisible) {
         sidebar.style.display = "block";
-        btnOpen.innerHTML = "❮";
+
+        // Кнопка справа від sidebar
+        btnOpen.style.left = "308px";
+
+        btnOpen.innerHTML = "◀";
+
     } else {
+
         sidebar.style.display = "none";
-        btnOpen.innerHTML = "❯";
+
+        // Кнопка біля лівого краю
+        btnOpen.style.left = "8px";
+
+        btnOpen.innerHTML = "▶";
     }
 };
 
@@ -1323,10 +1361,16 @@ function startAppTimer() {
                 AppState.m_iTimeForWatcher = 0;
         }
 
-        // Тут пізніше додамо потрібну відправку даних
     }, 1000);
 }
 
-startAppTimer();
-log("Програму запущено.");
-log("Інтерфейс готовий.");
+function startThePage() {
+    btnLogger.innerHTML = "▼";
+    btnOpen.innerHTML = "◀";
+    
+    startAppTimer();
+    log("Програму запущено.");
+    log("Інтерфейс готовий.");
+}
+
+startThePage()

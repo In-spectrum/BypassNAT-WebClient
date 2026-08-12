@@ -1,66 +1,181 @@
 * {
-    box-sizing: border-box
+    box-sizing: border-box;
 }
 
-html, body, #app {
+
+/* =====================================================
+   HTML / BODY / APP
+   ===================================================== */
+
+html,
+body,
+#app {
     margin: 0;
+
+    width: 100%;
     height: 100%;
+
     font-family: Segoe UI, sans-serif;
+
     background: #1b1b1b;
     color: #eee;
+
+    overflow: hidden;
 }
+
 
 #app {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 1fr 200px;
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
 }
 
-#sidebar {
-    grid-row: 1;
-    grid-column: 1;
-    width: 300px;
-    background: #2a2a2a;
-    border-right: 1px solid #444;
-    overflow-y: auto;
-}
+
+/* =====================================================
+   MAIN / PLAYER
+   ===================================================== */
 
 #main {
-    grid-row: 1;
-    grid-column: 2;
-    position: relative;
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: calc(100% - 200px);
+
+    background: #000;
+
+    overflow: hidden;
+
+    z-index: 1;
+}
+
+
+#main.fullscreen {
+    height: 100%;
+}
+
+
+/* =====================================================
+   PLAYER
+   ===================================================== */
+
+#playerArea {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+}
+
+
+#video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+
     background: #000;
 }
 
-#playerArea,
-#video {
-    width: 100%;
-    height: 100%;
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+
+#sidebar {
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    /*
+        При показаних логах
+        sidebar закінчується над logger.
+    */
+    bottom: 200px;
+
+    width: 300px;
+
+    background: #2a2a2a;
+
+    border-right: 1px solid #444;
+
+    overflow-y: auto;
+
+    z-index: 1000;
 }
 
-#video {
-    object-fit: contain;
+
+/*
+    Коли logger прихований,
+    sidebar займає всю висоту.
+*/
+
+#sidebar.fullscreen {
+    bottom: 0;
 }
+
+
+/* =====================================================
+   OPEN / CLOSE BUTTON
+   ===================================================== */
 
 #btnOpen {
     position: absolute;
-    left: 8px;
+
+    /*
+        Початковий стан:
+        sidebar відкритий.
+
+        300px — ширина sidebar
+        8px   — відступ
+    */
+    left: 308px;
+
     top: 50%;
+
     transform: translateY(-50%);
+
     width: 22px;
     height: 80px;
-    opacity: .45;
+
+    background: rgba(0, 0, 0, 0.45);
+
+     color: #ff9800;
+
+    z-index: 3000;
 }
+
+
+/* =====================================================
+   SIDEBAR TITLE
+   ===================================================== */
 
 .title {
     display: flex;
+
     justify-content: space-between;
     align-items: center;
+
     padding: 10px;
+
     font-size: 18px;
     font-weight: 800;
+
     border-bottom: 1px solid #444;
 }
+
 
 #btnClose {
     width: 28px;
@@ -68,45 +183,59 @@ html, body, #app {
 }
 
 
-/* Панелі */
+/* =====================================================
+   PANELS
+   ===================================================== */
 
 .panelBlock {
     padding: 12px;
+
     border-bottom: 1px solid #444;
 }
 
 
 .blockTitle {
+    margin-bottom: 12px;
+
     font-size: 16px;
     font-weight: 800;
-    margin-bottom: 12px;
+
     color: #fff;
 }
 
 
-/* Поля */
+/* =====================================================
+   FORM
+   ===================================================== */
 
 .formGroup {
     display: flex;
+
     flex-direction: column;
+
     margin-bottom: 12px;
 }
 
 
 .formGroup label {
-    font-weight: 700;
-    font-size: 14px;
     margin-bottom: 5px;
+
+    font-size: 14px;
+    font-weight: 700;
 }
 
 
 .formGroup input,
 .formGroup select {
     width: 100%;
+
     padding: 7px 8px;
+
     background: #151515;
     color: #eee;
+
     border: 1px solid #555;
+
     border-radius: 3px;
 }
 
@@ -121,21 +250,46 @@ button {
 }
 
 
-/* Логи */
+/* =====================================================
+   LOGGER
+   ===================================================== */
 
 #logger {
-    grid-column: 1/3;
+    position: absolute;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 200px;
+
     background: #111;
+
     border-top: 1px solid #444;
+
     display: flex;
+
     flex-direction: column;
+
+    z-index: 2000;
 }
 
 
+/* =====================================================
+   LOGGER HEADER
+   ===================================================== */
+
 #loggerHeader {
+    flex: 0 0 auto;
+
     display: flex;
+
     justify-content: space-between;
+    align-items: center;
+
     padding: 6px 10px;
+
     font-weight: 700;
 }
 
@@ -145,16 +299,39 @@ button {
 }
 
 
+/* =====================================================
+   LOGGER BODY
+   ===================================================== */
+
 #loggerBody {
     flex: 1;
+
+    min-height: 0;
+
     padding: 4px 10px;
+
     overflow: auto;
+
     font: 12px Consolas;
+
     background: #0d0d0d;
 }
 
-#connectionStatus
-{
+
+/* =====================================================
+   HIDE LOGGER
+   ===================================================== */
+
+#logger.hidden {
+    display: none;
+}
+
+
+/* =====================================================
+   CONNECTION STATUS
+   ===================================================== */
+
+#connectionStatus {
     position: fixed;
 
     top: 8px;
@@ -166,6 +343,7 @@ button {
     height: 24px;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -180,12 +358,38 @@ button {
     pointer-events: none;
 }
 
-#connectionStatusIndicator
-{
+
+#connectionStatusIndicator {
     width: 12px;
     height: 12px;
 
     border-radius: 2px;
 
     background-color: #808080;
+}
+
+/* =====================================================
+   LOGGER OPEN / CLOSE BUTTON
+   ===================================================== */
+
+#btnLogger {
+    position: absolute;
+
+    left: 50%;
+    bottom: 200px;
+
+    transform: translateX(-50%);
+
+    width: 80px;
+    height: 22px;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    color: #ff9800;
+
+    z-index: 4000;
+}
+
+#btnLogger.fullscreen {
+    bottom: 0;
 }
