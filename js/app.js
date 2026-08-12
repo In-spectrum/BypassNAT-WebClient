@@ -127,9 +127,20 @@ function log(text)
         now.getMinutes().toString().padStart(2, '0') + ":" +
         now.getSeconds().toString().padStart(2, '0');
 
-    loggerBody.innerHTML += "[" + time + "] " + text + "<br>";
+    // Чи був скрол вже внизу
+    const isAtBottom =
+        loggerBody.scrollHeight -
+        loggerBody.scrollTop -
+        loggerBody.clientHeight < 10;
 
-    loggerBody.scrollTop = loggerBody.scrollHeight;
+    loggerBody.innerHTML +=
+        "[" + time + "] " + text + "<br>";
+
+    // Автоматично вниз тільки якщо до цього були внизу
+    if (isAtBottom) {
+        loggerBody.scrollTop =
+            loggerBody.scrollHeight;
+    }
 }
 
 function setConnectionStatus(connected)
@@ -1232,12 +1243,13 @@ document.getElementById(
     */
 
     AppState.sDeskLogin = login;
+    AppState.sDeskId = id;
 
     const packet =
         Protocol.createConnectToDesktop(
             AppState.sDeskLogin,
             password,
-            id,
+            AppState.sDeskId,
             true
         );
 
@@ -1266,6 +1278,55 @@ document.getElementById(
     }
 };
 
+function startAppTimer() {
+    setInterval(function() {
 
+        //log("startAppTimer: running.");
+
+
+        if(AppState.sDeskId.length > 0)
+        {
+            AppState.m_iTimeForWatcher++;
+
+            if(AppState.m_iTimeForWatcher%5 == 0)
+            {
+                /*
+                    Формуємо пакет.
+                */
+
+                const packet =
+                    Protocol.fWatcher(
+                        AppState.sDeskId,
+                        AppState.clientId
+                    );
+
+
+                /*
+                    Відправляємо на сервер.
+                */
+
+                if( wsClient.send(packet) )
+                {
+                    log(
+                        "startAppTimer::fWatcher: пакет відправлено. "
+                     );
+                }
+                else
+                {
+                    log(
+                        "startAppTimer::fWatcher: не вдалося відправити пакет"
+                    );
+                }
+            }
+
+            if(AppState.m_iTimeForWatcher >= 10)
+                AppState.m_iTimeForWatcher = 0;
+        }
+
+        // Тут пізніше додамо потрібну відправку даних
+    }, 1000);
+}
+
+startAppTimer();
 log("Програму запущено.");
 log("Інтерфейс готовий.");

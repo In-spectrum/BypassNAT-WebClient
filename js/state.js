@@ -26,4 +26,5 @@ const AppState =
     , sDeskLogin: ""
     , sStreamNewUrl: ""
     , sWithoutStream: "WITHOUT_STREAM"
+    , m_iTimeForWatcher: 0
 };

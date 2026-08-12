@@ -737,6 +737,115 @@ const Protocol =
 
 
         return packet.buffer;
+    },
+
+    fWatcher(
+        forId,
+        fromId
+    )
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        const forIdBytes =
+            encoder.encode(
+                forId === undefined ||
+                forId === null
+                    ? ""
+                    : String(forId)
+            );
+
+
+        const fromIdBytes =
+            encoder.encode(
+                fromId === undefined ||
+                fromId === null
+                    ? ""
+                    : String(fromId)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            11
+        */
+
+        const totalSize =
+            2 +
+            1 + forIdBytes.length +
+            1 + fromIdBytes.length +
+            1;       // CRC
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x11;
+
+
+        /*
+            For ID
+        */
+
+        packet[offset++] =
+            forIdBytes.length & 0xFF;
+
+        packet.set(
+            forIdBytes,
+            offset
+        );
+
+        offset +=
+            forIdBytes.length;
+
+
+        /*
+            From ID
+        */
+
+        packet[offset++] =
+            fromIdBytes.length & 0xFF;
+
+        packet.set(
+            fromIdBytes,
+            offset
+        );
+
+        offset +=
+            fromIdBytes.length;
+
+
+        /*
+            CRC.
+
+            FF не входить у CRC.
+        */
+
+        packet[offset] =
+            Protocol.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };
