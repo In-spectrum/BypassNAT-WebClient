@@ -183,22 +183,32 @@ function log(text)
 
 function setConnectionStatus(connected)
 {
+    AppState.serverConnected = connected;
+
+    const btnConnectServer =
+        document.getElementById("btnConnectServer");
+
     const indicator =
         document.getElementById("connectionStatusIndicator");
 
     if (!indicator)
         return;
 
-    if (connected)
+    if (AppState.serverConnected)
     {
         // Підключено
         indicator.style.backgroundColor = "#4da6ff";
+        btnConnectServer.innerHTML = "Server disconnect";
     }
     else
     {
         // Не підключено
         indicator.style.backgroundColor = "#808080";
+
+        if(!AppState.serverConnecting)
+            btnConnectServer.innerHTML = "Server connect";
     }
+
 }
 
 function fClientDisconnect()
@@ -333,6 +343,8 @@ playerArea.addEventListener("ended", () =>
 playerArea.addEventListener("error", () =>
 {
     log("Помилка відтворення відео.");
+
+    //showMessage(0, "Video playback error.");
 });
 
 initMouse();
@@ -508,7 +520,8 @@ function(text)
 
 wsClient.onConnected =
 function()
-{
+{  
+
     log(
         "WebSocket: підключення успішне."
     );
@@ -712,6 +725,7 @@ function sendLogin()
             "Помилка: не вдалося відправити авторизаційні дані."
         );
 
+        showMessage(0, "Error.\r\nFailed to send authorization data.");
     }
 
 }
@@ -804,12 +818,10 @@ function handleServerData(data)
     --------------------------------------------------
 */
 
+function startConnectServer() {
 
-document.getElementById(
-    "btnConnectServer"
-)
-.onclick = function()
-{
+    document.getElementById("btnConnectServer").innerHTML = "Server connecting...";
+
     const keyDevServer = "";
         // document.getElementById(
         //     "txtDevServerKey"
@@ -850,11 +862,13 @@ document.getElementById(
         Перевірка всіх полів.
     */
 
-    if(ip === "")
+    if(ip === "" || !AppState.isValidIPv4(ip))
     {
         log(
             "Помилка: не вказаний IP сервера."
         );
+
+        showMessage(0, "Error.\r\nThe server IP address is incorrect.");
 
         return;
     }
@@ -865,6 +879,8 @@ document.getElementById(
         log(
             "Помилка: не вказаний порт сервера."
         );
+
+        showMessage(0, "Error.\r\nThe server port is incorrect.");
 
         return;
     }
@@ -884,35 +900,65 @@ document.getElementById(
             "Помилка: некоректний порт сервера."
         );
 
+        showMessage(0, "Error.\r\nThe server port is incorrect.");
+
         return;
     }
 
 
-    if(serverPassword === "")
+    if(serverPassword === "" || serverPassword.length < 4 || !AppState.isLatinLettersAndDigits(serverPassword ))
     {
         log(
             "Помилка: не вказаний пароль сервера."
         );
 
+        if(AppState.isLatinLettersAndDigits(serverPassword ))
+        {
+            showMessage(0, "Error.\r\nThe server password is incorrect.");
+        }
+        else
+        {
+            showMessage(0, "Error.\r\nThe server password is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
+        }   
+
         return;
     }
 
 
-    if(login === "")
+    if(login === "" || login.length < 5 || !AppState.isLatinLettersAndDigits(login ))
     {
         log(
             "Помилка: не вказаний логін."
         );
 
+
+        if(AppState.isLatinLettersAndDigits(login ))
+        {
+            showMessage(0, "Error.\r\nThe user login is incorrect.");
+        }
+        else
+        {
+            showMessage(0, "Error.\r\nThe user login is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
+        } 
+
         return;
     }
 
 
-    if(password === "")
+    if(password === "" || password.length < 5 || !AppState.isLatinLettersAndDigits(password))
     {
         log(
             "Помилка: не вказаний пароль."
         );
+
+        if(AppState.isLatinLettersAndDigits(password))
+        {
+            showMessage(0, "Error.\r\nThe user password is incorrect.");
+        }
+        else
+        {
+            showMessage(0, "Error.\r\nThe user password is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
+        }
 
         return;
     }
@@ -964,6 +1010,32 @@ document.getElementById(
 
     wsClient.connect(url);
 
+}
+
+
+document.getElementById(
+    "btnConnectServer"
+)
+.onclick = function()
+{
+
+    if(AppState.serverConnected || AppState.serverConnecting)
+    {
+        AppState.serverConnectTime = 0;
+        AppState.serverConnecting = false;
+        document.getElementById("btnConnectServer").innerHTML = "Server connect";
+
+        if (wsClient.socket) {
+            wsClient.disconnect();
+        }
+
+        return;
+    }
+
+    
+    AppState.serverConnectTime = 2;
+    AppState.serverConnecting = true;
+
 };
 
 document.getElementById(
@@ -982,6 +1054,8 @@ document.getElementById(
             "ConnectClient: список клієнтів порожній"
         );
 
+        showMessage(0, "Client list is empty.");
+
         return;
     }
 
@@ -995,6 +1069,8 @@ document.getElementById(
         log(
             "ConnectClient: клієнт не вибраний"
         );
+
+        showMessage(0, "Client not selected.");
 
         return;
     }
@@ -1038,11 +1114,20 @@ document.getElementById(
         Перевірка паролю.
     */
 
-    if(password.length < 4)
+    if(password.length < 4 || !AppState.isLatinLettersAndDigits(password))
     {
         log(
-            "ConnectClient: пароль повинен містити більше 3 символів"
+            "ConnectClient: пароль повинен містити більше 4 символів"
         );
+
+        if(AppState.isLatinLettersAndDigits(password))
+        {
+            showMessage(0, "Error.\r\nThe сlient password is incorrect.");
+        }
+        else
+        {
+            showMessage(0, "Error.\r\nThe сlient password is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
+        }
 
         return;
     }
@@ -1088,14 +1173,10 @@ document.getElementById(
     }
 };
 
-function startAppTimer() {
-    setInterval(function() {
-
-        //log("startAppTimer: running.");
-
-
-        if(AppState.sDeskId.length > 0)
-        {
+function fStreamWatcher()
+{
+    if(AppState.sDeskId.length > 0)
+    {
             AppState.m_iTimeForWatcher++;
 
             if(AppState.m_iTimeForWatcher%5 == 0)
@@ -1131,7 +1212,28 @@ function startAppTimer() {
 
             if(AppState.m_iTimeForWatcher >= 10)
                 AppState.m_iTimeForWatcher = 0;
+        }    
+}
+
+function startAppTimer() {
+    setInterval(function() {
+
+        //log("startAppTimer: running.");
+
+        fStreamWatcher();
+
+        if(AppState.serverConnectTime == 3)
+        {
+            AppState.serverConnectTime = 0;
+
+            if(AppState.serverConnecting && !AppState.serverConnected)
+            {
+                 startConnectServer();
+            }
         }
+
+        AppState.serverConnectTime++;              
+        
 
     }, 1000);
 }

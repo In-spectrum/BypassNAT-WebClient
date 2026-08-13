@@ -21,10 +21,35 @@ const AppState =
         Після отримання NEW_ID parserdata.js записує
         сюди ID, який надіслав сервер.
     */
-    clientId: ""
+    serverConnected: false
+    , serverConnectTime: 0
+    , serverConnecting: false
+    , clientId: ""
     , sDeskId: ""
     , sDeskLogin: ""
     , sStreamNewUrl: ""
     , sWithoutStream: "WITHOUT_STREAM"
     , m_iTimeForWatcher: 0
+
+    , isValidIPv4(ip) {
+        const parts = ip.trim().split(".");
+
+        if (parts.length !== 4) {
+            return false;
+        }
+
+        return parts.every(part => {
+            if (!/^\d+$/.test(part)) {
+                return false;
+            }
+
+            const value = Number(part);
+
+            return value >= 0 && value <= 255;
+        });
+    },
+
+    isLatinLettersAndDigits(value) {
+        return /^[A-Za-z0-9]+$/.test(value);
+    }
 };
