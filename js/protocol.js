@@ -846,6 +846,244 @@ const Protocol =
 
 
         return packet.buffer;
+    },
+
+    createMouseEvents(
+        userId,
+        desktopId,
+        eventType,
+        buttonLeftRight,
+        pressRelease,
+        x,
+        y
+    )
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        /*
+            User ID
+        */
+
+        const userIdBytes =
+            encoder.encode(
+                userId === undefined ||
+                userId === null
+                    ? ""
+                    : String(userId)
+            );
+
+
+        /*
+            Desktop ID
+        */
+
+        const desktopIdBytes =
+            encoder.encode(
+                desktopId === undefined ||
+                desktopId === null
+                    ? ""
+                    : String(desktopId)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            05
+        */
+
+
+        /*
+            Розмір:
+
+            FF              1
+            05              1
+
+            userId size     1
+            userId           N
+
+            desktopId size  1
+            desktopId        N
+
+            07              1
+
+            eventType       1
+            button          1
+            pressRelease    1
+
+            X               2
+            Y               2
+
+            CRC             1
+        */
+
+        const totalSize =
+            2 +
+            1 + userIdBytes.length +
+            1 + desktopIdBytes.length +
+            1 +
+            1 +
+            1 +
+            1 +
+            2 +
+            2 +
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x05;
+
+
+        /*
+            User ID
+        */
+
+        packet[offset++] =
+            userIdBytes.length & 0xFF;
+
+        packet.set(
+            userIdBytes,
+            offset
+        );
+
+        offset +=
+            userIdBytes.length;
+
+
+        /*
+            Desktop ID
+        */
+
+        packet[offset++] =
+            desktopIdBytes.length & 0xFF;
+
+        packet.set(
+            desktopIdBytes,
+            offset
+        );
+
+        offset +=
+            desktopIdBytes.length;
+
+
+        /*
+            Size = 7
+        */
+
+        packet[offset++] =
+            0x07;
+
+
+        /*
+            Event type
+
+            1 - button down
+            2 - button up
+            3 - mouse move
+            4 - wheel
+        */
+
+        packet[offset++] =
+            eventType & 0xFF;
+
+
+        /*
+            Left / Right
+
+            true  -> 0x01
+            false -> 0x00
+        */
+
+        if (buttonLeftRight)
+        {
+            packet[offset++] =
+                0x01;
+        }
+        else
+        {
+            packet[offset++] =
+                0x00;
+        }
+
+
+        /*
+            Press / Release
+
+            true  -> 0x01
+            false -> 0x00
+        */
+
+        if (pressRelease)
+        {
+            packet[offset++] =
+                0x01;
+        }
+        else
+        {
+            packet[offset++] =
+                0x00;
+        }
+
+
+        /*
+            X
+
+            Big Endian, 2 bytes
+        */
+
+        packet[offset++] =
+            (x >> 8) & 0xFF;
+
+        packet[offset++] =
+            x & 0xFF;
+
+
+        /*
+            Y
+
+            Big Endian, 2 bytes
+        */
+
+        packet[offset++] =
+            (y >> 8) & 0xFF;
+
+        packet[offset++] =
+            y & 0xFF;
+
+
+        /*
+            CRC
+
+            FF не входить у CRC.
+        */
+
+        packet[offset] =
+            Protocol.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };
