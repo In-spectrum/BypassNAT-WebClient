@@ -24,9 +24,17 @@ const AppState =
     serverConnected: false
     , serverConnectTime: 0
     , serverConnecting: false
-    , clientId: ""
+    , sMyId: ""
+
     , sDeskId: ""
     , sDeskLogin: ""
+    , sDeskPassword: ""
+    , sDeskConnecting: false
+    , iDeskConnectTime: 0
+    , iTimeDeskActive: 10
+    , bTimeDeskNoActiveShow: false
+
+    
     , sStreamNewUrl: ""
     , sWithoutStream: "WITHOUT_STREAM"
     , m_iTimeForWatcher: 0

@@ -336,6 +336,46 @@ const ParserData =
                         break;
                     }
 
+                    case 0x08:
+                    {
+                        const packet =
+                            this.parseActiveClient(
+                                data
+                            );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        /*
+                            Аналог:
+
+                            a_iPos += fNewId(...)
+                        */
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        break;
+                    }
+
                     case 0x0A:
                     {
                         const packet =
@@ -635,7 +675,7 @@ const ParserData =
             );
 
 
-        let clientId =
+        let sMyId =
             this.decodeUtf8(
                 idBytes
             );
@@ -665,9 +705,9 @@ const ParserData =
 
 
 
-        if(clientId.length === 0)
+        if(sMyId.length === 0)
         {
-            clientId = "0";
+            sMyId = "0";
         }
         else
         {
@@ -681,7 +721,7 @@ const ParserData =
                 if(devServer === 1)
                 {
                     
-                    clientId +=
+                    sMyId +=
                         Protocol.fIdGenerator(
                             Protocol.PREFIX,
                             "",
@@ -690,13 +730,13 @@ const ParserData =
                         );
 
 
-                    clientId +=
+                    sMyId +=
                         String(
                             Date.now()
                         );
 
 
-                    clientId +=
+                    sMyId +=
                         "_uds";
 
 
@@ -704,8 +744,8 @@ const ParserData =
                         Зберігаємо новий ID.
                     */
 
-                    AppState.clientId =
-                        clientId;
+                    AppState.sMyId =
+                        sMyId;
 
                     //переконнектится к серверу с новым Id
                     this.sgControl("0", 22, "", "");
@@ -720,14 +760,14 @@ const ParserData =
         }
 
 
-        AppState.clientId =
-            clientId;
+        AppState.sMyId =
+            sMyId;
 
 
         this.log(
             "ParserData::parseNewId: " +
             "ID=" +
-            clientId +
+            sMyId +
             ", DEV=" +
             (
                 devServerData.length > 0
@@ -769,8 +809,8 @@ const ParserData =
             validCRC:
                 true,
 
-            clientId:
-                clientId,
+            sMyId:
+                sMyId,
 
             devServer:
                 devServerData.length > 0
@@ -1680,29 +1720,29 @@ const ParserData =
         pos++;
 
 
-        const clientIdStart =
+        const sMyIdStart =
             3 +
             data1Length +
             pos;
 
 
-        const clientIdEnd =
+        const sMyIdEnd =
             3 +
             data1Length +
             data2Length +
             pos;
 
 
-        const clientIdBytes =
+        const sMyIdBytes =
             data.slice(
-                clientIdStart,
-                clientIdEnd
+                sMyIdStart,
+                sMyIdEnd
             );
 
 
-        const clientId =
+        const sMyId =
             this.decodeUtf8(
-                clientIdBytes
+                sMyIdBytes
             );
 
 
@@ -1801,8 +1841,8 @@ const ParserData =
             desktopId:
                 desktopId,
 
-            clientId:
-                clientId,
+            sMyId:
+                sMyId,
 
             url:
                 url,
@@ -1810,8 +1850,8 @@ const ParserData =
             desktopIdBytes:
                 desktopIdBytes,
 
-            clientIdBytes:
-                clientIdBytes,
+            sMyIdBytes:
+                sMyIdBytes,
 
             urlBytes:
                 urlBytes,
@@ -1824,6 +1864,213 @@ const ParserData =
 
             data3Length:
                 data3Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+    parseActiveClient(data)
+    {
+        if(data.length < 4)
+        {
+            return null;
+        }
+
+
+        let pos = 0;
+
+
+        /*
+            SIZE-1
+
+            Client ID
+        */
+
+        const data1Length =
+            data[2];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            Перевірка CRC.
+
+            FF у CRC НЕ входить.
+
+            CRC рахується від:
+
+            TYPE
+            SZ-1
+            DATA-1
+        */
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserSocketData::fGetActiveClient: " +
+                "CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x04,
+
+                name:
+                    "ACTIVE_CLIENT",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            Client ID
+        */
+
+        pos = 0;
+
+
+        const sMyIdStart =
+            3;
+
+
+        const sMyIdEnd =
+            3 +
+            data1Length +
+            pos;
+
+
+        const sMyIdBytes =
+            data.slice(
+                sMyIdStart,
+                sMyIdEnd
+            );
+
+
+        const sMyId =
+            this.decodeUtf8(
+                sMyIdBytes
+            );
+
+
+        /*
+            C++:
+
+            emit sgControl(
+                QString::fromStdString(
+                    a_basMyId.toStdString()
+                ),
+                17,
+                "",
+                ""
+            );
+        */
+
+        this.sgControl(
+            sMyId,
+            17,
+            "",
+            ""
+        );
+
+
+        /*
+            У C++:
+
+            a_iPlasPos++;
+
+            return
+                3 +
+                a_iData_1 +
+                a_iPlasPos;
+        */
+
+        pos++;
+
+
+        return {
+
+            size:
+                3 +
+                data1Length +
+                pos,
+
+            type:
+                0x04,
+
+            name:
+                "ACTIVE_CLIENT",
+
+            validCRC:
+                true,
+
+            sMyId:
+                sMyId,
+
+            sMyIdBytes:
+                sMyIdBytes,
+
+            data1Length:
+                data1Length,
 
             receivedCRC:
                 receivedCRC,

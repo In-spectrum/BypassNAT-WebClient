@@ -278,7 +278,7 @@ function onVideoMouseWheel(
 )
 {
 
-    if(!AppState.clientId || !AppState.sDeskId)
+    if(!AppState.sMyId || !AppState.sDeskId)
         return; 
 
     /*
@@ -308,7 +308,7 @@ function onVideoMouseWheel(
 
     const packet =
         Protocol.createMouseEvents(
-            AppState.clientId,
+            AppState.sMyId,
             AppState.sDeskId,
             4,
             direction,
@@ -355,7 +355,7 @@ function onVideoMouseButton(
     height
 )
 {
-    if(!AppState.clientId || !AppState.sDeskId)
+    if(!AppState.sMyId || !AppState.sDeskId)
         return; 
     /*
         Зараз передаємо:
@@ -409,7 +409,7 @@ function onVideoMouseButton(
     {
         const packet =
             Protocol.createMouseEvents(                
-                AppState.clientId,
+                AppState.sMyId,
                 AppState.sDeskId,
                 1,
                 mouseButton,
@@ -437,7 +437,7 @@ function onVideoMouseButton(
     {
         const packet =
             Protocol.createMouseEvents(
-                AppState.clientId,
+                AppState.sMyId,
                 AppState.sDeskId,
                 2,
                 mouseButton,
@@ -487,7 +487,7 @@ function onVideoMouseMove(
     height
 )
 {
-    if(!AppState.clientId || !AppState.sDeskId)
+    if(!AppState.sMyId || !AppState.sDeskId)
         return;    
 
     const now =
@@ -525,7 +525,7 @@ function onVideoMouseMove(
 
     const packet =
         Protocol.createMouseEvents(
-            AppState.clientId,
+            AppState.sMyId,
             AppState.sDeskId,
             3,
             true,

@@ -125,7 +125,7 @@ txtFindClient.addEventListener("input", () => {
 
      const packet =
             Protocol.createSearchDesktop(
-                AppState.clientId,
+                AppState.sMyId,
                 desktopLogin
             );
 
@@ -133,7 +133,7 @@ txtFindClient.addEventListener("input", () => {
     // {
     //     const packet =
     //         Protocol.createSearchDesktop(
-    //             AppState.clientId,
+    //             AppState.sMyId,
     //             desktopLogin
     //         );
 
@@ -181,6 +181,150 @@ function log(text)
     }
 }
 
+function setStatusConnectToDevice(connectedv)
+{
+    log(
+        "setStatusConnectToDevice: " +
+        connectedv
+    );
+    
+    const indicator =
+        document.getElementById("connectionStatusDevice");
+
+    if (!indicator)
+        return;
+
+    if (connectedv)
+    {
+        // Підключено
+        indicator.style.setProperty("--indicator-color", "#4da6ff");
+        document.getElementById("deviceConnectionText").style.display = "none";  // сховати
+
+        document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "NEW connect";
+    }
+    else
+    {
+        // Не підключено
+        indicator.style.setProperty("--indicator-color", "#808080");
+
+        if(AppState.sDeskId)
+        {
+            document.getElementById("deviceConnectionText").style.display = "flex";  // показати
+            document.getElementById(
+                "btnConnectClient"
+            ).innerHTML = "Connecting...";
+        }
+    }
+}
+
+function fConnectDevice()
+{
+    if(!AppState.sDeskLogin.length || !AppState.sDeskPassword.length || !AppState.sDeskId.length )
+        return;
+
+    AppState.iTimeDeskActive = 0;
+
+    const packet =
+        Protocol.createConnectToDesktop(
+            AppState.sDeskLogin,
+            AppState.sDeskPassword,
+            AppState.sDeskId,
+            false
+        );
+
+
+    /*
+        Відправляємо на сервер.
+    */
+
+    if(
+        wsClient.send(packet)
+    )
+    {
+        log(
+            "ConnectClient: пакет відправлено. " +
+            "login=" +
+            login +
+            ", id=" +
+            id
+        );
+
+        AppState.iTimeDeskActive = 0;
+        AppState.bTimeDeskNoActiveShow = false;
+
+
+        document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "Connecting...";
+        
+        setStatusConnectToDevice(false);
+
+    }
+    else
+    {
+        log(
+            "ConnectClient: не вдалося відправити пакет"
+        );
+    }
+}
+
+function fDisconnectDevice()
+{
+
+    log("fDisconnectDevice 0: " + AppState.sDeskId);
+
+    document.getElementById("deviceConnectionText").style.display = "none";  // сховати
+
+    if(!AppState.sDeskId.length)
+        return;
+
+    const packet =
+        Protocol.createConnectToDesktop(
+            "0",
+            "0",
+            "0",
+            false
+        );
+
+
+    /*
+        Відправляємо на сервер.
+    */
+
+    if(
+        wsClient.send(packet)
+    )
+    {
+        log(
+            "fDisconnectDevice: пакет відправлено. "
+        );
+
+        AppState.sDeskId = "";
+        AppState.sDeskLogin = "";
+        AppState.sDeskPassword = "";
+        AppState.sDeskConnecting = false;
+        AppState.iTimeDeskActive = 10;
+
+        document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "NEW connect";
+
+        
+        setStatusConnectToDevice(false);
+
+    }
+    else
+    {
+        log(
+            "fDisconnectDevice: не вдалося відправити пакет"
+        );
+    }
+    
+
+}
+
 function setConnectionStatus(connected)
 {
     AppState.serverConnected = connected;
@@ -197,17 +341,19 @@ function setConnectionStatus(connected)
     if (AppState.serverConnected)
     {
         // Підключено
-        indicator.style.backgroundColor = "#4da6ff";
+        indicator.style.setProperty("--indicator-color", "#4da6ff");
         btnConnectServer.innerHTML = "Server disconnect";
     }
     else
     {
         // Не підключено
-        indicator.style.backgroundColor = "#808080";
+        indicator.style.setProperty("--indicator-color", "#808080");
 
         if(!AppState.serverConnecting)
             btnConnectServer.innerHTML = "Server connect";
     }
+
+    document.getElementById("serverConnectionText").style.display = "none";  // сховати
 
 }
 
@@ -406,6 +552,19 @@ wsClient.slControl =
                 
                 break;
             }  
+            case 4:
+            {
+                log("app.slControl 4.0: " + AppState.iTimeDeskActive );
+
+                AppState.bTimeDeskNoActiveShow = false;
+                AppState.iTimeDeskActive = 0;
+
+                if(AppState.sDeskId.length)
+                    setStatusConnectToDevice(true);          
+
+
+                break;
+            }   
             case 5:
             {
                 const option =
@@ -674,7 +833,7 @@ function sendLogin()
 
     log(
         "LOGIN: використовується Client ID = " +
-        (AppState.clientId || "<порожній>")
+        (AppState.sMyId || "<порожній>")
     );
 
      const keyDevServer = "";
@@ -704,7 +863,7 @@ function sendLogin()
         Protocol.createLogin(
             login,
             password,
-            AppState.clientId,
+            AppState.sMyId,
             keyDevServer,
             serverPassword
         );
@@ -776,7 +935,7 @@ function handleServerData(data)
                 log(
                     "app.handleServerData: SERVER: NEW_ID. " +
                     "ID=" +
-                    (AppState.clientId || "") +
+                    (AppState.sMyId || "") +
                     ", DEV=" +
                     (packet.devServer !== undefined ?
                         packet.devServer :
@@ -820,7 +979,8 @@ function handleServerData(data)
 
 function startConnectServer() {
 
-    document.getElementById("btnConnectServer").innerHTML = "Server connecting...";
+    document.getElementById("serverConnectionText").style.display = "flex";  // показати
+    document.getElementById("btnConnectServer").innerHTML = "Server connecting... Stop!";
 
     const keyDevServer = "";
         // document.getElementById(
@@ -1033,8 +1193,9 @@ document.getElementById(
     }
 
     
-    AppState.serverConnectTime = 2;
+    AppState.serverConnectTime = 0;
     AppState.serverConnecting = true;
+    startConnectServer();
 
 };
 
@@ -1043,10 +1204,14 @@ document.getElementById(
 )
 .onclick = function()
 {
+
+    fDisconnectDevice();
+
     /*
         Перевіряємо наявність елементів
         у списку.
     */
+      
 
     if(lstClients.options.length === 0)
     {
@@ -1054,7 +1219,7 @@ document.getElementById(
             "ConnectClient: список клієнтів порожній"
         );
 
-        showMessage(0, "Client list is empty.");
+        showMessage(0, "Device list is empty.");
 
         return;
     }
@@ -1070,7 +1235,7 @@ document.getElementById(
             "ConnectClient: клієнт не вибраний"
         );
 
-        showMessage(0, "Client not selected.");
+        showMessage(0, "Device not selected.");
 
         return;
     }
@@ -1122,60 +1287,41 @@ document.getElementById(
 
         if(AppState.isLatinLettersAndDigits(password))
         {
-            showMessage(0, "Error.\r\nThe сlient password is incorrect.");
+            showMessage(0, "Error.\r\nDevice password is incorrect.");
         }
         else
         {
-            showMessage(0, "Error.\r\nThe сlient password is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
+            showMessage(0, "Error.\r\nDevice password is incorrect.\r\nOnly [A-Z, a-z, 0-9]");
         }
 
         return;
     }
 
 
+   
     /*
         Формуємо пакет.
     */
 
     AppState.sDeskLogin = login;
     AppState.sDeskId = id;
+    AppState.sDeskPassword = password;   
+    AppState.bTimeDeskNoActiveShow = false; 
 
-    const packet =
-        Protocol.createConnectToDesktop(
-            AppState.sDeskLogin,
-            password,
-            AppState.sDeskId,
-            true
-        );
+    fConnectDevice();
+}
 
-
-    /*
-        Відправляємо на сервер.
-    */
-
-    if(
-        wsClient.send(packet)
-    )
-    {
-        log(
-            "ConnectClient: пакет відправлено. " +
-            "login=" +
-            login +
-            ", id=" +
-            id
-        );
-    }
-    else
-    {
-        log(
-            "ConnectClient: не вдалося відправити пакет"
-        );
-    }
-};
+document.getElementById(
+    "btnDisConnectClient"
+)
+.onclick = function()
+{
+    fDisconnectDevice();    
+}
 
 function fStreamWatcher()
 {
-    if(AppState.sDeskId.length > 0)
+    if(AppState.sStreamNewUrl.length && AppState.sDeskId.length)
     {
             AppState.m_iTimeForWatcher++;
 
@@ -1188,7 +1334,7 @@ function fStreamWatcher()
                 const packet =
                     Protocol.fWatcher(
                         AppState.sDeskId,
-                        AppState.clientId
+                        AppState.sMyId
                     );
 
 
@@ -1212,13 +1358,65 @@ function fStreamWatcher()
 
             if(AppState.m_iTimeForWatcher >= 10)
                 AppState.m_iTimeForWatcher = 0;
-        }    
+    }    
 }
 
 function startAppTimer() {
     setInterval(function() {
 
-        //log("startAppTimer: running.");
+    //log("startAppTimer: running. ");
+
+    if(AppState.sDeskId.length)
+    {
+        //log("startAppTimer 5.0:" + AppState.iTimeDeskActive );
+
+        if(AppState.iTimeDeskActive >= 3)
+        {
+            //log("startAppTimer 5.1:");
+
+            if(AppState.bTimeDeskNoActiveShow)
+            {
+                setStatusConnectToDevice(false);
+                fConnectDevice();
+            }
+
+            AppState.bTimeDeskNoActiveShow = !AppState.bTimeDeskNoActiveShow
+
+            const packet =
+                    Protocol.fGetActiveClient(
+                        AppState.sMyId
+                    );
+
+
+                /*
+                    Відправляємо на сервер.
+                */
+
+                if( wsClient.send(packet) )
+                {
+                    log(
+                        "startAppTimer::fGetActiveClient: пакет відправлено. "
+                     );
+                }
+                else
+                {
+                    log(
+                        "startAppTimer::fGetActiveClient: не вдалося відправити пакет"
+                    );
+                }
+
+
+            
+            //sgSendMassang( MyProtocol::fGetActiveClient( StaticData::m_sMyId ) );
+
+            AppState.iTimeDeskActive = -1;
+        }
+
+        AppState.iTimeDeskActive++;
+        
+    }
+
+    
 
         fStreamWatcher();
 
@@ -1227,8 +1425,8 @@ function startAppTimer() {
             AppState.serverConnectTime = 0;
 
             if(AppState.serverConnecting && !AppState.serverConnected)
-            {
-                 startConnectServer();
+            {                
+                startConnectServer();
             }
         }
 
@@ -1241,6 +1439,9 @@ function startAppTimer() {
 function startThePage() {
     btnLogger.innerHTML = "▼";
     btnOpen.innerHTML = "◀";
+
+    document.getElementById("serverConnectionText").style.display = "none";  // сховати
+    document.getElementById("deviceConnectionText").style.display = "none";  // сховати
     
     startAppTimer();
     log("Програму запущено.");

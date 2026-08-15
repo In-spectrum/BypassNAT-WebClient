@@ -201,7 +201,7 @@ const Protocol =
     createLogin(
         login,
         password,
-        clientId,
+        sMyId,
         key,
         serverPassword
     )
@@ -219,7 +219,7 @@ const Protocol =
 
 
         const idBytes =
-            encoder.encode(clientId || "");
+            encoder.encode(sMyId || "");
 
 
         const keyBytes =
@@ -830,6 +830,100 @@ const Protocol =
 
         offset +=
             fromIdBytes.length;
+
+
+        /*
+            CRC.
+
+            FF не входить у CRC.
+        */
+
+        packet[offset] =
+            Protocol.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
+    },
+
+    fGetActiveClient(userId)
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        const userIdBytes =
+            encoder.encode(
+                userId === undefined ||
+                userId === null
+                    ? ""
+                    : String(userId)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            08
+        */
+
+        const totalSize =
+            2 +
+            1 + userIdBytes.length +
+            1;       // CRC
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x08;
+
+
+        /*
+            User ID
+
+            C++:
+
+            unsigned int a_iSz =
+                a_baTemp.length();
+
+            a_baSz.append(...4 bytes...);
+
+            a_baRequest.append(a_baSz.at(3));
+
+            Тобто фактично передається
+            тільки молодший байт розміру.
+        */
+
+        packet[offset++] =
+            userIdBytes.length & 0xFF;
+
+
+        packet.set(
+            userIdBytes,
+            offset
+        );
+
+
+        offset +=
+            userIdBytes.length;
 
 
         /*

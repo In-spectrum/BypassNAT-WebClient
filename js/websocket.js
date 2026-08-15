@@ -108,7 +108,7 @@ class WebSocketClient
             */
             this.log(
                 "WebSocket: Client ID = " +
-                (AppState.clientId || "<порожній>")
+                (AppState.sMyId || "<порожній>")
             );
 
 
@@ -261,7 +261,16 @@ class WebSocketClient
                     this.slControl(sId, 5, sData);
                 }
                 break;
-            }       
+            }    
+            case 17:
+            {
+                if(this.slControl)
+                {
+                    //log("WebSocketClient.sgControl 17: ");
+                    this.slControl(sId, 4, sData);
+                }
+                break;
+            }     
             case 18:
             {
                 if(this.slControl)
