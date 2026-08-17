@@ -16,7 +16,10 @@ const playerState =
     videoReady: false
 };
 
+const LOG_VIEW_SIZE = 100;
+let logLines = [];
 let loggerVisible = true;
+
 let menuVisible = true;
 let keyboardCapture = false;
 
@@ -110,7 +113,10 @@ btnOpen.onclick = () => {
 };
 
 
-document.getElementById('btnClear').onclick = () => {
+document.getElementById('btnClear').onclick = () =>
+{
+    logLines = [];
+
     loggerBody.innerHTML = "";
 };
 
@@ -165,17 +171,59 @@ function log(text)
         now.getMinutes().toString().padStart(2, '0') + ":" +
         now.getSeconds().toString().padStart(2, '0');
 
-    // Чи був скрол вже внизу
+    const line =
+        "[" + time + "] " + text;
+
+
+    /*
+        Додаємо рядок у масив.
+    */
+
+    logLines.push(line);
+
+
+    /*
+        Залишаємо тільки останні 50 рядків.
+    */
+
+    if(logLines.length > LOG_VIEW_SIZE)
+    {
+        logLines.splice(
+            0,
+            logLines.length - LOG_VIEW_SIZE
+        );
+    }
+
+
+    /*
+        Чи був scrollbar внизу
+        до оновлення.
+    */
+
     const isAtBottom =
         loggerBody.scrollHeight -
         loggerBody.scrollTop -
         loggerBody.clientHeight < 10;
 
-    loggerBody.innerHTML +=
-        "[" + time + "] " + text + "<br>";
 
-    // Автоматично вниз тільки якщо до цього були внизу
-    if (isAtBottom) {
+    /*
+        Оновлюємо logger.
+    */
+
+    loggerBody.innerHTML =
+        logLines.join("<br>");
+
+
+    /*
+        Якщо користувач був внизу —
+        прокручуємо вниз.
+
+        Якщо він читав старі повідомлення
+        вище — не рухаємо його.
+    */
+
+    if(isAtBottom)
+    {
         loggerBody.scrollTop =
             loggerBody.scrollHeight;
     }
@@ -558,9 +606,13 @@ wsClient.slControl =
                     // );
 
                     AppState.iTimeDeskActive = 0;
+
+                    AppState.bStreamError = false;
                     setTimeout(function() {
                         fStreamStart();
-                    }, 500);
+                    }, 1000);
+
+                    
 
                     // log(
                     //     "app.wsClient.slControl 2.10: ");
@@ -1458,11 +1510,15 @@ function startAppTimer() {
         }
         else{
             
-            if(AppState.iTimeDeskActive > 1)
+            if(AppState.iTimeDeskActive >= 2)
             {
                 if(AppState.serverConnected && AppState.bStream && !AppState.bRunStream)
                 {
-                     fConnectDevice();
+                    if(AppState.bStreamError)
+                    {
+                        AppState.bStreamError = false;
+                        fConnectDevice();
+                    }
                 }
             }
         }
