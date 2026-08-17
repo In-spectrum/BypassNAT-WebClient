@@ -487,7 +487,7 @@ function onVideoMouseMove(
     height
 )
 {
-    if(!AppState.sMyId || !AppState.sDeskId)
+    if(!AppState.sMyId || !AppState.sDeskId || !AppState.bRunStream)
         return;    
 
     const now =

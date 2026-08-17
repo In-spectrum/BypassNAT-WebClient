@@ -139,9 +139,9 @@ body,
         sidebar відкритий.
 
         300px — ширина sidebar
-        8px   — відступ
+        //8px   — відступ
     */
-    left: 308px;
+    left: 300px;
 
     top: 50%;
 
@@ -537,4 +537,30 @@ DEVICE CONNECTION TEXT
     border-radius: 3px;
 
     white-space: nowrap;
+}
+
+/* =====================================================
+   LOGGER OPEN / CLOSE BUTTON
+   ===================================================== */
+
+#btnLogger {
+    position: absolute;
+
+    left: 50%;
+    bottom: 200px;
+
+    transform: translateX(-50%);
+
+    width: 80px;
+    height: 22px;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    color: #ff9800;
+
+    z-index: 4000;
+}
+
+#btnLogger.fullscreen {
+    bottom: 0;
 }

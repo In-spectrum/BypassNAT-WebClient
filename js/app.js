@@ -94,7 +94,7 @@ btnOpen.onclick = () => {
         sidebar.style.display = "block";
 
         // Кнопка справа від sidebar
-        btnOpen.style.left = "308px";
+        btnOpen.style.left = "300px";
 
         btnOpen.innerHTML = "◀";
 
@@ -103,7 +103,7 @@ btnOpen.onclick = () => {
         sidebar.style.display = "none";
 
         // Кнопка біля лівого краю
-        btnOpen.style.left = "8px";
+        btnOpen.style.left = "0px";
 
         btnOpen.innerHTML = "▶";
     }
@@ -221,6 +221,9 @@ function setStatusConnectToDevice(connectedv)
 
 function fConnectDevice()
 {
+    setStatusConnectToDevice(false);
+    stopPlayer();
+
     if(!AppState.sDeskLogin.length || !AppState.sDeskPassword.length || !AppState.sDeskId.length )
         return;
 
@@ -231,7 +234,7 @@ function fConnectDevice()
             AppState.sDeskLogin,
             AppState.sDeskPassword,
             AppState.sDeskId,
-            false
+            AppState.bStream
         );
 
 
@@ -246,9 +249,9 @@ function fConnectDevice()
         log(
             "ConnectClient: пакет відправлено. " +
             "login=" +
-            login +
+            AppState.sDeskLogin +
             ", id=" +
-            id
+            AppState.sDeskId
         );
 
         AppState.iTimeDeskActive = 0;
@@ -259,8 +262,7 @@ function fConnectDevice()
             "btnConnectClient"
         ).innerHTML = "Connecting...";
         
-        setStatusConnectToDevice(false);
-
+        
     }
     else
     {
@@ -275,10 +277,12 @@ function fDisconnectDevice()
 
     log("fDisconnectDevice 0: " + AppState.sDeskId);
 
+    stopPlayer();
+
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
 
     if(!AppState.sDeskId.length)
-        return;
+        return;   
 
     const packet =
         Protocol.createConnectToDesktop(
@@ -304,8 +308,10 @@ function fDisconnectDevice()
         AppState.sDeskId = "";
         AppState.sDeskLogin = "";
         AppState.sDeskPassword = "";
-        AppState.sDeskConnecting = false;
-        AppState.iTimeDeskActive = 10;
+        AppState.bDeskConnecting = false;
+        AppState.iTimeDeskActive = 0;
+
+        AppState.sStreamNewUrl = "";
 
         document.getElementById(
             "btnConnectClient"
@@ -509,7 +515,7 @@ wsClient.slControl =
 ) =>
 {
     log(
-        "app.slControl: " +
+        "app.wsClient.slControl: " +
         "Id=" + sId +
         ", Var=" + iVar +
         ", Data=" + sData
@@ -519,6 +525,11 @@ wsClient.slControl =
         {
             case 2:
             {
+                // log(
+                //     "app.wsClient.slControl 0: " +
+                //     "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
+                // );
+
                 if(AppState.sWithoutStream === sData)
                 {
                     const mes = "User '" + AppState.sDeskLogin
@@ -529,25 +540,30 @@ wsClient.slControl =
                 }
                 else
                 {
+                    // log(
+                    //     "app.wsClient.slControl 2.0: " +
+                    //     "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
+                    // );
 
                     if(AppState.sStreamNewUrl !== sData)
                     {
                         AppState.sStreamNewUrl = sData;                        
                     }
 
-                    const url =
-                            "http://localhost:8889/live/" +
-                            AppState.sStreamNewUrl +
-                            "/whep";
+                    AppState.m_iTimeForWatcher = 0;
 
+                    // log(
+                    //     "app.wsClient.slControl 2.1: " +
+                    //     AppState.sStreamNewUrl
+                    // );
+
+                    AppState.iTimeDeskActive = 0;
                     setTimeout(function() {
-                        startPlayer(url);
-                    }, 2000);
+                        fStreamStart();
+                    }, 500);
 
-                    log(
-                        "app.slControl 2.2: " +
-                        "AppState.sStreamNewUrl = " + url
-                    );
+                    // log(
+                    //     "app.wsClient.slControl 2.10: ");
                 }
                 
                 break;
@@ -896,77 +912,78 @@ function handleServerData(data)
     if(!data)
         return;
 
-
-    if(Array.isArray(data))
+    if(!Array.isArray(data))
     {
-        if(data.length === 0)
-        {
-            log(
-                "app.handleServerData: SERVER: binary data отримано, але повного пакета ще немає."
-            );
-
-            return;
-        }
-
-
-        for(const packet of data)
-        {
-            if(!packet)
-                continue;
-
-
-            if(packet.type === 0x10)
-            {
-                log(
-                    "app.handleServerData: SERVER: MESSAGE_STATUS. " +
-                    "VAR=" + packet.variable +
-                    ", DATA=" + (packet.dataText || "")
-                );
-
-                if(packet.validCRC === false)
-                {
-                    log(
-                        "app.handleServerData: SERVER: MESSAGE_STATUS — CRC ПОМИЛКА."
-                    );
-                }
-            }
-            else if(packet.type === 0x07)
-            {
-                log(
-                    "app.handleServerData: SERVER: NEW_ID. " +
-                    "ID=" +
-                    (AppState.sMyId || "") +
-                    ", DEV=" +
-                    (packet.devServer !== undefined ?
-                        packet.devServer :
-                        "")
-                );
-
-
-                if(packet.validCRC === false)
-                {
-                    log(
-                        "app.handleServerData:SERVER: NEW_ID — CRC ПОМИЛКА."
-                    );
-                }
-            }
-            else
-            {
-                log(
-                    "app.handleServerData:SERVER: отримано пакет типу " +
-                    packet.type
-                );
-            }
-        }
-
+        log(
+            "app.handleServerData: SERVER: ParserData повернув дані невідомого формату."
+        );
 
         return;
     }
 
+    /*
+        Порожній результат ParserData
+        не є помилкою.
 
-    log(
-        "app.handleServerData: SERVER: ParserData повернув дані невідомого формату."
-    );
+        Це може означати:
+        - пакет ще накопичується;
+        - дані не містили завершеного пакета;
+        - пакет обробляється іншим механізмом.
+    */
+
+    if(data.length === 0)
+        return;
+
+
+    for(const packet of data)
+    {
+        if(!packet)
+            continue;
+
+
+        if(packet.type === 0x10)
+        {
+            log(
+                "app.handleServerData: SERVER: MESSAGE_STATUS. " +
+                "VAR=" + packet.variable +
+                ", DATA=" + (packet.dataText || "")
+            );
+
+            if(packet.validCRC === false)
+            {
+                log(
+                    "app.handleServerData: SERVER: MESSAGE_STATUS — CRC ПОМИЛКА."
+                );
+            }
+        }
+        else if(packet.type === 0x07)
+        {
+            log(
+                "app.handleServerData: SERVER: NEW_ID. " +
+                "ID=" +
+                (AppState.sMyId || "") +
+                ", DEV=" +
+                (packet.devServer !== undefined ?
+                    packet.devServer :
+                    "")
+            );
+
+
+            if(packet.validCRC === false)
+            {
+                log(
+                    "app.handleServerData: SERVER: NEW_ID — CRC ПОМИЛКА."
+                );
+            }
+        }
+        else
+        {
+            log(
+                "app.handleServerData: SERVER: отримано пакет типу " +
+                packet.type
+            );
+        }
+    }
 }
 
 
@@ -1155,10 +1172,11 @@ function startConnectServer() {
     }
 
 
+    AppState.serverIP = ip;
 
     const url =
         "ws://" +
-        ip +
+        AppState.serverIP +
         ":" +
         portNumber;
 
@@ -1319,6 +1337,34 @@ document.getElementById(
     fDisconnectDevice();    
 }
 
+
+ function fStreamStart()
+ {
+    log("app.fStreamStart 0: " +
+        AppState.serverIP.length +
+        " " + AppState.sWebRTCPort.length +
+        " " +  AppState.sStreamNewUrl.length);
+
+    if(!AppState.serverIP.length || !AppState.sWebRTCPort.length || !AppState.sStreamNewUrl.length)
+        return;
+
+    log("app.fStreamStart 1: ");
+
+    const url =
+        "http://" +
+        AppState.serverIP +
+        ':' +
+        AppState.sWebRTCPort + 
+        "/live/" +
+        AppState.sStreamNewUrl +
+        "/whep";                            
+
+    startPlayer(url);
+
+    log("app.fStreamStart 10: ");
+ }
+
+
 function fStreamWatcher()
 {
     if(AppState.sStreamNewUrl.length && AppState.sDeskId.length)
@@ -1345,13 +1391,13 @@ function fStreamWatcher()
                 if( wsClient.send(packet) )
                 {
                     log(
-                        "startAppTimer::fWatcher: пакет відправлено. "
+                        "fWatcher: пакет відправлено. "
                      );
                 }
                 else
                 {
                     log(
-                        "startAppTimer::fWatcher: не вдалося відправити пакет"
+                        "fWatcher: не вдалося відправити пакет"
                     );
                 }
             }
@@ -1366,7 +1412,7 @@ function startAppTimer() {
 
     //log("startAppTimer: running. ");
 
-    if(AppState.sDeskId.length)
+    if(AppState.serverConnected && AppState.sDeskId.length)
     {
         //log("startAppTimer 5.0:" + AppState.iTimeDeskActive );
 
@@ -1376,11 +1422,10 @@ function startAppTimer() {
 
             if(AppState.bTimeDeskNoActiveShow)
             {
-                setStatusConnectToDevice(false);
                 fConnectDevice();
-            }
+            }           
 
-            AppState.bTimeDeskNoActiveShow = !AppState.bTimeDeskNoActiveShow
+            AppState.bTimeDeskNoActiveShow = !AppState.bTimeDeskNoActiveShow;
 
             const packet =
                     Protocol.fGetActiveClient(
@@ -1394,9 +1439,9 @@ function startAppTimer() {
 
                 if( wsClient.send(packet) )
                 {
-                    log(
-                        "startAppTimer::fGetActiveClient: пакет відправлено. "
-                     );
+                    // log(
+                    //     "startAppTimer::fGetActiveClient: пакет відправлено. "
+                    //  );
                 }
                 else
                 {
@@ -1410,6 +1455,16 @@ function startAppTimer() {
             //sgSendMassang( MyProtocol::fGetActiveClient( StaticData::m_sMyId ) );
 
             AppState.iTimeDeskActive = -1;
+        }
+        else{
+            
+            if(AppState.iTimeDeskActive > 1)
+            {
+                if(AppState.serverConnected && AppState.bStream && !AppState.bRunStream)
+                {
+                     fConnectDevice();
+                }
+            }
         }
 
         AppState.iTimeDeskActive++;

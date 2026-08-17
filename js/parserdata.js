@@ -30,13 +30,13 @@ const ParserData =
         baIn
     )
     {
-        //log("ParserData.sgControl 0:");
+        //this.log("ParserData.sgControl 0: " + iVar);
 
-        if(ParserData.slControl)
+        if(this.slControl)
         {
-            //log("ParserData.slControl 1:");
+            //this.log("ParserData.slControl 1:");
 
-            ParserData.slControl(
+            this.slControl(
                 sId,
                 iVar,
                 sData,
@@ -61,6 +61,8 @@ const ParserData =
 
     parse(data)
     {
+        //this.log("ParserData::parse 0: ");
+
         let bytes;
 
 
@@ -91,6 +93,8 @@ const ParserData =
         /*
             Аналог fNextStep().
         */
+
+        //this.log("ParserData::parse 10: ");
 
         return this.nextStep();
     },
@@ -135,6 +139,9 @@ const ParserData =
 
     nextStep()
     {
+        //this.log("ParserData::nextStep 0: ");
+
+
         const result = [];
 
 
@@ -162,6 +169,9 @@ const ParserData =
         }
 
 
+        //this.log("ParserData::nextStep 1: ");
+
+
         /*
             Видаляємо дані перед FF.
         */
@@ -184,6 +194,8 @@ const ParserData =
             pos < this.buffer.length
         )
         {
+            //this.log("ParserData::nextStep 2.0: ");
+
             prevPos = pos;
 
 
@@ -222,6 +234,9 @@ const ParserData =
             }
 
 
+            //this.log("ParserData::nextStep 3.0: ");
+
+
             if(startPos > 0)
             {
                 data =
@@ -242,14 +257,16 @@ const ParserData =
                 break;
 
 
+            // this.log(
+            //     "ParserData::nextStep 4.0: " +
+            //     this.toHex(data)
+            // );
+
+
             if(data[0] === 0xFF)
             {
                 switch(data[1])
                 {
-
-                    /*
-                        New ID
-                    */
 
                     /*
                         Stream Data
@@ -257,10 +274,22 @@ const ParserData =
 
                     case 0x04:
                     {
+                        
+                        // this.log(
+                        //     "ParserData::nextStep 5.4.0: " +
+                        //     this.toHex(data)
+                        // );
+
+
                         const packet =
                             this.parseStreamData(
                                 data
                             );
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.4.1: " +
+                        //     this.toHex(packet)
+                        // );
 
 
                         /*
@@ -291,18 +320,37 @@ const ParserData =
                         result.push(
                             packet
                         );
-
+                        
+                        // this.log(
+                        //     "ParserData::nextStep 5.4.10: " +
+                        //     this.toHex(result)
+                        // );
 
                         break;
                     }
 
+
+                    /*
+                        New ID
+                    */
+
                     case 0x07:
                     {
+                        // this.log(
+                        //     "ParserData::nextStep 5.4.0: " +
+                        //     this.toHex(data)
+                        // );
+
                         const packet =
                             this.parseNewId(
                                 data
                             );
 
+                        // this.log(
+                        //     "ParserData::nextStep 5.7.1: " +
+                        //     this.toHex(packet)
+                        // );
+
 
                         /*
                             null означає,
@@ -317,7 +365,7 @@ const ParserData =
                         /*
                             Аналог:
 
-                            a_iPos += fNewId(...)
+                            a_iPos += fNewId(...);
                         */
 
                         if(packet.size <= 0)
@@ -332,17 +380,38 @@ const ParserData =
                             packet
                         );
 
+                        // this.log(
+                        //     "ParserData::nextStep 5.7.10: " +
+                        //     this.toHex(result)
+                        // );
+
 
                         break;
                     }
 
+
+                    /*
+                        Active Client
+                    */
+
                     case 0x08:
                     {
+                        // this.log(
+                        //     "ParserData::nextStep 5.8.0: " +
+                        //     this.toHex(data)
+                        // );
+
+
                         const packet =
                             this.parseActiveClient(
                                 data
                             );
 
+                        // this.log(
+                        //     "ParserData::nextStep 5.8.1: " +
+                        //     this.toHex(packet)
+                        // );
+
 
                         /*
                             null означає,
@@ -357,7 +426,7 @@ const ParserData =
                         /*
                             Аналог:
 
-                            a_iPos += fNewId(...)
+                            a_iPos += fGetActiveClient(...);
                         */
 
                         if(packet.size <= 0)
@@ -372,14 +441,36 @@ const ParserData =
                             packet
                         );
 
+                        // this.log(
+                        //     "ParserData::nextStep 5.8.10: " +
+                        //     this.toHex(result)
+                        // );
 
                         break;
                     }
 
+
+                    /*
+                        Maybe My Login
+                    */
+
                     case 0x0A:
                     {
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.0A.0: " +
+                        //     this.toHex(data)
+                        // );
+
                         const packet =
-                            this.parseMaybeMyLogin(data);
+                            this.parseMaybeMyLogin(
+                                data
+                            );
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.0A.1: " +
+                        //     this.toHex(packet)
+                        // );
 
                         /*
                             null означає,
@@ -394,7 +485,7 @@ const ParserData =
                         /*
                             Аналог:
 
-                            a_iPos += fGetActiveClient(...)
+                            a_iPos += fMaybeMyLogin(...);
                         */
 
                         if(packet.size <= 0)
@@ -408,6 +499,11 @@ const ParserData =
                         result.push(
                             packet
                         );
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.0A.10: " +
+                        //     this.toHex(result)
+                        // );
 
 
                         break;
@@ -420,10 +516,20 @@ const ParserData =
 
                     case 0x10:
                     {
+                        // this.log(
+                        //     "ParserData::nextStep 5.10.0: " +
+                        //     this.toHex(data)
+                        // );
+
                         const packet =
                             this.parseMessageStatus(
                                 data
                             );
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.10.1: " +
+                        //     this.toHex(packet)
+                        // );
 
 
                         /*
@@ -439,7 +545,7 @@ const ParserData =
                         /*
                             Аналог:
 
-                            a_iPos += fMessageStatus(...)
+                            a_iPos += fMessageStatus(...);
                         */
 
                         if(packet.size <= 0)
@@ -454,6 +560,10 @@ const ParserData =
                             packet
                         );
 
+                        // this.log(
+                        //     "ParserData::nextStep 5.10.10: " +
+                        //     this.toHex(result)
+                        // );
 
                         break;
                     }
@@ -462,12 +572,85 @@ const ParserData =
                     /*
                         Невідомий тип.
 
-                        Як і у C++ версії,
-                        нічого не робимо.
+                        Видаляємо поточний пакет
+                        і переходимо до наступного FF.
                     */
 
                     default:
+                    {
+                        // this.log(
+                        //     "ParserData::nextStep 5.default.0: " +
+                        //     this.toHex(data)
+                        // );
+
+                        this.log(
+                            "ParserData::nextStep: unknown TYPE = 0x" +
+                            data[1]
+                                .toString(16)
+                                .padStart(2, "0")
+                        );
+
+
+                        /*
+                            Шукаємо наступний FF.
+
+                            Починаємо з data[1],
+                            щоб не знайти поточний FF
+                            у data[0].
+                        */
+
+                        const nextStart =
+                            this.findByte(
+                                data.slice(1),
+                                0xFF
+                            );
+
+
+                        /*
+                            Наступного FF немає.
+
+                            Поточний невідомий пакет
+                            і всі дані після нього
+                            більше не використовуємо.
+                        */
+
+                        if(nextStart < 0)
+                        {
+                            this.log(
+                                "ParserData::nextStep: " +
+                                "next FF not found"
+                            );
+
+
+                            pos =
+                                this.buffer.length;
+
+
+                            break;
+                        }
+
+
+                        /*
+                            nextStart визначений
+                            відносно data.slice(1).
+
+                            Тому додаємо 1.
+                        */
+
+                        pos +=
+                            1 + nextStart;
+
+
+                        this.log(
+                            "ParserData::nextStep: " +
+                            "skip unknown packet, " +
+                            "next FF at pos = " +
+                            pos
+                        );
+
+
                         break;
+                    }
                 }
             }
         }
@@ -1491,6 +1674,10 @@ const ParserData =
 
     parseStreamData(data)
     {
+        // this.log(
+        //     "ParserData::parseStreamData 0: "
+        // );
+
         if(data.length < 4)
         {
             return null;
@@ -1511,6 +1698,10 @@ const ParserData =
 
         pos++;
 
+
+        // this.log(
+        //     "ParserData::parseStreamData 1: "
+        // );
 
         if(
             data.length <
@@ -1540,6 +1731,10 @@ const ParserData =
 
         pos++;
 
+
+        // this.log(
+        //     "ParserData::parseStreamData 2: "
+        // );
 
         if(
             data.length <
@@ -1594,6 +1789,9 @@ const ParserData =
             pos +
             1;
 
+        // this.log(
+        //     "ParserData::parseStreamData 3: "
+        // );
 
         if(
             data.length <
@@ -1649,6 +1847,11 @@ const ParserData =
                 crcData.length
             );
 
+
+        
+        // this.log(
+        //     "ParserData::parseStreamData 4: "
+        // );
 
         if(
             !this.fCRC_isOk(
@@ -1796,12 +1999,20 @@ const ParserData =
             );
         */
 
+        // this.log(
+        //     "ParserData::parseStreamData 5: "
+        // );
+
         this.sgControl(
             desktopId,
             2,
             url,
             ""
         );
+
+        // this.log(
+        //     "ParserData::parseStreamData 6: "
+        // );
 
 
         /*
@@ -1818,7 +2029,7 @@ const ParserData =
         */
 
         pos++;
-
+       
 
         return {
 
@@ -1875,6 +2086,8 @@ const ParserData =
 
     parseActiveClient(data)
     {
+        //this.log("ParserData::parseActiveClient 0: ");
+
         if(data.length < 4)
         {
             return null;
@@ -1981,6 +2194,7 @@ const ParserData =
             };
         }
 
+        //this.log("ParserData::parseActiveClient 5: ");
 
         /*
             Client ID
@@ -2024,6 +2238,8 @@ const ParserData =
                 ""
             );
         */
+
+        //this.log("ParserData::parseActiveClient 7: ");
 
         this.sgControl(
             sMyId,
