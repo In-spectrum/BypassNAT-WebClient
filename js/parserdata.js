@@ -926,25 +926,21 @@ const ParserData =
                     /*
                         Зберігаємо новий ID.
                     */
-
-                    AppState.sMyId =
-                        sMyId;
+                   
 
                     //переконнектится к серверу с новым Id
-                    this.sgControl("0", 22, "", "");
+                    this.sgControl("0", 22, sMyId, "");
                 }
                 else
                 if(devServer === 2)
                 {
                    //переконнектится к серверу с новым префикс-Id
-                    this.sgControl("0", 22, "", "");
+                    this.sgControl("0", 22, sMyId, "");
                 }
             }
         }
 
-
-        AppState.sMyId =
-            sMyId;
+        this.sgControl("0", 22, sMyId, "");
 
 
         this.log(

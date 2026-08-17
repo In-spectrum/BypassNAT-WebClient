@@ -285,7 +285,7 @@ class WebSocketClient
             {
                 if(this.slControl)
                 {
-                    this.slControl(_sId, 16, "");
+                    this.slControl(sId, 16, sData);
                 }
 
                 break;

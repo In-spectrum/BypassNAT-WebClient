@@ -564,3 +564,34 @@ DEVICE CONNECTION TEXT
 #btnLogger.fullscreen {
     bottom: 0;
 }
+
+
+/* =====================================================
+  
+   ===================================================== */
+
+.passwordInput {
+    position: relative;
+}
+
+.passwordInput input {
+    width: 100%;
+    padding-right: 45px;
+    box-sizing: border-box;
+}
+
+.passwordInput button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    color: white;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+
+    padding: 2px 5px;
+    font-size: 20px;
+    line-height: 1;
+}

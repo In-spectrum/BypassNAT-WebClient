@@ -120,7 +120,12 @@ document.getElementById('btnClear').onclick = () =>
     loggerBody.innerHTML = "";
 };
 
-txtFindClient.addEventListener("input", () => {
+function searchClient()
+{
+    //log("searchClient 2: " + desktopLogin);
+    
+    if (AppState.sMyId.length  === 0)
+        return;
 
     lstClients.innerHTML = "";
 
@@ -143,22 +148,27 @@ txtFindClient.addEventListener("input", () => {
     //             desktopLogin
     //         );
 
-    //     log("SearchDesktop 2: " + desktopLogin);
+    //     log("searchClient 2: " + desktopLogin);
     // }
     // catch(error)
     // {
     //     log(
-    //         "SearchDesktop ERROR: " +
+    //         "searchClient ERROR: " +
     //         error.message
     //     );
 
     //     console.error(
-    //         "SearchDesktop ERROR:",
+    //         "searchClient ERROR:",
     //         error
     //     );
     // }
 
     wsClient.send(packet);
+}
+
+txtFindClient.addEventListener("input", () => {
+    
+    searchClient();   
 
 });
 
@@ -396,7 +406,9 @@ function setConnectionStatus(connected)
     {
         // Підключено
         indicator.style.setProperty("--indicator-color", "#4da6ff");
-        btnConnectServer.innerHTML = "Server disconnect";
+        btnConnectServer.innerHTML = "Server disconnect"; 
+        
+        searchClient();
     }
     else
     {
@@ -532,19 +544,17 @@ video.addEventListener("loadedmetadata", () =>
 
 playerArea.addEventListener("playing", () =>
 {
-    log("Відтворення відео розпочато.");
+    //log("Відтворення відео розпочато.");
 });
 
 playerArea.addEventListener("ended", () =>
 {
-    log("Відтворення завершено.");
+    //log("Відтворення завершено.");
 });
 
 playerArea.addEventListener("error", () =>
 {
-    log("Помилка відтворення відео.");
-
-    //showMessage(0, "Video playback error.");
+    //log("Помилка відтворення відео.");
 });
 
 initMouse();
@@ -715,6 +725,12 @@ wsClient.slControl =
 
             case 16: //переконнектится к серверу с новым Id
             {               
+                if( AppState.sMyId !== sData)
+                {
+                    AppState.sMyId = sData;
+                    startConnectServer();
+                }
+
                 break;
             }
         }
@@ -1243,6 +1259,32 @@ function startConnectServer() {
 }
 
 
+function setupPasswordButton(buttonId, inputId) {
+
+    const button = document.getElementById(buttonId);
+    const input = document.getElementById(inputId);
+
+    if (!button || !input) {
+        return;
+    }
+
+    button.addEventListener("click", () => {
+
+        if (input.type === "password") {
+
+            input.type = "text";
+            button.innerHTML = "🙈";
+
+        } else {
+
+            input.type = "password";
+            button.innerHTML = "👁";
+
+        }
+
+    });
+}
+
 document.getElementById(
     "btnConnectServer"
 )
@@ -1251,6 +1293,8 @@ document.getElementById(
 
     if(AppState.serverConnected || AppState.serverConnecting)
     {
+        fDisconnectDevice();
+
         AppState.serverConnectTime = 0;
         AppState.serverConnecting = false;
         document.getElementById("btnConnectServer").innerHTML = "Server connect";
@@ -1266,6 +1310,9 @@ document.getElementById(
     AppState.serverConnectTime = 0;
     AppState.serverConnecting = true;
     startConnectServer();
+
+    txtFindClient.value = "";    
+    //lstClients.innerHTML = "";
 
 };
 
@@ -1464,68 +1511,68 @@ function startAppTimer() {
 
     //log("startAppTimer: running. ");
 
-    if(AppState.serverConnected && AppState.sDeskId.length)
-    {
-        //log("startAppTimer 5.0:" + AppState.iTimeDeskActive );
-
-        if(AppState.iTimeDeskActive >= 3)
+        if(AppState.serverConnected && AppState.sDeskId.length)
         {
-            //log("startAppTimer 5.1:");
+            //log("startAppTimer 5.0:" + AppState.iTimeDeskActive );
 
-            if(AppState.bTimeDeskNoActiveShow)
+            if(AppState.iTimeDeskActive >= 3)
             {
-                fConnectDevice();
-            }           
+                //log("startAppTimer 5.1:");
 
-            AppState.bTimeDeskNoActiveShow = !AppState.bTimeDeskNoActiveShow;
-
-            const packet =
-                    Protocol.fGetActiveClient(
-                        AppState.sMyId
-                    );
-
-
-                /*
-                    Відправляємо на сервер.
-                */
-
-                if( wsClient.send(packet) )
+                if(AppState.bTimeDeskNoActiveShow)
                 {
-                    // log(
-                    //     "startAppTimer::fGetActiveClient: пакет відправлено. "
-                    //  );
-                }
-                else
-                {
-                    log(
-                        "startAppTimer::fGetActiveClient: не вдалося відправити пакет"
-                    );
-                }
+                    fConnectDevice();
+                }           
+
+                AppState.bTimeDeskNoActiveShow = !AppState.bTimeDeskNoActiveShow;
+
+                const packet =
+                        Protocol.fGetActiveClient(
+                            AppState.sMyId
+                        );
 
 
-            
-            //sgSendMassang( MyProtocol::fGetActiveClient( StaticData::m_sMyId ) );
+                    /*
+                        Відправляємо на сервер.
+                    */
 
-            AppState.iTimeDeskActive = -1;
-        }
-        else{
-            
-            if(AppState.iTimeDeskActive >= 2)
-            {
-                if(AppState.serverConnected && AppState.bStream && !AppState.bRunStream)
-                {
-                    if(AppState.bStreamError)
+                    if( wsClient.send(packet) )
                     {
-                        AppState.bStreamError = false;
-                        fConnectDevice();
+                        // log(
+                        //     "startAppTimer::fGetActiveClient: пакет відправлено. "
+                        //  );
+                    }
+                    else
+                    {
+                        log(
+                            "startAppTimer::fGetActiveClient: не вдалося відправити пакет"
+                        );
+                    }
+
+
+                
+                //sgSendMassang( MyProtocol::fGetActiveClient( StaticData::m_sMyId ) );
+
+                AppState.iTimeDeskActive = -1;
+            }
+            else{
+                
+                if(AppState.iTimeDeskActive >= 2)
+                {
+                    if(AppState.bStream && !AppState.bRunStream)
+                    {
+                        if(AppState.bStreamError)
+                        {
+                            AppState.bStreamError = false;
+                            fConnectDevice();
+                        }
                     }
                 }
             }
-        }
 
-        AppState.iTimeDeskActive++;
-        
-    }
+            AppState.iTimeDeskActive++;
+            
+        }
 
     
 
@@ -1553,6 +1600,21 @@ function startThePage() {
 
     document.getElementById("serverConnectionText").style.display = "none";  // сховати
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
+
+    setupPasswordButton(
+        "btnShowServerPassword",
+        "txtServerPassword"
+    );
+
+    setupPasswordButton(
+        "btnShowUserPassword",
+        "txtUserPassword"
+    );
+
+    setupPasswordButton(
+        "btnShowClientPassword",
+        "txtClientPassword"
+    );
     
     startAppTimer();
     log("Програму запущено.");

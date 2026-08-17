@@ -42,6 +42,7 @@ const AppState =
     , sWithoutStream: "WITHOUT_STREAM"
     , m_iTimeForWatcher: 0
     , bRunStream: false
+    , bStreamError: false
 
     , isValidIPv4(ip) {
         const parts = ip.trim().split(".");
