@@ -22,7 +22,6 @@ const AppState =
         сюди ID, який надіслав сервер.
     */
     serverIP: ""
-    , sWebRTCPort: "8889"
     , serverConnected: false
     , serverConnectTime: 0
     , serverConnecting: false
@@ -31,18 +30,19 @@ const AppState =
     , sDeskId: ""
     , sDeskLogin: ""
     , sDeskPassword: ""
-    , bStream: true
     , bDeskConnecting: false
     , iDeskConnectTime: 0
     , iTimeDeskActive: 0
     , bTimeDeskNoActiveShow: false
 
     
+    , bStream: true
     , sStreamNewUrl: ""
     , sWithoutStream: "WITHOUT_STREAM"
     , m_iTimeForWatcher: 0
     , bRunStream: false
-    , bStreamError: false
+    , bStreamError: false    
+    , sWebRTCPort: "8889"
 
     , isValidIPv4(ip) {
         const parts = ip.trim().split(".");

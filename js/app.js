@@ -51,6 +51,11 @@ document.getElementById(
 ).value =
     "1236";
 
+document.getElementById(
+    "txtWebRTCPort"
+).value =
+    AppState.sWebRTCPort;
+
 
 document.getElementById(
     "txtServerIP"
@@ -1414,6 +1419,51 @@ document.getElementById(
         return;
     }
 
+
+    if(AppState.bStream)
+    {       
+
+        const WebRTC_port =
+            document.getElementById(
+                "txtWebRTCPort"
+            ).value.trim();
+
+        if(WebRTC_port === "")
+        {
+            log(
+                "Помилка: не вказаний WebRTC-порт."
+            );
+
+            showMessage(0, "Error.\r\nThe WebRTC-port is incorrect.");
+
+            return;
+        }
+
+        const WebRTCportNumber =
+        Number(WebRTC_port);
+
+
+        if(
+            !Number.isInteger(WebRTCportNumber) ||
+            WebRTCportNumber < 1 ||
+            WebRTCportNumber > 65535
+        )
+        {
+            log(
+                "Помилка: некоректний WebRTC-порт."
+            );
+
+            showMessage(0, "Error.\r\nThe WebRTC-port is incorrect.");
+
+            return;
+        }
+
+        AppState.sWebRTCPort = WebRTC_port;
+
+         log(
+                "btnConnectClient::sWebRTCPort: " +  AppState.sWebRTCPort
+            );
+    }
 
    
     /*
