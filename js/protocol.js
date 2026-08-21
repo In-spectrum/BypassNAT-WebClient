@@ -941,6 +941,107 @@ const Protocol =
 
         return packet.buffer;
     },
+    
+    fSendKeyEvents(
+        userId,
+        desktopId,
+        variable,
+        key,
+        keyboardLayout,
+        data
+    )
+    {
+        const encoder = new TextEncoder();
+
+        const userIdBytes = encoder.encode(
+            userId === undefined || userId === null
+                ? ""
+                : String(userId)
+        );
+
+        const desktopIdBytes = encoder.encode(
+            desktopId === undefined || desktopId === null
+                ? ""
+                : String(desktopId)
+        );
+
+        const dataBytes = encoder.encode(
+            data === undefined || data === null
+                ? ""
+                : String(data)
+        );
+
+        if (
+            userIdBytes.length > 255 ||
+            desktopIdBytes.length > 255 ||
+            dataBytes.length > 255
+        )
+        {
+            return null;
+        }
+
+        const totalSize =
+            2 +
+            1 + userIdBytes.length +
+            1 + desktopIdBytes.length +
+            1 +
+            1 +
+            4 +
+            4 +
+            1 + dataBytes.length +
+            1;
+
+        const packet = new Uint8Array(totalSize);
+        let offset = 0;
+
+        packet[offset++] = 0xFF;
+        packet[offset++] = 0x06;
+
+        packet[offset++] = userIdBytes.length & 0xFF;
+        packet.set(userIdBytes, offset);
+        offset += userIdBytes.length;
+
+        packet[offset++] = desktopIdBytes.length & 0xFF;
+        packet.set(desktopIdBytes, offset);
+        offset += desktopIdBytes.length;
+
+        // C++: a_iSz = 9; a_baRequest.append(a_baSz.at(3));
+        packet[offset++] = 0x09;
+
+        // C++ sends only the low byte of _iVar here.
+        packet[offset++] = Number(variable) & 0xFF;
+
+        this.writeUint32BE(packet, offset, Number(key) >>> 0);
+        offset += 4;
+
+        this.writeUint32BE(
+            packet,
+            offset,
+            Number(keyboardLayout) >>> 0
+        );
+        offset += 4;
+
+        // C++ appends a_baSz.at(3): only the low byte of the UTF-8 size.
+        packet[offset++] = dataBytes.length & 0xFF;
+        packet.set(dataBytes, offset);
+        offset += dataBytes.length;
+
+        // FF is excluded from CRC, exactly as in the C++ implementation.
+        packet[offset] = this.getCRC(
+            packet.subarray(1, offset),
+            offset - 1
+        );
+
+        return packet.buffer;
+    },
+
+    writeUint32BE(buffer, offset, value)
+    {
+        buffer[offset]     = (value >>> 24) & 0xFF;
+        buffer[offset + 1] = (value >>> 16) & 0xFF;
+        buffer[offset + 2] = (value >>> 8) & 0xFF;
+        buffer[offset + 3] = value & 0xFF;
+    },
 
     createMouseEvents(
         userId,

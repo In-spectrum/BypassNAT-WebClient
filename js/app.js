@@ -21,7 +21,6 @@ let logLines = [];
 let loggerVisible = true;
 
 let menuVisible = true;
-let keyboardCapture = false;
 
 let wsClient = new WebSocketClient();
 
@@ -1665,6 +1664,8 @@ function startThePage() {
         "btnShowClientPassword",
         "txtClientPassword"
     );
+
+    Keyboard.init();
     
     startAppTimer();
     log("Програму запущено.");

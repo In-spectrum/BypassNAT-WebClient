@@ -1,13 +1,16 @@
 let lastMouseLogTime = 0;
 let mouseInsidePlayer = false;
+let mouseInsideVideo = false;
 
 
 function initMouse()
 {
+  
     playerArea.addEventListener("mouseenter", () =>
     {
         mouseInsidePlayer = true;
-        keyboardCapture = true;
+        mouseInsideVideo = true;
+        keyboardCapture = mouseInsideVideo;
 
         playerArea.focus();
     });
@@ -16,7 +19,8 @@ function initMouse()
     playerArea.addEventListener("mouseleave", () =>
     {
         mouseInsidePlayer = false;
-        keyboardCapture = false;
+        mouseInsideVideo = false;
+        keyboardCapture = mouseInsideVideo;
     });
 
 
@@ -91,7 +95,7 @@ function initMouse()
 
 
         onVideoMouseWheel(
-            event.deltaY,
+            -event.deltaY,
             p.x,
             p.y,
             p.width,
@@ -119,12 +123,13 @@ function initMouse()
         if (!mouseInsidePlayer)
             return;
 
-
         const p = getMouseCoordinates(event);
+
+        mouseInsideVideo = (p != null);
+        keyboardCapture = mouseInsideVideo;
 
         if (p == null)
             return;
-
 
         onVideoMouseMove(
             p.x,
