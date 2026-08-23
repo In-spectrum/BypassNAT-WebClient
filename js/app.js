@@ -1339,7 +1339,7 @@ document.getElementById(
 document.getElementById(
     "btnConnectClient"
 )
-.onclick = function()
+.onclick = async function()
 {
 
     fDisconnectDevice();
@@ -1490,6 +1490,28 @@ document.getElementById(
     AppState.sDeskPassword = password;   
     AppState.bTimeDeskNoActiveShow = false; 
 
+    /*
+        Одноразовий запит дозволу
+        на читання локального clipboard.
+
+        Навіть при Deny підключення
+        до remote PC продовжується.
+    */
+    const bClipboardPermission =
+        await Clipboard.requestReadPermission();
+
+
+    if(!bClipboardPermission)
+    {
+        log(
+            "Clipboard: доступ до читання не наданий."
+        );
+    }
+
+
+    /*
+        Підключення до remote PC.
+    */
     fConnectDevice();
 }
 

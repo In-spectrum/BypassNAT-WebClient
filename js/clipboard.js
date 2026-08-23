@@ -6,21 +6,147 @@
 const Clipboard =
 {
     /*
+        Буфер, який вже був успішно
+        відправлений на сервер.
+    */
+    sBufferPrev: "",
+
+
+    /*
+        Буфер, який накопичується
+        при отриманні з сервера.
+
+        VAR 0 -> очищення
+        VAR 1 -> додавання
+        VAR 2 -> додавання + запис
+    */
+    sBufferWrite: "",
+
+
+    /*
+        Одноразовий запит permission
+        на читання системного clipboard.
+    */
+    m_bPermissionRequested: false,
+
+
+    /*
+        Результат запиту permission.
+
+        true  -> доступ дозволений
+        false -> доступ заборонений
+    */
+    m_bReadPermission: false,
+
+
+    /*
+        --------------------------------------------------
+        requestReadPermission
+
+        Викликається один раз по кліку
+        на кнопку Connect Client.
+        --------------------------------------------------
+    */
+
+    async requestReadPermission()
+    {
+        /*
+            Якщо запит вже робився,
+            повторно його не виконуємо.
+        */
+
+        if(
+            this.m_bPermissionRequested
+        )
+        {
+            return this.m_bReadPermission;
+        }
+
+
+        this.m_bPermissionRequested =
+            true;
+
+
+        /*
+            Перевірка Clipboard API.
+        */
+
+        if(
+            !navigator.clipboard ||
+            !navigator.clipboard.readText
+        )
+        {
+            log(
+                "Clipboard: Clipboard API недоступний."
+            );
+
+            this.m_bReadPermission =
+                false;
+
+            return false;
+        }
+
+
+        try
+        {
+            /*
+                Цей виклик виконується
+                безпосередньо під час кліку
+                по кнопці Connect Client.
+
+                Якщо permission = prompt,
+                браузер може показати
+                вікно дозволу.
+            */
+
+            await navigator.clipboard.readText();
+
+
+            this.m_bReadPermission =
+                true;
+
+
+            log(
+                "Clipboard: доступ на читання дозволено."
+            );
+
+
+            return true;
+        }
+        catch(error)
+        {
+            this.m_bReadPermission =
+                false;
+
+
+            log(
+                "Clipboard: доступ на читання заборонено."
+            );
+
+
+            return false;
+        }
+    },
+
+
+    /*
         --------------------------------------------------
         readAndSend
 
-        Читаємо clipboard та передаємо його
-        на remote PC.
+        Викликається з keyboard.js
+        при Ctrl+V.
 
-        Функція async, тому caller може
-        дочекатися повного завершення передачі.
+        Спочатку читаємо локальний clipboard,
+        потім передаємо його на remote PC.
         --------------------------------------------------
     */
-    sBufferPrev: "",
-    sBufferWrite: "",
 
     async readAndSend()
     {
+        /*
+            Clipboard API повинен бути доступний.
+        */
+
         if(
             !navigator.clipboard ||
             !navigator.clipboard.readText
@@ -34,6 +160,28 @@ const Clipboard =
         }
 
 
+        /*
+            Permission повинен бути
+            отриманий раніше через
+            кнопку Connect Client.
+        */
+
+        if(
+            !this.m_bReadPermission
+        )
+        {
+            log(
+                "Clipboard: доступ на читання не дозволений."
+            );
+
+            return false;
+        }
+
+
+        /*
+            Remote PC повинен бути підключений.
+        */
+
         if(
             !AppState.serverConnected ||
             !AppState.sDeskId
@@ -46,29 +194,53 @@ const Clipboard =
         try
         {
             /*
-                Тут браузер може показати
-                запит permission.
-
-                Викликається тільки при Ctrl+V.
+                Читаємо локальний clipboard.
             */
 
             const sData =
                 await navigator.clipboard.readText();
 
-            if(this.sBufferPrev == sData)
-                return true;
 
-            this.sBufferPrev =
-                sData;
+            /*
+                Якщо цей buffer вже був
+                успішно відправлений —
+                повторно не передаємо.
+            */
+
+            if(
+                sData === this.sBufferPrev
+            )
+            {
+                return true;
+            }
 
 
             /*
-                Передаємо весь clipboard.
+                Передаємо повний buffer.
             */
 
-            return this.fSendClipboard(
-                sData
-            );
+            const bResult =
+                this.fSendClipboard(
+                    sData
+                );
+
+
+            /*
+                Запам'ятовуємо buffer
+                тільки після успішної
+                передачі.
+            */
+
+            if(
+                bResult
+            )
+            {
+                this.sBufferPrev =
+                    sData;
+            }
+
+
+            return bResult;
         }
         catch(error)
         {
@@ -91,7 +263,8 @@ const Clipboard =
         --------------------------------------------------
         fSendClipboard
 
-        Передача clipboard згідно C++ протоколу.
+        Передача clipboard
+        згідно існуючого протоколу.
 
         VAR 0 = START
         VAR 1 = DATA
@@ -111,11 +284,12 @@ const Clipboard =
             return false;
         }
 
-        //sData += sData + "_MyTest";
 
         /*
             --------------------------------------------------
             START
+
+            VAR = 0
             --------------------------------------------------
         */
 
@@ -127,21 +301,31 @@ const Clipboard =
             );
 
 
-        if(packet === null)
+        if(
+            packet === null
+        )
+        {
             return false;
+        }
 
 
-        if(!wsClient.send(packet))
+        if(
+            !wsClient.send(packet)
+        )
+        {
+            log(
+                "Clipboard: START не відправлено."
+            );
+
             return false;
+        }
 
 
         /*
             --------------------------------------------------
             DATA
 
-            Аналог C++:
-
-                int a_iPlas = 250;
+            Розмір частини = 250 символів.
             --------------------------------------------------
         */
 
@@ -156,7 +340,8 @@ const Clipboard =
 
 
         /*
-            Всі частини, крім останньої.
+            Всі частини,
+            крім останньої.
         */
 
         while(
@@ -181,12 +366,24 @@ const Clipboard =
                 );
 
 
-            if(packet === null)
+            if(
+                packet === null
+            )
+            {
                 return false;
+            }
 
 
-            if(!wsClient.send(packet))
+            if(
+                !wsClient.send(packet)
+            )
+            {
+                log(
+                    "Clipboard: DATA не відправлено."
+                );
+
                 return false;
+            }
 
 
             a_iSend +=
@@ -197,6 +394,10 @@ const Clipboard =
         /*
             --------------------------------------------------
             END
+
+            VAR = 2
+
+            Остання частина clipboard.
             --------------------------------------------------
         */
 
@@ -214,12 +415,24 @@ const Clipboard =
             );
 
 
-        if(packet === null)
+        if(
+            packet === null
+        )
+        {
             return false;
+        }
 
 
-        if(!wsClient.send(packet))
+        if(
+            !wsClient.send(packet)
+        )
+        {
+            log(
+                "Clipboard: END не відправлено."
+            );
+
             return false;
+        }
 
 
         log(
@@ -229,37 +442,132 @@ const Clipboard =
         );
 
 
-        /*
-            Дуже важливо:
-
-            true повертається тільки після
-            відправки END.
-        */
-
         return true;
     },
+
+
+    /*
+        --------------------------------------------------
+        fBufferWrite
+
+        Отримання clipboard
+        від remote PC.
+
+        Аналог:
+
+            Control::fBufferWrite()
+        --------------------------------------------------
+    */
+
+    fBufferWrite(
+        iVar,
+        sData
+    )
+    {
+        log(
+            "Clipboard.fBufferWrite: " +
+            iVar +
+            " " +
+            sData
+        );
+
+
+        /*
+            --------------------------------------------------
+            VAR 0
+
+            Початок нового clipboard.
+            --------------------------------------------------
+        */
+
+        if(
+            iVar === 0 ||
+            !AppState.bStream
+        )
+        {
+            this.sBufferWrite =
+                "";
+
+            return;
+        }
+
+
+        /*
+            --------------------------------------------------
+            VAR 1
+
+            Проміжна частина.
+            --------------------------------------------------
+        */
+
+        if(
+            iVar === 1
+        )
+        {
+            this.sBufferWrite +=
+                sData;
+
+            return;
+        }
+
+
+        /*
+            --------------------------------------------------
+            VAR 2
+
+            Остання частина.
+
+            Тільки тут робимо запис
+            у системний clipboard.
+            --------------------------------------------------
+        */
+
+        if(
+            iVar === 2
+        )
+        {
+            this.sBufferWrite +=
+                sData;
+
+
+            /*
+                Аналог C++:
+
+                    if(
+                        StaticData::m_sMyId != "0"
+                        && m_iTimeForBuffer < 5
+                    )
+            */
+
+            if(
+                AppState.sMyId !== "0" &&
+                AppState.sMyId.length > 0 &&
+                AppState.bStream
+            )
+            {
+                this.writeClipboard(
+                    this.sBufferWrite
+                );
+            }
+        }
+    },
+
+
+    /*
+        --------------------------------------------------
+        writeClipboard
+
+        Запис повністю зібраного clipboard
+        у локальний системний clipboard.
+
+        Викликається тільки після VAR 2.
+        --------------------------------------------------
+    */
 
     async writeClipboard(
         sData
     )
     {
-        if(
-            !AppState.sMyId ||
-            AppState.sMyId === "0"
-        )
-        {
-            return false;
-        }
-
-
-        if(
-            !AppState.bStream
-        )
-        {
-            return false;
-        }
-
-
         if(
             !navigator.clipboard ||
             !navigator.clipboard.writeText
@@ -275,24 +583,38 @@ const Clipboard =
 
         try
         {
+            /*
+                Повністю замінюємо
+                текстовий clipboard.
+            */
+
+            console.log(
+                "Clipboard: buffer отримано. " +
+                sData
+            );
+
             await navigator.clipboard.writeText(
                 sData
             );
 
 
             /*
-                Запам'ятовуємо отриманий buffer,
-                щоб при наступному Ctrl+V
-                не відправити його назад
-                на сервер повторно.
+                Цей buffer тепер вважаємо
+                вже відомим локальному клієнту.
+
+                Наступний Ctrl+V не повинен
+                відправляти його назад
+                на сервер.
             */
 
             this.sBufferPrev =
                 sData;
 
 
-            log(
-                "Clipboard: buffer записано."
+            console.log(
+                "Clipboard: buffer записано: " +
+                sData.length +
+                " символів."
             );
 
 
@@ -311,95 +633,6 @@ const Clipboard =
             );
 
             return false;
-        }
-    },
-
-    fBufferWrite(
-        iVar,
-        sData
-    )
-    {
-        log(
-            "Clipboard.fBufferWrite 0: " +
-            iVar +
-            " " +
-            sData
-        );
-
-
-        /*
-            C++:
-
-            if(_iVar == 0 || !m_bStream)
-            {
-                m_sBufferWrite = "";
-            }
-        */
-
-        if(
-            iVar === 0 ||
-            !AppState.bStream
-        )
-        {
-            this.sBufferWrite =
-                "";
-
-            return;
-        }
-
-
-        /*
-            C++:
-
-            if(_iVar == 1)
-            {
-                m_sBufferWrite += _sData;
-            }
-        */
-
-        if(
-            iVar === 1
-        )
-        {
-            this.sBufferWrite +=
-                sData;
-
-            return;
-        }
-
-
-        /*
-            C++:
-
-            if(_iVar == 2)
-            {
-                m_sBufferWrite += _sData;
-
-                ...
-
-                clipboard->clear();
-                clipboard->setText(m_sBufferWrite);
-            }
-        */
-
-        if(
-            iVar === 2
-        )
-        {
-            this.sBufferWrite +=
-                sData;
-
-
-            /*
-                Тут buffer вже повністю зібраний.
-
-                ТІЛЬКИ ТУТ виконуємо запис
-                у локальний clipboard.
-            */
-
-            this.writeClipboard(
-                this.sBufferWrite
-            );
         }
     }
 };
