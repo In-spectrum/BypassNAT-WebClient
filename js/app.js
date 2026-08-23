@@ -676,6 +676,22 @@ wsClient.slControl =
 
                 break;
             }   
+            case 8:
+            {
+                /*
+                    Clipboard від remote PC.
+                */
+
+                Clipboard.fBufferWrite(
+                    parseInt(
+                        sId,
+                        10
+                    ),
+                    sData
+                );
+
+                break;
+            }
             case 12:
             {
                 const id = parseInt(sId, 10);

@@ -17,6 +17,7 @@ const Clipboard =
         --------------------------------------------------
     */
     sBufferPrev: "",
+    sBufferWrite: "",
 
     async readAndSend()
     {
@@ -236,5 +237,169 @@ const Clipboard =
         */
 
         return true;
+    },
+
+    async writeClipboard(
+        sData
+    )
+    {
+        if(
+            !AppState.sMyId ||
+            AppState.sMyId === "0"
+        )
+        {
+            return false;
+        }
+
+
+        if(
+            !AppState.bStream
+        )
+        {
+            return false;
+        }
+
+
+        if(
+            !navigator.clipboard ||
+            !navigator.clipboard.writeText
+        )
+        {
+            log(
+                "Clipboard: Clipboard API write недоступний."
+            );
+
+            return false;
+        }
+
+
+        try
+        {
+            await navigator.clipboard.writeText(
+                sData
+            );
+
+
+            /*
+                Запам'ятовуємо отриманий buffer,
+                щоб при наступному Ctrl+V
+                не відправити його назад
+                на сервер повторно.
+            */
+
+            this.sBufferPrev =
+                sData;
+
+
+            log(
+                "Clipboard: buffer записано."
+            );
+
+
+            return true;
+        }
+        catch(error)
+        {
+            log(
+                "Clipboard: помилка запису: " +
+                (
+                    error &&
+                    error.message
+                        ? error.message
+                        : error
+                )
+            );
+
+            return false;
+        }
+    },
+
+    fBufferWrite(
+        iVar,
+        sData
+    )
+    {
+        log(
+            "Clipboard.fBufferWrite 0: " +
+            iVar +
+            " " +
+            sData
+        );
+
+
+        /*
+            C++:
+
+            if(_iVar == 0 || !m_bStream)
+            {
+                m_sBufferWrite = "";
+            }
+        */
+
+        if(
+            iVar === 0 ||
+            !AppState.bStream
+        )
+        {
+            this.sBufferWrite =
+                "";
+
+            return;
+        }
+
+
+        /*
+            C++:
+
+            if(_iVar == 1)
+            {
+                m_sBufferWrite += _sData;
+            }
+        */
+
+        if(
+            iVar === 1
+        )
+        {
+            this.sBufferWrite +=
+                sData;
+
+            return;
+        }
+
+
+        /*
+            C++:
+
+            if(_iVar == 2)
+            {
+                m_sBufferWrite += _sData;
+
+                ...
+
+                clipboard->clear();
+                clipboard->setText(m_sBufferWrite);
+            }
+        */
+
+        if(
+            iVar === 2
+        )
+        {
+            this.sBufferWrite +=
+                sData;
+
+
+            /*
+                Тут buffer вже повністю зібраний.
+
+                ТІЛЬКИ ТУТ виконуємо запис
+                у локальний clipboard.
+            */
+
+            this.writeClipboard(
+                this.sBufferWrite
+            );
+        }
     }
 };

@@ -509,6 +509,59 @@ const ParserData =
                         break;
                     }
 
+                    /*
+                        Clipboard Data
+                    */
+                    case 0x0B:
+                    {
+                        console.log(
+                            "ParserData::nextStep 5.0B.0: " +
+                            this.toHex(data)
+                        );
+
+                        const packet =
+                            this.parseBufferData(
+                                data
+                            );
+
+                        console.log(
+                            "ParserData::nextStep 5.0B.1: " +
+                            this.toHex(packet)
+                        );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        /*
+                            Аналог:
+
+                                a_iPos +=
+                                    fBufferData(a_baData);
+                        */
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+                        break;
+                    }
+
 
                     /*
                         Message Status
@@ -2283,6 +2336,378 @@ const ParserData =
 
             data1Length:
                 data1Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+    parseBufferData(data)
+    {
+        /*
+            --------------------------------------------------
+            Аналог:
+
+                ParserSocketData::fBufferData()
+
+            Пакет:
+
+                FF
+                0B
+
+                SIZE-1
+                DATA-1
+
+                SIZE-2
+                DATA-2
+
+                SIZE-3
+                DATA-3
+
+                CRC
+            --------------------------------------------------
+        */
+
+
+        if(data.length < 4)
+            return null;
+
+
+        let pos = 0;
+
+
+        /*
+            --------------------------------------------------
+            SIZE-1
+
+            C++:
+
+                a_iData_1 =
+                    static_cast<quint8>(
+                        _baIn.at(2)
+                    );
+            --------------------------------------------------
+        */
+
+        const data1Length =
+            data[2];
+
+
+        pos++;
+
+
+        /*
+            Перевірка DATA-1 + SIZE-2
+        */
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            SIZE-2
+            --------------------------------------------------
+        */
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        /*
+            --------------------------------------------------
+            SIZE-3
+            --------------------------------------------------
+        */
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const data3Length =
+            data[
+                3 +
+                data1Length +
+                data2Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        /*
+            --------------------------------------------------
+            Повний розмір пакета
+            --------------------------------------------------
+        */
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            CRC
+
+            FF не входить у CRC.
+            --------------------------------------------------
+        */
+
+        const receivedCRC =
+            data[
+                packetSize - 1
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                data.slice(
+                    1,
+                    packetSize - 1
+                ),
+                packetSize - 2
+            );
+
+
+        if(
+            calculatedCRC !==
+            receivedCRC
+        )
+        {
+            this.log(
+                "ParserData.parseBufferData: CRC ERROR"
+            );
+
+
+            return {
+                size: packetSize,
+                type: 0x0B,
+                name: "BUFFER_DATA",
+                validCRC: false
+            };
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA-1 = Desktop ID
+            --------------------------------------------------
+        */
+
+        pos = 0;
+
+
+        const desktopIdStart =
+            3;
+
+
+        const desktopIdEnd =
+            3 +
+            data1Length +
+            pos;
+
+
+        const desktopIdBytes =
+            data.slice(
+                desktopIdStart,
+                desktopIdEnd
+            );
+
+
+        /*
+            --------------------------------------------------
+            DATA-2 = VAR
+            --------------------------------------------------
+        */
+
+        pos++;
+
+
+        const variableStart =
+            3 +
+            data1Length +
+            pos;
+
+
+        const variableEnd =
+            variableStart +
+            data2Length;
+
+
+        const variableBytes =
+            data.slice(
+                variableStart,
+                variableEnd
+            );
+
+
+        /*
+            --------------------------------------------------
+            DATA-3 = Clipboard data
+            --------------------------------------------------
+        */
+
+        pos++;
+
+
+        const bufferDataStart =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const bufferDataEnd =
+            bufferDataStart +
+            data3Length;
+
+
+        const bufferDataBytes =
+            data.slice(
+                bufferDataStart,
+                bufferDataEnd
+            );
+
+
+        /*
+            --------------------------------------------------
+            Перетворення даних
+            --------------------------------------------------
+        */
+
+        const desktopId =
+            this.decodeUtf8(
+                desktopIdBytes
+            );
+
+
+        /*
+            VAR у C++ має розмір 1 байт.
+        */
+
+        const variable =
+            variableBytes.length > 0
+                ? variableBytes[0]
+                : 0;
+
+
+        const bufferData =
+            this.decodeUtf8(
+                bufferDataBytes
+            );
+
+
+        /*
+            --------------------------------------------------
+            Аналог:
+
+                emit sgControl(
+                    QString::number(
+                        static_cast<quint8>(
+                            a_baVar.at(0)
+                        )
+                    ),
+                    8,
+                    QString::fromStdString(
+                        a_baData.toStdString()
+                    ),
+                    ""
+                );
+            --------------------------------------------------
+        */
+
+        this.sgControl(
+            String(variable),
+            8,
+            bufferData,
+            ""
+        );
+
+
+        /*
+            --------------------------------------------------
+            Аналог повернення:
+
+                return
+                    3 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iData_3 +
+                    a_iPlasPos;
+            --------------------------------------------------
+        */
+
+        pos++;
+
+
+        return {
+            size:
+                packetSize,
+
+            type:
+                0x0B,
+
+            name:
+                "BUFFER_DATA",
+
+            validCRC:
+                true,
+
+            desktopId:
+                desktopId,
+
+            variable:
+                variable,
+
+            data:
+                bufferData,
+
+            dataText:
+                bufferData,
 
             receivedCRC:
                 receivedCRC,

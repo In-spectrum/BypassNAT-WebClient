@@ -262,6 +262,19 @@ class WebSocketClient
                 }
                 break;
             }    
+            case 8:
+            {
+                if(this.slControl)
+                {
+                    this.slControl(
+                        sId,
+                        8,
+                        sData
+                    );
+                }
+
+                break;
+            }
             case 17:
             {
                 if(this.slControl)
