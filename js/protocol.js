@@ -1279,6 +1279,246 @@ const Protocol =
 
 
         return packet.buffer;
+    },
+
+        fSendClipboard(
+        desktopId,
+        variable,
+        data
+    )
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        const desktopIdBytes =
+            encoder.encode(
+                desktopId === undefined ||
+                desktopId === null
+                    ? ""
+                    : String(desktopId)
+            );
+
+
+        const dataBytes =
+            encoder.encode(
+                data === undefined ||
+                data === null
+                    ? ""
+                    : String(data)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            0B
+
+            desktopId size
+            desktopId
+
+            01
+            variable
+
+            data size
+            data
+
+            CRC
+        */
+
+        /*
+            C++ використовує тільки
+            молодший байт розміру.
+
+            Тому максимальний розмір
+            одного поля = 255 байт.
+        */
+        if(
+            desktopIdBytes.length > 255 ||
+            dataBytes.length > 255
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            Повний розмір:
+
+            FF                  1
+            0B                  1
+
+            desktopId size      1
+            desktopId           N
+
+            variable size       1
+            variable            1
+
+            data size           1
+            data                N
+
+            CRC                 1
+        */
+        const totalSize =
+            2 +
+            1 + desktopIdBytes.length +
+            1 +
+            1 +
+            1 + dataBytes.length +
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x0B;
+
+
+        /*
+            Desktop ID
+
+            C++:
+
+            unsigned int a_iSz =
+                a_baTemp.length();
+
+            ...
+
+            a_baRequest.append(
+                a_baSz.at(3)
+            );
+
+            Тобто фактично передається
+            тільки молодший байт розміру.
+        */
+
+        packet[offset++] =
+            desktopIdBytes.length & 0xFF;
+
+
+        packet.set(
+            desktopIdBytes,
+            offset
+        );
+
+        offset +=
+            desktopIdBytes.length;
+
+
+        /*
+            Variable size
+
+            C++:
+
+            a_iSz = 1;
+
+            ...
+
+            a_baRequest.append(
+                a_baSz.at(3)
+            );
+
+            Тобто завжди:
+
+            01
+        */
+
+        packet[offset++] =
+            0x01;
+
+
+        /*
+            Variable
+
+            C++:
+
+            a_iSz = _iVar;
+
+            ...
+
+            a_baRequest.append(
+                a_baSz.at(3)
+            );
+
+            Передається тільки
+            молодший байт _iVar.
+        */
+
+        packet[offset++] =
+            Number(variable) & 0xFF;
+
+
+        /*
+            Data size
+
+            C++:
+
+            a_iSz =
+                a_baTemp.length();
+
+            ...
+
+            a_baRequest.append(
+                a_baSz.at(3)
+            );
+
+            Передається тільки
+            молодший байт розміру.
+        */
+
+        packet[offset++] =
+            dataBytes.length & 0xFF;
+
+
+        /*
+            Data
+        */
+
+        packet.set(
+            dataBytes,
+            offset
+        );
+
+        offset +=
+            dataBytes.length;
+
+
+        /*
+            CRC.
+
+            C++:
+
+            fGetCRC(
+                a_baRequest.mid(1),
+                a_baRequest.size() - 1
+            )
+
+            FF НЕ входить у CRC.
+        */
+
+        packet[offset] =
+            this.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };

@@ -115,7 +115,7 @@ const Keyboard = {
             log("Keyboard capture initialized");
     },
 
-    onKeyDown(event) {
+    async onKeyDown(event) {
 
         if (!keyboardCapture)
             return;
@@ -136,6 +136,22 @@ const Keyboard = {
             );
 
         event.preventDefault();
+
+        /*
+            Ctrl+V
+
+            Спочатку передаємо clipboard.
+        */
+
+        if(
+            event.code === "KeyV" &&
+            event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+        )
+        {
+            await Clipboard.readAndSend();
+        }
 
         this.sendKeyEvent(
             1,
