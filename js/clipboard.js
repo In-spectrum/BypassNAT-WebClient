@@ -161,7 +161,7 @@ const Clipboard =
             !navigator.clipboard.writeText
         )
         {
-            console.log(
+            log(
                 "Clipboard: Clipboard API write недоступний."
             );
 
@@ -203,7 +203,7 @@ const Clipboard =
                             true;
 
 
-                        console.log(
+                        log(
                             "Clipboard: доступ на запис дозволено."
                         );
 
@@ -221,7 +221,7 @@ const Clipboard =
                             false;
 
 
-                        console.log(
+                        log(
                             "Clipboard: доступ на запис заборонено."
                         );
 
@@ -286,7 +286,7 @@ const Clipboard =
                 true;
 
 
-            console.log(
+            log(
                 "Clipboard: доступ на запис дозволено."
             );
 
@@ -305,7 +305,7 @@ const Clipboard =
             );
 
 
-            console.log(
+            log(
                 "Clipboard: доступ на запис заборонено: " +
                 (
                     error &&
@@ -656,12 +656,12 @@ const Clipboard =
         sData
     )
     {
-        log(
-            "Clipboard.fBufferWrite: " +
-            iVar +
-            " " +
-            sData
-        );
+        // log(
+        //     "Clipboard.fBufferWrite: " +
+        //     iVar +
+        //     " " +
+        //     sData
+        // );
 
 
         /*
@@ -696,6 +696,10 @@ const Clipboard =
             iVar === 1
         )
         {
+            document.getElementById(
+                "clipboardRiadWrite"
+            ).style.display = "flex";
+
             this.sBufferWrite +=
                 sData;
 
@@ -718,6 +722,11 @@ const Clipboard =
             iVar === 2
         )
         {
+
+            document.getElementById(
+                "clipboardRiadWrite"
+            ).style.display = "none";
+
             this.sBufferWrite +=
                 sData;
 
@@ -765,7 +774,7 @@ const Clipboard =
             !navigator.clipboard.writeText
         )
         {
-            console.log(
+            log(
                 "Clipboard: Clipboard API write недоступний."
             );
 
@@ -782,7 +791,7 @@ const Clipboard =
             !this.m_bWritePermission
         )
         {
-            console.log(
+            log(
                 "Clipboard: доступ на запис не дозволений."
             );
 
@@ -796,9 +805,15 @@ const Clipboard =
                 Повністю отриманий buffer.
             */
 
-            console.log(
+            log(
                 "Clipboard: buffer отримано:\n\r" +
                 sData
+            );
+
+            log(
+                "Clipboard: buffer length: " +
+                sData.length +
+                " символів."
             );
 
 
@@ -824,7 +839,7 @@ const Clipboard =
                 sData;
 
 
-            console.log(
+            log(
                 "Clipboard: buffer записано: " +
                 sData.length +
                 " символів."
@@ -843,7 +858,7 @@ const Clipboard =
             );
 
 
-            console.log(
+            log(
                 "Clipboard: помилка запису: " +
                 (
                     error &&

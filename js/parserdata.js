@@ -63,11 +63,11 @@ const ParserData =
     {
         //this.log("ParserData::parse 0: ");
 
-        // console.log(
-        //         "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\r" +
-        //         "ParserData::parse 0: " +
-        //         this.toHex(data)
-        //     ); 
+        this.log(
+                "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\r" +
+                "ParserData::parse 0: " +
+                this.toHex(data)
+            ); 
 
         let bytes;
 
@@ -95,10 +95,10 @@ const ParserData =
 
         this.append(bytes);
 
-        // console.log(
-        //         "ParserData::parse 10: " +
-        //         this.toHex(this.buffer)
-        //     ); 
+        this.log(
+                "ParserData::parse 10: " +
+                this.toHex(this.buffer)
+            ); 
 
 
         /*
@@ -268,7 +268,7 @@ const ParserData =
                 break;
 
 
-            // console.log(
+            // this.log(
             //     "ParserData::nextStep 4.0: " +
             //     this.toHex(data)
             // );
@@ -525,20 +525,20 @@ const ParserData =
                     */
                     case 0x0B:
                     {
-                        console.log(
-                            "ParserData::nextStep 5.0B.0: " +
-                            this.toHex(data)
-                        );
+                        // this.log(
+                        //     "ParserData::nextStep 5.0B.0: " +
+                        //     this.toHex(data)
+                        // );
 
                         const packet =
                             this.parseBufferData(
                                 data
                             );
 
-                        console.log(
-                            "ParserData::nextStep 5.0B.1: " +
-                            this.toHex(packet)
-                        );
+                        // this.log(
+                        //     "ParserData::nextStep 5.0B.1: " +
+                        //     this.toHex(packet)
+                        // );
 
 
                         /*

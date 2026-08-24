@@ -197,10 +197,10 @@ class WebSocketClient
                 сирі дані, які прийшли від WebSocket.
             */
 
-            this.log(
-                "WebSocket: отримано binary data: " +
-                WebSocketClient.toHex(event.data)
-            );
+            // this.log(
+            //     "WebSocket: отримано binary data: " +
+            //     WebSocketClient.toHex(event.data)
+            // );
 
 
             const data =
@@ -234,13 +234,13 @@ class WebSocketClient
         baIn
     )
     {
-        log(
-            "WebSocketClient.sgControl: " +
-            "Id=" + sId +
-            ", Var=" + iVar +
-            ", Data=" + sData +
-            ", baIn=" + toHex(baIn)
-        );
+        // log(
+        //     "WebSocketClient.sgControl: " +
+        //     "Id=" + sId +
+        //     ", Var=" + iVar +
+        //     ", Data=" + sData +
+        //     ", baIn=" + toHex(baIn)
+        // );
 
         switch(iVar)
         {

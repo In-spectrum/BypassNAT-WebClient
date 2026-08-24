@@ -178,6 +178,9 @@ txtFindClient.addEventListener("input", () => {
 
 function log(text)
 {
+    console.log(text);
+    return;
+
     const now = new Date();
 
     const time =
@@ -245,10 +248,10 @@ function log(text)
 
 function setStatusConnectToDevice(connectedv)
 {
-    log(
-        "setStatusConnectToDevice: " +
-        connectedv
-    );
+    // log(
+    //     "setStatusConnectToDevice: " +
+    //     connectedv
+    // );
     
     const indicator =
         document.getElementById("connectionStatusDevice");
@@ -308,13 +311,13 @@ function fConnectDevice()
         wsClient.send(packet)
     )
     {
-        log(
-            "ConnectClient: пакет відправлено. " +
-            "login=" +
-            AppState.sDeskLogin +
-            ", id=" +
-            AppState.sDeskId
-        );
+        // log(
+        //     "ConnectClient: пакет відправлено. " +
+        //     "login=" +
+        //     AppState.sDeskLogin +
+        //     ", id=" +
+        //     AppState.sDeskId
+        // );
 
         AppState.iTimeDeskActive = 0;
         AppState.bTimeDeskNoActiveShow = false;
@@ -363,9 +366,9 @@ function fDisconnectDevice()
         wsClient.send(packet)
     )
     {
-        log(
-            "fDisconnectDevice: пакет відправлено. "
-        );
+        // log(
+        //     "fDisconnectDevice: пакет відправлено. "
+        // );
 
         AppState.sDeskId = "";
         AppState.sDeskLogin = "";
@@ -576,11 +579,17 @@ wsClient.slControl =
     sData
 ) =>
 {
-    log(
+    // log(
+    //     "app.wsClient.slControl: " +
+    //     "Id=" + sId +
+    //     ", Var=" + iVar +
+    //     ", Data=" + sData
+    // );
+
+        log(
         "app.wsClient.slControl: " +
         "Id=" + sId +
-        ", Var=" + iVar +
-        ", Data=" + sData
+        ", Var=" + iVar
     );
 
         switch(iVar)
@@ -636,7 +645,7 @@ wsClient.slControl =
             }  
             case 4:
             {
-                log("app.slControl 4.0: " + AppState.iTimeDeskActive );
+                //log("app.slControl 4.0: " + AppState.iTimeDeskActive );
 
                 AppState.bTimeDeskNoActiveShow = false;
                 AppState.iTimeDeskActive = 0;
@@ -837,17 +846,17 @@ function logSentData(data)
             new Uint8Array(data);
 
 
-        log(
-            "CLIENT SEND: " +
-            bytes.length +
-            " bytes"
-        );
+        // log(
+        //     "CLIENT SEND: " +
+        //     bytes.length +
+        //     " bytes"
+        // );
 
 
-        log(
-            "CLIENT HEX: " +
-            toHex(bytes)
-        );
+        // log(
+        //     "CLIENT HEX: " +
+        //     toHex(bytes)
+        // );
 
 
         return;
@@ -1066,10 +1075,10 @@ function handleServerData(data)
         }
         else
         {
-            log(
-                "app.handleServerData: SERVER: отримано пакет типу " +
-                packet.type
-            );
+            // log(
+            //     "app.handleServerData: SERVER: отримано пакет типу " +
+            //     packet.type
+            // );
         }
     }
 }
@@ -1576,9 +1585,9 @@ function fStreamWatcher()
 
                 if( wsClient.send(packet) )
                 {
-                    log(
-                        "fWatcher: пакет відправлено. "
-                     );
+                    // log(
+                    //     "fWatcher: пакет відправлено. "
+                    // );
                 }
                 else
                 {
@@ -1702,6 +1711,13 @@ function startThePage() {
         "btnShowClientPassword",
         "txtClientPassword"
     );
+
+    btnLogger.style.display = "none";
+    btnLogger.onclick();
+
+    document.getElementById(
+                "clipboardRiadWrite"
+            ).style.display = "none";
 
     Keyboard.init();
     

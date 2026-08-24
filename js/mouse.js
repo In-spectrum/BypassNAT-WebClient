@@ -329,14 +329,14 @@ function onVideoMouseWheel(
     }
 
 
-    log(
-        "Mouse WHEEL direction=" +
-        direction +
-        " x=" +
-        normalizedX +
-        " y=" +
-        normalizedY
-    );
+    // log(
+    //     "Mouse WHEEL direction=" +
+    //     direction +
+    //     " x=" +
+    //     normalizedX +
+    //     " y=" +
+    //     normalizedY
+    // );
 }
 
 
@@ -459,16 +459,16 @@ function onVideoMouseButton(
     }
 
 
-    log(
-        "Mouse " +
-        (pressed ? "DOWN" : "UP") +
-        " " +
-        mouseButtonName(button) +
-        " x=" +
-        normalizedX +
-        " y=" +
-        normalizedY
-    );
+    // log(
+    //     "Mouse " +
+    //     (pressed ? "DOWN" : "UP") +
+    //     " " +
+    //     mouseButtonName(button) +
+    //     " x=" +
+    //     normalizedX +
+    //     " y=" +
+    //     normalizedY
+    // );
 }
 
 
@@ -546,12 +546,12 @@ function onVideoMouseMove(
     }
 
 
-    log(
-        "Mouse MOVE x=" +
-        normalizedX +
-        " y=" +
-        normalizedY
-    );
+    // log(
+    //     "Mouse MOVE x=" +
+    //     normalizedX +
+    //     " y=" +
+    //     normalizedY
+    // );
 }
 
 
