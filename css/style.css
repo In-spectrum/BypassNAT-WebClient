@@ -152,7 +152,7 @@ body,
 
     background: rgba(0, 0, 0, 0.45);
 
-     color: #ff9800;
+    color: orange;
 
     z-index: 3000;
 }
@@ -188,19 +188,54 @@ body,
    ===================================================== */
 
 .panelBlock {
-    padding: 12px;
-
     border-bottom: 1px solid #444;
 }
 
 
 .blockTitle {
-    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 10px 12px;
 
     font-size: 16px;
     font-weight: 800;
 
     color: #fff;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.blockTitle:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.blockTitle:focus-visible {
+    outline: 1px solid #888;
+    outline-offset: -2px;
+}
+
+.blockArrow {
+    width: 14px;
+    flex: 0 0 14px;
+    font-size: 12px;
+    transition: transform 120ms ease;
+    color: orange;
+}
+
+.settingsSection.isOpen .blockArrow {
+    transform: rotate(0deg);
+}
+
+.blockContent {
+    padding: 0 12px 12px 12px;
+}
+
+.blockContent[hidden] {
+    display: none;
 }
 
 

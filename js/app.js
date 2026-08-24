@@ -9,6 +9,47 @@ const lstClients = document.getElementById("lstClients");
 const video = document.getElementById("video");
 const playerArea = document.getElementById("playerArea");
 
+
+// =====================================================
+// SETTINGS SECTIONS (ACCORDION)
+// =====================================================
+
+function toggleSettingsSection(section)
+{
+    const title = section.querySelector(".blockTitle");
+    const content = section.querySelector(".blockContent");
+
+    if(!title || !content)
+        return;
+
+    const isOpen = !content.hidden;
+
+    content.hidden = isOpen;
+    title.setAttribute("aria-expanded", String(!isOpen));
+    section.classList.toggle("isOpen", !isOpen);
+}
+
+document.querySelectorAll(".settingsSection .blockTitle").forEach(title =>
+{
+    const section = title.closest(".settingsSection");
+    if(!section)
+        return;
+
+    title.addEventListener("click", () =>
+    {
+        toggleSettingsSection(section);
+    });
+
+    title.addEventListener("keydown", event =>
+    {
+        if(event.key === "Enter" || event.key === " ")
+        {
+            event.preventDefault();
+            toggleSettingsSection(section);
+        }
+    });
+});
+
 const playerState =
 {
     frameWidth: 0,
@@ -1588,6 +1629,14 @@ function fStreamWatcher()
                     // log(
                     //     "fWatcher: пакет відправлено. "
                     // );
+
+                    const now =
+                        performance.now();
+
+                    log(
+                       "fWatcher: пакет відправлено. " +
+                        now.toFixed(0)
+                    );
                 }
                 else
                 {
