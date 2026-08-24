@@ -517,12 +517,18 @@ const Clipboard =
             --------------------------------------------------
             DATA
 
-            Розмір частини = 250 символів.
+            Розмір частини = 220 символів.
+
+            VAR = 1
             --------------------------------------------------
         */
 
+        document.getElementById(
+                    "clipboardRiadWrite"
+                ).style.display = "flex";
+
         const a_iPlas =
-            250;
+            220;
 
         const a_iSz =
             sData.length;
@@ -535,7 +541,7 @@ const Clipboard =
             Всі частини,
             крім останньої.
         */
-
+        
         while(
             a_iSend +
             a_iPlas <
@@ -581,7 +587,7 @@ const Clipboard =
             a_iSend +=
                 a_iPlas;
         }
-
+         
 
         /*
             --------------------------------------------------
@@ -592,6 +598,10 @@ const Clipboard =
             Остання частина clipboard.
             --------------------------------------------------
         */
+
+        document.getElementById(
+                    "clipboardRiadWrite"
+                ).style.display = "none";  
 
         const sLast =
             sData.substring(
