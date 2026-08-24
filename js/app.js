@@ -1497,17 +1497,17 @@ document.getElementById(
         Навіть при Deny підключення
         до remote PC продовжується.
     */
-    const bClipboardPermission =
-        await Clipboard.requestReadPermission();
 
+    const bClipboardWritePermission =
+        await Clipboard.requestWritePermission();
 
-    if(!bClipboardPermission)
+    if(!bClipboardWritePermission)
     {
         log(
-            "Clipboard: доступ до читання не наданий."
+            "Clipboard: доступ на запис не наданий."
         );
     }
-
+    
 
     /*
         Підключення до remote PC.

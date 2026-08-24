@@ -40,6 +40,16 @@ const Clipboard =
 
 
     /*
+        Результат дозволу на запис
+        у системний clipboard.
+
+        true  -> доступ дозволений
+        false -> доступ заборонений
+    */
+    m_bWritePermission: false,
+
+
+    /*
         --------------------------------------------------
         requestReadPermission
 
@@ -121,6 +131,188 @@ const Clipboard =
 
             log(
                 "Clipboard: доступ на читання заборонено."
+            );
+
+
+            return false;
+        }
+    },
+
+
+    /*
+        --------------------------------------------------
+        requestWritePermission
+
+        Одноразова перевірка/отримання дозволу
+        на запис у системний clipboard.
+
+        Викликається по кнопці Connect Client.
+        --------------------------------------------------
+    */
+
+    async requestWritePermission()
+    {
+        /*
+            Clipboard API недоступний.
+        */
+
+        if(
+            !navigator.clipboard ||
+            !navigator.clipboard.writeText
+        )
+        {
+            console.log(
+                "Clipboard: Clipboard API write недоступний."
+            );
+
+            this.m_bWritePermission =
+                false;
+
+            return false;
+        }
+
+
+        try
+        {
+            /*
+                Перевіряємо permission,
+                якщо браузер підтримує
+                Permissions API.
+            */
+
+            if(
+                navigator.permissions &&
+                navigator.permissions.query
+            )
+            {
+                try
+                {
+                    const permission =
+                        await navigator.permissions.query(
+                        {
+                            name: "clipboard-write"
+                        });
+
+
+                    if(
+                        permission.state ===
+                        "granted"
+                    )
+                    {
+                        this.m_bWritePermission =
+                            true;
+
+
+                        console.log(
+                            "Clipboard: доступ на запис дозволено."
+                        );
+
+
+                        return true;
+                    }
+
+
+                    if(
+                        permission.state ===
+                        "denied"
+                    )
+                    {
+                        this.m_bWritePermission =
+                            false;
+
+
+                        console.log(
+                            "Clipboard: доступ на запис заборонено."
+                        );
+
+
+                        return false;
+                    }
+                }
+                catch(error)
+                {
+                    /*
+                        Деякі браузери можуть
+                        не підтримувати
+                        clipboard-write у
+                        Permissions API.
+
+                        У такому випадку
+                        пробуємо writeText().
+                    */
+                }
+            }
+
+
+            /*
+                Permission = prompt
+                або браузер не повернув
+                стан permission.
+
+                Для перевірки записуємо
+                поточний текст clipboard.
+
+                Важливо:
+                значення clipboard
+                при цьому не змінюється.
+            */
+
+            let sData = "";
+
+
+            if(
+                this.m_bReadPermission &&
+                navigator.clipboard.readText
+            )
+            {
+                try
+                {
+                    sData =
+                        await navigator.clipboard.readText();
+                }
+                catch(error)
+                {
+                    sData = "";
+                }
+            }
+
+
+            await navigator.clipboard.writeText(
+                sData
+            );
+
+
+            this.m_bWritePermission =
+                true;
+
+
+            console.log(
+                "Clipboard: доступ на запис дозволено."
+            );
+
+
+            return true;
+        }
+        catch(error)
+        {
+            this.m_bWritePermission =
+                false;
+
+
+            console.error(
+                "Clipboard WRITE PERMISSION ERROR:",
+                error
+            );
+
+
+            console.log(
+                "Clipboard: доступ на запис заборонено: " +
+                (
+                    error &&
+                    error.message
+                        ? error.message
+                        : error
+                )
             );
 
 
@@ -573,8 +765,25 @@ const Clipboard =
             !navigator.clipboard.writeText
         )
         {
-            log(
+            console.log(
                 "Clipboard: Clipboard API write недоступний."
+            );
+
+            return false;
+        }
+
+
+        /*
+            Перевіряємо попередньо
+            отриманий дозвіл.
+        */
+
+        if(
+            !this.m_bWritePermission
+        )
+        {
+            console.log(
+                "Clipboard: доступ на запис не дозволений."
             );
 
             return false;
@@ -584,14 +793,18 @@ const Clipboard =
         try
         {
             /*
-                Повністю замінюємо
-                текстовий clipboard.
+                Повністю отриманий buffer.
             */
 
             console.log(
-                "Clipboard: buffer отримано. " +
+                "Clipboard: buffer отримано:\n\r" +
                 sData
             );
+
+
+            /*
+                Запис у системний clipboard.
+            */
 
             await navigator.clipboard.writeText(
                 sData
@@ -622,7 +835,15 @@ const Clipboard =
         }
         catch(error)
         {
-            log(
+            console.error(
+                "Clipboard WRITE ERROR:",
+                error.name,
+                error.message,
+                error
+            );
+
+
+            console.log(
                 "Clipboard: помилка запису: " +
                 (
                     error &&
@@ -631,6 +852,7 @@ const Clipboard =
                         : error
                 )
             );
+
 
             return false;
         }

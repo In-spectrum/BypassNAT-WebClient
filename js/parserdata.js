@@ -63,6 +63,12 @@ const ParserData =
     {
         //this.log("ParserData::parse 0: ");
 
+        // console.log(
+        //         "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\r" +
+        //         "ParserData::parse 0: " +
+        //         this.toHex(data)
+        //     ); 
+
         let bytes;
 
 
@@ -88,6 +94,11 @@ const ParserData =
         */
 
         this.append(bytes);
+
+        // console.log(
+        //         "ParserData::parse 10: " +
+        //         this.toHex(this.buffer)
+        //     ); 
 
 
         /*
@@ -194,7 +205,7 @@ const ParserData =
             pos < this.buffer.length
         )
         {
-            //this.log("ParserData::nextStep 2.0: ");
+            //console.log("ParserData::nextStep 2.0: ");
 
             prevPos = pos;
 
@@ -257,7 +268,7 @@ const ParserData =
                 break;
 
 
-            // this.log(
+            // console.log(
             //     "ParserData::nextStep 4.0: " +
             //     this.toHex(data)
             // );
