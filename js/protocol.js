@@ -1281,7 +1281,7 @@ const Protocol =
         return packet.buffer;
     },
 
-        fSendClipboard(
+    fSendClipboard(
         desktopId,
         variable,
         data
@@ -1291,7 +1291,7 @@ const Protocol =
             new TextEncoder();
 
 
-        const desktopIdBytes =
+            const desktopIdBytes =
             encoder.encode(
                 desktopId === undefined ||
                 desktopId === null
@@ -1299,39 +1299,50 @@ const Protocol =
                     : String(desktopId)
             );
 
-
-        const dataBytes =
-            encoder.encode(
-                data === undefined ||
-                data === null
-                    ? ""
-                    : String(data)
-            );
-
-
         /*
-            C++:
+            _bData у C++ має тип QByteArray.
 
-            FF
-            0B
-
-            desktopId size
-            desktopId
-
-            01
-            variable
-
-            data size
-            data
-
-            CRC
+            Тому data вже повинен бути
+            масивом байтів і НЕ повинен
+            додатково кодуватися через TextEncoder.
         */
+        let dataBytes;
+
+        if(data === undefined || data === null)
+        {
+            dataBytes =
+                new Uint8Array(0);
+        }
+        else if(data instanceof Uint8Array)
+        {
+            dataBytes =
+                data;
+        }
+        else if(data instanceof ArrayBuffer)
+        {
+            dataBytes =
+                new Uint8Array(data);
+        }
+        else if(ArrayBuffer.isView(data))
+        {
+            dataBytes =
+                new Uint8Array(
+                    data.buffer,
+                    data.byteOffset,
+                    data.byteLength
+                );
+        }
+        else
+        {
+            return null;
+        }
+
 
         /*
             C++ використовує тільки
             молодший байт розміру.
 
-            Тому максимальний розмір
+            Максимальний розмір
             одного поля = 255 байт.
         */
         if(
@@ -1391,25 +1402,10 @@ const Protocol =
 
         /*
             Desktop ID
-
-            C++:
-
-            unsigned int a_iSz =
-                a_baTemp.length();
-
-            ...
-
-            a_baRequest.append(
-                a_baSz.at(3)
-            );
-
-            Тобто фактично передається
-            тільки молодший байт розміру.
         */
 
         packet[offset++] =
             desktopIdBytes.length & 0xFF;
-
 
         packet.set(
             desktopIdBytes,
@@ -1423,19 +1419,7 @@ const Protocol =
         /*
             Variable size
 
-            C++:
-
-            a_iSz = 1;
-
-            ...
-
-            a_baRequest.append(
-                a_baSz.at(3)
-            );
-
-            Тобто завжди:
-
-            01
+            Завжди 1 байт.
         */
 
         packet[offset++] =
@@ -1444,19 +1428,6 @@ const Protocol =
 
         /*
             Variable
-
-            C++:
-
-            a_iSz = _iVar;
-
-            ...
-
-            a_baRequest.append(
-                a_baSz.at(3)
-            );
-
-            Передається тільки
-            молодший байт _iVar.
         */
 
         packet[offset++] =
@@ -1465,20 +1436,6 @@ const Protocol =
 
         /*
             Data size
-
-            C++:
-
-            a_iSz =
-                a_baTemp.length();
-
-            ...
-
-            a_baRequest.append(
-                a_baSz.at(3)
-            );
-
-            Передається тільки
-            молодший байт розміру.
         */
 
         packet[offset++] =
@@ -1487,6 +1444,10 @@ const Protocol =
 
         /*
             Data
+
+            ВАЖЛИВО:
+            data вже є масивом байтів.
+            Ніякого TextEncoder тут немає.
         */
 
         packet.set(
@@ -1499,14 +1460,7 @@ const Protocol =
 
 
         /*
-            CRC.
-
-            C++:
-
-            fGetCRC(
-                a_baRequest.mid(1),
-                a_baRequest.size() - 1
-            )
+            CRC
 
             FF НЕ входить у CRC.
         */

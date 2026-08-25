@@ -476,6 +476,20 @@ const Clipboard =
             return false;
         }
 
+        //sData += (sData + "_Temp");
+
+        /*
+            Перетворюємо весь clipboard
+            у UTF-8 байти.
+
+            Далі працюємо тільки з bData.
+        */
+        const encoder =
+            new TextEncoder();
+
+        const bData =
+            encoder.encode(sData);
+
 
         /*
             --------------------------------------------------
@@ -489,7 +503,7 @@ const Clipboard =
             Protocol.fSendClipboard(
                 AppState.sDeskId,
                 0,
-                ""
+                new Uint8Array(0)
             );
 
 
@@ -517,21 +531,22 @@ const Clipboard =
             --------------------------------------------------
             DATA
 
-            Розмір частини = 220 символів.
-
             VAR = 1
+
+            Розмір частини = 220 байт.
             --------------------------------------------------
         */
 
         document.getElementById(
-                    "clipboardRiadWrite"
-                ).style.display = "flex";
+            "clipboardRiadWrite"
+        ).style.display = "flex";
+
 
         const a_iPlas =
             220;
 
         const a_iSz =
-            sData.length;
+            bData.length;
 
         let a_iSend =
             0;
@@ -541,15 +556,15 @@ const Clipboard =
             Всі частини,
             крім останньої.
         */
-        
+
         while(
             a_iSend +
             a_iPlas <
             a_iSz
         )
         {
-            const sTemp =
-                sData.substring(
+            const bTemp =
+                bData.slice(
                     a_iSend,
                     a_iSend +
                     a_iPlas
@@ -560,7 +575,7 @@ const Clipboard =
                 Protocol.fSendClipboard(
                     AppState.sDeskId,
                     1,
-                    sTemp
+                    bTemp
                 );
 
 
@@ -587,7 +602,7 @@ const Clipboard =
             a_iSend +=
                 a_iPlas;
         }
-         
+
 
         /*
             --------------------------------------------------
@@ -600,11 +615,12 @@ const Clipboard =
         */
 
         document.getElementById(
-                    "clipboardRiadWrite"
-                ).style.display = "none";  
+            "clipboardRiadWrite"
+        ).style.display = "none";
 
-        const sLast =
-            sData.substring(
+
+        const bLast =
+            bData.slice(
                 a_iSend
             );
 
@@ -613,7 +629,7 @@ const Clipboard =
             Protocol.fSendClipboard(
                 AppState.sDeskId,
                 2,
-                sLast
+                bLast
             );
 
 
@@ -640,7 +656,9 @@ const Clipboard =
         log(
             "Clipboard: передано " +
             sData.length +
-            " символів."
+            " символів (" +
+            bData.length +
+            " байт)."
         );
 
 

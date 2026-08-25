@@ -383,6 +383,10 @@ function fDisconnectDevice()
 
     log("fDisconnectDevice 0: " + AppState.sDeskId);
 
+    document.getElementById(
+                "clipboardRiadWrite"
+            ).style.display = "none"; 
+
     stopPlayer();
 
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
@@ -686,7 +690,7 @@ wsClient.slControl =
             }  
             case 4:
             {
-                //log("app.slControl 4.0: " + AppState.iTimeDeskActive );
+                log("app.slControl 4.0: " + AppState.iTimeDeskActive );
 
                 AppState.bTimeDeskNoActiveShow = false;
                 AppState.iTimeDeskActive = 0;
@@ -1547,6 +1551,16 @@ document.getElementById(
         Навіть при Deny підключення
         до remote PC продовжується.
     */
+
+    const bClipboardReadPermission =
+        await Clipboard.requestReadPermission();
+
+    if(!bClipboardReadPermission)
+    {
+        log(
+            "Clipboard: доступ на читання не наданий."
+        );
+    }
 
     const bClipboardWritePermission =
         await Clipboard.requestWritePermission();

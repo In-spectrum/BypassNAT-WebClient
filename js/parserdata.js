@@ -18,7 +18,7 @@ const ParserData =
 
     /*
         Callback для виводу діагностичних повідомлень.
-        app.js підключає сюди функцію log().
+        app.js підключає сюди функцію this.log().
     */
 
     onLog: null,
@@ -63,11 +63,11 @@ const ParserData =
     {
         //this.log("ParserData::parse 0: ");
 
-        this.log(
-                "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\r" +
-                "ParserData::parse 0: " +
-                this.toHex(data)
-            ); 
+        // this.log(
+        //         "\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\n\r" +
+        //         "ParserData::parse 0: " +
+        //         this.toHex(data)
+        //     ); 
 
         let bytes;
 
@@ -95,10 +95,10 @@ const ParserData =
 
         this.append(bytes);
 
-        this.log(
-                "ParserData::parse 10: " +
-                this.toHex(this.buffer)
-            ); 
+        // this.log(
+        //         "ParserData::parse 10: " +
+        //         this.toHex(this.buffer)
+        //     ); 
 
 
         /*
@@ -205,7 +205,10 @@ const ParserData =
             pos < this.buffer.length
         )
         {
-            //console.log("ParserData::nextStep 2.0: ");
+            // this.log(
+            //     "ParserData::nextStep 1: " +
+            //     this.toHex(this.buffer)
+            // );
 
             prevPos = pos;
 
@@ -224,6 +227,10 @@ const ParserData =
                     pos
                 );
 
+            // this.log(
+            //     "ParserData::nextStep 2: " +
+            //     this.toHex(data)
+            // );
 
             /*
                 Знову шукаємо FF.
@@ -738,7 +745,11 @@ const ParserData =
             this.buffer =
                 new Uint8Array(0);
         }
-
+        
+        // this.log(
+        //         "ParserData::nextStep 200: " +
+        //         this.toHex(this.buffer)
+        //     );
 
         return result;
     },
