@@ -206,6 +206,16 @@ const Protocol =
         serverPassword
     )
     {
+
+        // log(
+        //     "createLogin 0: " +
+        //     "login: " + password +
+        //     "password: " + password +
+        //     "sMyId: " + sMyId +
+        //     "key: " + key +
+        //     "serverPassword: " + serverPassword
+        // );
+
         const encoder =
             new TextEncoder();
 

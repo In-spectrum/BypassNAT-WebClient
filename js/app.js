@@ -1016,35 +1016,43 @@ function sendLogin()
             "txtUserPassword"
         ).value;
 
+        
+        //одразу після конекта не завжди уходять дані на сервер
+        //тому - запуск черз 1с.
+        setTimeout(function() {
 
-    const packet =
-        Protocol.createLogin(
-            login,
-            password,
-            AppState.sMyId,
-            keyDevServer,
-            serverPassword
-        );
+                        const packet =
+                            Protocol.createLogin(
+                                login,
+                                password,
+                                AppState.sMyId,
+                                keyDevServer,
+                                serverPassword
+                            );
 
 
-    if(wsClient.send(packet))
-    {
+                        if(wsClient.send(packet))
+                        {
 
-        log(
-            "Авторизаційні дані відправлено."
-        );
+                            log(
+                                "Авторизаційні дані відправлено."
+                            );
 
-    }
-    else
-    {
+                        }
+                        else
+                        {
 
-        log(
-            "Помилка: не вдалося відправити авторизаційні дані."
-        );
+                            log(
+                                "Помилка: не вдалося відправити авторизаційні дані."
+                            );
 
-        showMessage(0, "Error.\r\nFailed to send authorization data.");
-    }
+                            showMessage(0, "Error.\r\nFailed to send authorization data.");
+                        }
 
+                    }, 1000);
+
+
+    
 }
 
 

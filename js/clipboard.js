@@ -833,10 +833,10 @@ const Clipboard =
                 Повністю отриманий buffer.
             */
 
-            log(
-                "Clipboard: buffer отримано:\n\r" +
-                sData
-            );
+            // log(
+            //     "Clipboard: buffer отримано:\n\r" +
+            //     sData
+            // );
 
             log(
                 "Clipboard: buffer length: " +
