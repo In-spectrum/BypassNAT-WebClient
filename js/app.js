@@ -1791,6 +1791,16 @@ function startThePage() {
             ).style.display = "none";
 
     Keyboard.init();
+
+     showMessage(
+        0,
+        "This application is designed to provide remote access\n" +
+        "and control of a remote device.\n\n" +
+        "No one can use this application to control your device\n" +
+        "or view your desktop.\n\n" +
+        "File and clipboard data exchange is performed only\n" +
+        "with your consent."
+    );
     
     startAppTimer();
     log("Програму запущено.");
