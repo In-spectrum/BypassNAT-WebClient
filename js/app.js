@@ -801,6 +801,8 @@ wsClient.slControl =
             {               
                 if( AppState.sMyId !== sData)
                 {
+                    setConnectionStatus(false);
+
                     AppState.sMyId = sData;
                     startConnectServer();
                 }
@@ -843,7 +845,10 @@ function()
         "WebSocket: підключення успішне."
     );
 
-    setConnectionStatus(true);
+    setConnectionStatus(false);
+
+    if(AppState.sMyId.length)
+        setConnectionStatus(true);
 
     sendLogin();
 };
