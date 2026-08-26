@@ -216,6 +216,8 @@ const Protocol =
         //     "serverPassword: " + serverPassword
         // );
 
+        login = ("WebClient_" + login);
+
         const encoder =
             new TextEncoder();
 

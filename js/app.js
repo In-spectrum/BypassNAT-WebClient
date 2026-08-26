@@ -1743,6 +1743,16 @@ function startAppTimer() {
             }
 
             AppState.iTimeDeskActive++;
+
+
+            if(AppState.bStream 
+                && AppState.bRunStream
+                && AppState.iClipboardTimeCopy < 10
+            )
+            {
+               AppState.iClipboardTimeCopy++;
+            }
+            
             
         }
 
@@ -1799,12 +1809,12 @@ function startThePage() {
 
      showMessage(
         0,
-        "This application is designed to provide remote access\n" +
-        "and control of a remote device.\n\n" +
+        "This application is intended for remote device control.\n\n" +
         "No one can use this application to control your device\n" +
         "or view your desktop.\n\n" +
-        "File and clipboard data exchange is performed only\n" +
-        "with your consent."
+        "File and clipboard data are only exchanged\n" +
+        "with your consent.\n\n" +
+        "This web-client will not appear\nin the device finder for connections."
     );
     
     startAppTimer();

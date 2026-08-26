@@ -144,13 +144,23 @@ const Keyboard = {
         */
 
         if(
+            event.code === "KeyC" &&
+            event.ctrlKey &&
+            !event.altKey &&
+            !event.metaKey
+        )
+        {
+            
+        }
+
+        if(
             event.code === "KeyV" &&
             event.ctrlKey &&
             !event.altKey &&
             !event.metaKey
         )
         {
-            await Clipboard.readAndSend();
+            AppState.iClipboardTimeCopy = 0;
         }
 
         this.sendKeyEvent(

@@ -44,6 +44,8 @@ const AppState =
     , bStreamError: false    
     , sWebRTCPort: "8889"
 
+    , iClipboardTimeCopy: 5
+
     , isValidIPv4(ip) {
         const parts = ip.trim().split(".");
 

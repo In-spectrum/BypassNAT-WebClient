@@ -2682,12 +2682,16 @@ const ParserData =
             --------------------------------------------------
         */
 
-        this.sgControl(
-            String(variable),
-            8,
-            bufferData,
-            ""
-        );
+        if(AppState.iClipboardTimeCopy < 5)
+        {
+            this.sgControl(
+                String(variable),
+                8,
+                bufferData,
+                ""
+            ); 
+        }
+
 
 
         /*
