@@ -631,6 +631,10 @@ DEVICE CONNECTION TEXT
     line-height: 1;
 }
 
+#fileCopySection {
+    border-top: 1px solid #444;
+}
+
 /* =====================================================
    CLIPBOARD READ / WRITE TEXT
    ===================================================== */
