@@ -176,6 +176,46 @@ body,
     border-bottom: 1px solid #444;
 }
 
+.titleLogo {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: #eee;
+    padding: 2px 6px;
+    text-align: center;
+}
+
+.bypassNatBlue {
+    color: rgb(0, 162, 232);
+    font-size: 40px;
+    position: relative;
+    left: -34px;
+}
+
+.bypassNatGreen {
+    color: rgb(34, 177, 76);
+    font-size: 40px;
+    position: relative;
+    left: -34px;
+}
+
+.bypassNatBlack {
+    color: black;
+    font-size: 40px;
+    position: relative;
+    right: -100px;
+    top: -3px;
+}
+
+.bypassNatBeta {
+    color: rgb(255, 0, 0);
+    font-size: 12px;
+    position: relative;
+    left: -33px;
+    top: -2px;
+}
+
+
 
 #btnClose {
     width: 28px;
@@ -633,6 +673,13 @@ DEVICE CONNECTION TEXT
 
 #fileCopySection {
     border-top: 1px solid #444;
+}
+
+.fileCopyBottomBarrier {
+    height: 12px;
+    border-top: 1px solid #444;
+    border-bottom: none;
+    pointer-events: none;
 }
 
 /* =====================================================
