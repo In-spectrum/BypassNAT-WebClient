@@ -48,6 +48,8 @@ const Clipboard =
     */
     m_bWritePermission: false,
 
+    m_bWritePermissionRequested: false,
+
 
     /*
         --------------------------------------------------
@@ -150,7 +152,9 @@ const Clipboard =
         --------------------------------------------------
     */
 
-    async requestWritePermission()
+    async requestWritePermission(
+        sData
+    )
     {
         /*
             Clipboard API недоступний.
@@ -207,6 +211,14 @@ const Clipboard =
                             "Clipboard: доступ на запис дозволено."
                         );
 
+                        /*
+                            Permission вже є,
+                            тому записуємо отриманий
+                            buffer.
+                        */
+                        await navigator.clipboard.writeText(
+                            sData
+                        );
 
                         return true;
                     }
@@ -238,7 +250,8 @@ const Clipboard =
                         Permissions API.
 
                         У такому випадку
-                        пробуємо writeText().
+                        безпосередньо пробуємо
+                        writeText().
                     */
                 }
             }
@@ -249,34 +262,11 @@ const Clipboard =
                 або браузер не повернув
                 стан permission.
 
-                Для перевірки записуємо
-                поточний текст clipboard.
-
-                Важливо:
-                значення clipboard
-                при цьому не змінюється.
+                Тут виконуємо реальний запис
+                отриманого remote buffer.
+                Саме цей виклик може показати
+                permission popup.
             */
-
-            let sData = "";
-
-
-            if(
-                this.m_bReadPermission &&
-                navigator.clipboard.readText
-            )
-            {
-                try
-                {
-                    sData =
-                        await navigator.clipboard.readText();
-                }
-                catch(error)
-                {
-                    sData = "";
-                }
-            }
-
-
             await navigator.clipboard.writeText(
                 sData
             );
@@ -301,6 +291,8 @@ const Clipboard =
 
             console.error(
                 "Clipboard WRITE PERMISSION ERROR:",
+                error.name,
+                error.message,
                 error
             );
 
@@ -811,19 +803,21 @@ const Clipboard =
 
 
         /*
-            Перевіряємо попередньо
-            отриманий дозвіл.
+            Якщо permission вже отриманий —
+            одразу записуємо buffer без popup.
         */
-
         if(
             !this.m_bWritePermission
         )
         {
-            log(
-                "Clipboard: доступ на запис не дозволений."
+            /*
+                Permission ще не отриманий.
+                Перший реальний buffer передаємо
+                у requestWritePermission().
+            */
+            return await this.requestWritePermission(
+                sData
             );
-
-            return false;
         }
 
 
@@ -832,12 +826,6 @@ const Clipboard =
             /*
                 Повністю отриманий buffer.
             */
-
-            // log(
-            //     "Clipboard: buffer отримано:\n\r" +
-            //     sData
-            // );
-
             log(
                 "Clipboard: buffer length: " +
                 sData.length +
@@ -857,10 +845,6 @@ const Clipboard =
             /*
                 Цей buffer тепер вважаємо
                 вже відомим локальному клієнту.
-
-                Наступний Ctrl+V не повинен
-                відправляти його назад
-                на сервер.
             */
 
             this.sBufferPrev =
@@ -899,5 +883,5 @@ const Clipboard =
 
             return false;
         }
-    }
+    }    
 };

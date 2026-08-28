@@ -150,7 +150,7 @@ const Keyboard = {
             !event.metaKey
         )
         {
-            
+            AppState.iClipboardTimeCopy = 0;            
         }
 
         if(
@@ -160,7 +160,7 @@ const Keyboard = {
             !event.metaKey
         )
         {
-            AppState.iClipboardTimeCopy = 0;
+            await Clipboard.readAndSend();
         }
 
         this.sendKeyEvent(

@@ -1573,18 +1573,7 @@ document.getElementById(
         log(
             "Clipboard: доступ на читання не наданий."
         );
-    }
-
-    const bClipboardWritePermission =
-        await Clipboard.requestWritePermission();
-
-    if(!bClipboardWritePermission)
-    {
-        log(
-            "Clipboard: доступ на запис не наданий."
-        );
-    }
-    
+    }  
 
     /*
         Підключення до remote PC.
