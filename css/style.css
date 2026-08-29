@@ -181,7 +181,7 @@ body,
     width: 100%;
     box-sizing: border-box;
     background: #eee;
-    padding: 2px 6px;
+    padding: 2px 6px;    
     text-align: center;
 }
 
@@ -189,30 +189,32 @@ body,
     color: rgb(0, 162, 232);
     font-size: 40px;
     position: relative;
-    left: -34px;
+    left: 0px;
+    top: -3px;
 }
 
 .bypassNatGreen {
     color: rgb(34, 177, 76);
     font-size: 40px;
     position: relative;
-    left: -34px;
+    left: -0%;
+    top: -3px;
 }
 
 .bypassNatBlack {
     color: black;
     font-size: 40px;
     position: relative;
-    right: -100px;
+    left: -0%;
     top: -3px;
 }
 
 .bypassNatBeta {
     color: rgb(255, 0, 0);
-    font-size: 12px;
+    font-size: 11px;
     position: relative;
-    left: -33px;
-    top: -2px;
+    left: -3px;
+    top: 6px;
 }
 
 
@@ -228,7 +230,13 @@ body,
    ===================================================== */
 
 .panelBlock {
-    border-bottom: 1px solid #444;
+    border-top: 1px solid #444;    
+    border-bottom: none;
+}
+
+.panelTitleBottom {
+    border-top: none;
+    border-bottom: 3px solid #a3a1a1; 
 }
 
 
