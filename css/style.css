@@ -176,49 +176,6 @@ body,
     border-bottom: 1px solid #444;
 }
 
-.titleLogo {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-    background: #eee;
-    padding: 2px 6px;    
-    text-align: center;
-}
-
-.bypassNatBlue {
-    color: rgb(0, 162, 232);
-    font-size: 40px;
-    position: relative;
-    left: 0px;
-    top: -3px;
-}
-
-.bypassNatGreen {
-    color: rgb(34, 177, 76);
-    font-size: 40px;
-    position: relative;
-    left: -0%;
-    top: -3px;
-}
-
-.bypassNatBlack {
-    color: black;
-    font-size: 40px;
-    position: relative;
-    left: -0%;
-    top: -3px;
-}
-
-.bypassNatBeta {
-    color: rgb(255, 0, 0);
-    font-size: 11px;
-    position: relative;
-    left: -3px;
-    top: 6px;
-}
-
-
-
 #btnClose {
     width: 28px;
     height: 28px;
@@ -234,9 +191,44 @@ body,
     border-bottom: none;
 }
 
+
 .panelTitleBottom {
-    border-top: none;
-    border-bottom: 3px solid #a3a1a1; 
+    width: 100%;
+    padding: 5px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+        border-top: none;
+    border-bottom: 3px solid #a3a1a1;
+}
+
+.bannerContainer {
+    position: relative;
+    width: 100%;
+}
+
+.bannerContainer img {
+    display: block;
+
+    width: 100%;
+    height: auto;
+}
+
+.bannerBeta {
+    position: absolute;
+
+    right: 5px;
+    bottom: 2px;
+
+    color: red;
+    font-size: 14px;
+    font-weight: 700;
+
+    z-index: 1;
 }
 
 
