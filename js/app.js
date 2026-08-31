@@ -836,6 +836,41 @@ function(text)
     log(text);
 };
 
+/*
+    --------------------------------------------------
+    File Copy
+    --------------------------------------------------
+*/
+
+ParserData.slFileCopy =
+async function(
+    sForId,
+    sFromId,
+    sFilePath,
+    iFileSize,
+    iPosition,
+    baData
+)
+{
+    if(!fileCopy)
+    {
+        return;
+    }
+
+
+    await fileCopy.writeReceiveFile(
+        {
+            //sForId,
+            //sFromId,
+
+            sFilePath,
+            iFileSize,
+            iPosition,
+            baData
+        }
+    );
+};
+
 
 wsClient.onConnected =
 function()
@@ -1759,7 +1794,26 @@ function startAppTimer() {
             }
         }
 
-        AppState.serverConnectTime++;              
+        AppState.serverConnectTime++;    
+        
+        if(fileCopy && fileCopy.m_bCopying && fileCopy.m_iTimeCopying < 10)
+        {
+            fileCopy.m_iTimeCopying++;
+
+            if(fileCopy.m_iTimeCopying == 5)
+            {
+                // log(
+                //     "startAppTimer::fileCopy: closeReceiveFile. "
+                // );  
+                
+                showMessage(
+                    0,
+                    "Error.\n\nFile transfer failed.\nPlease check the connection to the remote device."
+                );
+
+                fileCopy.closeReceiveFile();
+            }
+        }
         
 
     }, 1000);

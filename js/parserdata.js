@@ -7,6 +7,8 @@ const ParserData =
         у WebSocketClient.
     */
     slControl: null,
+    onFileData: null,
+
 
 
     /*
@@ -576,6 +578,44 @@ const ParserData =
                         result.push(
                             packet
                         );
+
+                        break;
+                    }
+
+                    /*
+                        Send File
+                    */
+
+                    case 0x0D:
+                    {
+                        const packet =
+                            this.parseSendFile(
+                                data
+                            );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
 
                         break;
                     }
@@ -2740,6 +2780,672 @@ const ParserData =
 
             calculatedCRC:
                 calculatedCRC
+        };
+    },
+
+    parseSendFile(data)
+    {
+        // this.log(
+        //     "ParserData::parseSendFile: " +
+        //     ", DATA=" +
+        //     this.toHex(data)
+        // );
+        /*
+            --------------------------------------------------
+            Аналог:
+
+                ParserSocketData::fSendFile()
+
+            Формат:
+
+                FF
+                0D
+
+                SIZE-FOR-ID
+                FOR-ID
+
+                SIZE-FROM-ID
+                FROM-ID
+
+                SIZE-FILE-PATH
+                FILE-PATH
+
+                SIZE-FILE
+                FILE-SIZE
+
+                SIZE-POSITION
+                POSITION
+
+                DATA-SIZE      4 bytes
+                DATA
+
+                CRC
+            --------------------------------------------------
+        */
+
+
+        if(!data)
+            return null;
+
+
+        if(data.length < 4)
+            return null;
+
+
+        /*
+            --------------------------------------------------
+            Позиція після FF 0D
+            --------------------------------------------------
+        */
+
+        let pos =
+            2;
+
+
+        /*
+            --------------------------------------------------
+            FOR ID
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const forIdLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            forIdLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const forIdBytes =
+            data.slice(
+                pos,
+                pos +
+                forIdLength
+            );
+
+
+        pos +=
+            forIdLength;
+
+
+        /*
+            --------------------------------------------------
+            FROM ID
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const fromIdLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            fromIdLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const fromIdBytes =
+            data.slice(
+                pos,
+                pos +
+                fromIdLength
+            );
+
+
+        pos +=
+            fromIdLength;
+
+
+        /*
+            --------------------------------------------------
+            FILE PATH
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const filePathLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            filePathLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const filePathBytes =
+            data.slice(
+                pos,
+                pos +
+                filePathLength
+            );
+
+
+        pos +=
+            filePathLength;
+
+
+        /*
+            --------------------------------------------------
+            FILE SIZE
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const fileSizeLength =
+            data[pos];
+
+
+        pos++;
+
+
+        /*
+            C++:
+
+                if(fileSizeLength != 4)
+                    return 0;
+
+            Отже тут обов'язково 4 байти.
+        */
+
+        if(fileSizeLength !== 4)
+        {
+            return {
+                size:
+                    0,
+
+                type:
+                    0x0D,
+
+                name:
+                    "SEND_FILE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        if(
+            data.length <
+            pos +
+            4 +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            Big Endian,
+            аналог:
+
+                _baIn.mid(..., 4)
+                    .toHex()
+                    .toUInt(..., 16)
+        */
+
+        const fileSize =
+            (
+                (data[pos] << 24) >>> 0
+            ) |
+            (
+                data[pos + 1] << 16
+            ) |
+            (
+                data[pos + 2] << 8
+            ) |
+            data[pos + 3];
+
+
+        pos +=
+            4;
+
+
+        /*
+            --------------------------------------------------
+            POSITION
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const positionLength =
+            data[pos];
+
+
+        pos++;
+
+
+        /*
+            C++:
+
+                if(positionLength != 4)
+                    return 0;
+        */
+
+        if(positionLength !== 4)
+        {
+            return {
+                size:
+                    0,
+
+                type:
+                    0x0D,
+
+                name:
+                    "SEND_FILE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        if(
+            data.length <
+            pos +
+            4 +
+            4 +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const position =
+            (
+                (data[pos] << 24) >>> 0
+            ) |
+            (
+                data[pos + 1] << 16
+            ) |
+            (
+                data[pos + 2] << 8
+            ) |
+            data[pos + 3];
+
+
+        pos +=
+            4;
+
+
+        /*
+            --------------------------------------------------
+            DATA SIZE
+            --------------------------------------------------
+
+            ВАЖЛИВО:
+
+            У C++ тут НЕМАЄ окремого
+            SIZE-DATA-SIZE.
+
+            Наступні 4 байти —
+            це саме DATA-SIZE.
+            --------------------------------------------------
+        */
+
+        if(
+            data.length <
+            pos +
+            4 +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const dataSize =
+            (
+                (data[pos] << 24) >>> 0
+            ) |
+            (
+                data[pos + 1] << 16
+            ) |
+            (
+                data[pos + 2] << 8
+            ) |
+            data[pos + 3];
+
+
+        pos +=
+            4;
+
+
+        /*
+            --------------------------------------------------
+            DATA
+            --------------------------------------------------
+        */
+
+        if(
+            dataSize >
+            data.length -
+            pos -
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const fileData =
+            data.slice(
+                pos,
+                pos +
+                dataSize
+            );
+
+        // this.log(
+        //     "ParserData::parseSendFile 8: " +
+        //     ", fileData.length = " +
+        //     fileData.length
+        // );
+
+
+        pos +=
+            dataSize;
+
+
+        /*
+            --------------------------------------------------
+            CRC
+            --------------------------------------------------
+
+            C++:
+
+            _baIn.at(
+                1 +
+                a_iData_1 +
+                a_iData_2 +
+                a_iData_3 +
+                a_iData_4 +
+                a_iData_5 +
+                a_iData_6 +
+                a_iPlasPos +
+                3 +
+                1
+            )
+
+            Після розбору структура вже
+            однозначно довела нас до CRC.
+            --------------------------------------------------
+        */
+
+        if(
+            pos >= data.length
+        )
+        {
+            return null;
+        }
+
+
+        const receivedCRC =
+            data[pos];
+
+
+        /*
+            --------------------------------------------------
+            Перевірка повного пакета
+
+            CRC має бути останнім байтом.
+            --------------------------------------------------
+        */
+
+        if(
+            pos + 1 !== data.length
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            Точно та сама ділянка,
+            яка використовується
+            C++ fCRC_isOk():
+
+                _baIn.mid(
+                    1,
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iData_3 +
+                    a_iData_4 +
+                    a_iData_5 +
+                    a_iData_6 +
+                    a_iPlasPos +
+                    3
+                )
+
+            Для поточного cursor:
+            це data.slice(1, pos)
+        */
+
+        const crcData =
+            data.slice(
+                1,
+                pos
+            );
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseSendFile: CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x0D,
+
+                name:
+                    "SEND_FILE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            --------------------------------------------------
+            DECODE
+            --------------------------------------------------
+        */
+
+        const sForId =
+            this.decodeUtf8(
+                forIdBytes
+            );
+
+
+        const sFromId =
+            this.decodeUtf8(
+                fromIdBytes
+            );
+
+
+        const sFilePath =
+            this.decodeUtf8(
+                filePathBytes
+            );
+
+
+        /*
+            --------------------------------------------------
+            FILE DATA
+            --------------------------------------------------
+        */
+
+        const iFileSize =
+            fileSize;
+
+
+        const iPosition =
+            position;
+
+
+        const baData =
+            new Uint8Array(
+                fileData
+            );
+
+        // this.log(
+        //     "ParserData::parseSendFile 8: " +
+        //     ", baData.length = " +
+        //     baData.length
+        // );
+
+        /*
+            --------------------------------------------------
+            Передаємо дані у FileCopy
+            --------------------------------------------------
+        */
+
+        if(
+            this.slFileCopy
+        )
+        {
+            this.slFileCopy(
+                sForId,
+                sFromId,
+                sFilePath,
+                iFileSize,
+                iPosition,
+                baData
+            );
+        }
+
+        // let data =
+        //     baData;
+
+
+        // if(
+        //     data instanceof ArrayBuffer
+        // )
+        // {
+        //     data =
+        //         new Uint8Array(
+        //             data
+        //         );
+        // }
+
+
+        // if(
+        //     !(data instanceof Uint8Array)
+        // )
+        // {
+        //     console.error(
+        //         "FileCopy: invalid binary data."
+        //     );
+
+        //     //return false;
+        // }
+
+        /*
+            --------------------------------------------------
+            RESULT
+            --------------------------------------------------
+        */
+
+        return {
+
+            size:
+                data.length,
+
+            type:
+                0x0D,
+
+            name:
+                "SEND_FILE",
+
+            validCRC:
+                true,
+
+            forId:
+                sForId,
+
+            fromId:
+                sFromId,
+
+            filePath:
+                sFilePath,
+
+            fileSize:
+                iFileSize,
+
+            position:
+                iPosition,
+
+            data:
+                baData
         };
     },
 

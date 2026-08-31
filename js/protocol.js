@@ -1485,6 +1485,224 @@ const Protocol =
 
 
         return packet.buffer;
+    },
+
+    fGetFile(
+        sForId,
+        sFromId,
+        sFilePath,
+        iPos
+    )
+    {
+        console.log("Protocol:fGetFile 0: "
+            , sFilePath );
+            
+        const encoder =
+            new TextEncoder();
+
+
+        /*
+            --------------------------------------------------
+            ENCODE DATA
+            --------------------------------------------------
+        */
+
+        const forIdBytes =
+            encoder.encode(
+                sForId || ""
+            );
+
+
+        const fromIdBytes =
+            encoder.encode(
+                sFromId || ""
+            );
+
+
+        const filePathBytes =
+            encoder.encode(
+                sFilePath || ""
+            );
+
+
+        /*
+            --------------------------------------------------
+            FULL SIZE
+            --------------------------------------------------
+
+            FF
+            0C
+
+            ForId size + ForId
+            FromId size + FromId
+            FilePath size + FilePath
+
+            Position size + Position
+
+            CRC
+        */
+
+        const totalSize =
+            2 +
+
+            1 + forIdBytes.length +
+            1 + fromIdBytes.length +
+            1 + filePathBytes.length +
+
+            1 + 4 +
+
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset =
+            0;
+
+
+        /*
+            --------------------------------------------------
+            FF
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            0xFF;
+
+
+        /*
+            --------------------------------------------------
+            TYPE
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            0x0C;
+
+
+        /*
+            --------------------------------------------------
+            FOR ID
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            forIdBytes.length & 0xFF;
+
+
+        packet.set(
+            forIdBytes,
+            offset
+        );
+
+
+        offset +=
+            forIdBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FROM ID
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            fromIdBytes.length & 0xFF;
+
+
+        packet.set(
+            fromIdBytes,
+            offset
+        );
+
+
+        offset +=
+            fromIdBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FILE PATH
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            filePathBytes.length & 0xFF;
+
+
+        packet.set(
+            filePathBytes,
+            offset
+        );
+
+
+        offset +=
+            filePathBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            POSITION
+            --------------------------------------------------
+
+            C++:
+
+                a_baRequest.append(0x04);
+                a_baRequest.append(a_baSz);
+
+            Position = 4 bytes, Big Endian.
+        */
+
+        packet[offset++] =
+            0x04;
+
+
+        packet[offset++] =
+            (iPos >>> 24) & 0xFF;
+
+
+        packet[offset++] =
+            (iPos >>> 16) & 0xFF;
+
+
+        packet[offset++] =
+            (iPos >>> 8) & 0xFF;
+
+
+        packet[offset++] =
+            iPos & 0xFF;
+
+
+        /*
+            --------------------------------------------------
+            CRC
+            --------------------------------------------------
+
+            C++:
+
+                fGetCRC(
+                    a_baRequest.mid(1),
+                    a_baRequest.size() - 1
+                )
+
+            FF НЕ входить у CRC.
+        */
+
+        packet[offset] =
+            this.getCRC(
+                packet.subarray(
+                    1,
+                    offset
+                ),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };

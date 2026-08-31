@@ -8,14 +8,60 @@ class FileCopy
 {
     constructor()
     {
-        this.m_bVisible = false;
-        this.m_bCopying = false;
-        this.m_sCopyType = "";
+        this.m_bVisible =
+            false;
 
-        this.m_oSendFileHandle = null;
-        this.m_oReceiveFileHandle = null;
+        this.m_bCopying =
+            false;
+        
+        this.m_iTimeCopying =
+            0;
+
+        this.m_sCopyType =
+            "";
+
+
+        /*
+            --------------------------------------------------
+            COMMON FILE DATA
+            --------------------------------------------------
+
+            m_sPathFile:
+                шлях БЕЗ імені файла
+
+            m_sNameFile:
+                ім'я файла з розширенням
+            --------------------------------------------------
+        */
+
+        this.m_sPathFile =
+            "";
+
+        this.m_sNameFile =
+            "";
+
+
+        /*
+            --------------------------------------------------
+            RECEIVE
+            --------------------------------------------------
+        */
+
+        /*
+            Handle файла, вибраного
+            через Save File Picker.
+        */
+
+        this.m_oReceiveFileHandle =
+            null;
     }
 
+
+    /*
+    --------------------------------------------------
+    INIT
+    --------------------------------------------------
+    */
 
     init()
     {
@@ -23,6 +69,7 @@ class FileCopy
             document.getElementById(
                 "fileCopyTitle"
             );
+
 
         if(!title)
         {
@@ -57,6 +104,12 @@ class FileCopy
     }
 
 
+    /*
+    --------------------------------------------------
+    OPEN
+    --------------------------------------------------
+    */
+
     open()
     {
         if(
@@ -69,19 +122,50 @@ class FileCopy
         }
 
 
-        this.m_bVisible = true;
-        this.m_bCopying = false;
-        this.m_sCopyType = "";
+        this.m_bVisible =
+            true;
 
-        this.m_oSendFileHandle = null;
-        this.m_oReceiveFileHandle = null;
+        this.m_bCopying =
+            false;
 
+        this.m_sCopyType =
+            "";
+
+
+        /*
+            --------------------------------------------------
+            RESET
+            --------------------------------------------------
+        */
+
+        this.m_sPathFile =
+            "";
+
+        this.m_sNameFile =
+            "";
+
+        this.m_oReceiveFileHandle =
+            null;
+
+        this.m_oReceiveWritable =
+            null;
+
+
+        /*
+            --------------------------------------------------
+            OVERLAY
+            --------------------------------------------------
+        */
 
         const overlay =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         overlay.id =
             "fileCopyWindow";
+
 
         overlay.style.position =
             "fixed";
@@ -114,8 +198,17 @@ class FileCopy
             "10000";
 
 
+        /*
+            --------------------------------------------------
+            WINDOW
+            --------------------------------------------------
+        */
+
         const box =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         box.style.width =
             "50vw";
@@ -142,11 +235,21 @@ class FileCopy
             "border-box";
 
 
+        /*
+            --------------------------------------------------
+            TITLE
+            --------------------------------------------------
+        */
+
         const title =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         title.textContent =
             "File copy";
+
 
         title.style.fontSize =
             "18px";
@@ -164,18 +267,37 @@ class FileCopy
             "20px";
 
 
+        /*
+            --------------------------------------------------
+            NORMAL
+            --------------------------------------------------
+        */
+
         const normal =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         normal.id =
             "fileCopyNormal";
 
 
+        /*
+            --------------------------------------------------
+            PATH LABEL
+            --------------------------------------------------
+        */
+
         const pathLabel =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         pathLabel.textContent =
             "Add file path with file name";
+
 
         pathLabel.style.fontSize =
             "15px";
@@ -187,106 +309,99 @@ class FileCopy
             "8px";
 
 
+        /*
+            --------------------------------------------------
+            PATH + RECEIVE ROW
+            --------------------------------------------------
+        */
+
+        const receiveRow =
+            document.createElement(
+                "div"
+            );
+
+
+        receiveRow.style.display =
+            "flex";
+
+        receiveRow.style.alignItems =
+            "center";
+
+        receiveRow.style.gap =
+            "10px";
+
+
+        /*
+            --------------------------------------------------
+            PATH INPUT
+            --------------------------------------------------
+        */
+
+      
         const path =
-            document.createElement("input");
+            document.createElement(
+                "input"
+            );
+
 
         path.id =
             "fileCopyPath";
 
+
         path.type =
             "text";
 
-        path.style.width =
-            "100%";
+
+        path.style.flex =
+            "1";
+
 
         path.style.height =
             "42px";
 
+
         path.style.boxSizing =
             "border-box";
+
 
         path.style.padding =
             "6px 10px";
 
+
         path.style.fontSize =
             "16px";
+
 
         path.placeholder =
             "File path";
 
-
-        const file =
-            document.createElement("input");
-
-        file.id =
-            "fileCopyFile";
-
-        file.type =
-            "file";
-
-        file.style.display =
-            "none";
+        path.value =
+            "c:\\Users\\Oleksandr\\Downloads\\DiscordSetup.exe";
 
 
         /*
-            Вибір файла для Send.
-
-            Зберігаємо FileSystemFileHandle,
-            а назву показуємо в полі.
+            --------------------------------------------------
+            RECEIVE BUTTON
+            --------------------------------------------------
         */
-        const fileButton =
-            document.createElement("button");
-
-        fileButton.textContent =
-            "Your file";
-
-        fileButton.style.display =
-            "block";
-
-        fileButton.style.margin =
-            "12px auto 0";
-
-        fileButton.style.minWidth =
-            "120px";
-
-        fileButton.style.height =
-            "38px";
-
-        fileButton.style.fontSize =
-            "15px";
-
-
-        fileButton.onclick =
-            async () =>
-            {
-                await this.selectSendFile();
-            };
-
-
-        const buttons =
-            document.createElement("div");
-
-        buttons.style.display =
-            "flex";
-
-        buttons.style.justifyContent =
-            "space-between";
-
-        buttons.style.marginTop =
-            "20px";
-
 
         const receive =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
+
 
         receive.textContent =
             "Receive";
 
+
         receive.style.minWidth =
             "110px";
 
+
         receive.style.height =
             "38px";
+
 
         receive.style.fontSize =
             "15px";
@@ -301,135 +416,257 @@ class FileCopy
             };
 
 
-        const send =
-            document.createElement("button");
-
-        send.textContent =
-            "Send";
-
-        send.style.minWidth =
-            "110px";
-
-        send.style.height =
-            "38px";
-
-        send.style.fontSize =
-            "15px";
+        receiveRow.appendChild(
+            path
+        );
 
 
-        send.onclick =
-            async () =>
-            {
-                await this.start(
-                    "send"
-                );
-            };
-
-
-        buttons.appendChild(
+        receiveRow.appendChild(
             receive
         );
 
-        buttons.appendChild(
-            send
+
+        /*
+            --------------------------------------------------
+            SEND YOUR FILE + CANCEL ROW
+            --------------------------------------------------
+        */
+
+        const bottomRow =
+            document.createElement(
+                "div"
+            );
+
+
+        bottomRow.style.display =
+            "flex";
+
+
+        bottomRow.style.justifyContent =
+            "space-between";
+
+
+        bottomRow.style.alignItems =
+            "center";
+
+
+        /*
+            Відступ від рядка Receive.
+        */
+
+        bottomRow.style.marginTop =
+            "25px";
+
+
+        /*
+            --------------------------------------------------
+            SEND YOUR FILE
+            --------------------------------------------------
+        */
+
+        const sendYourFile =
+            document.createElement(
+                "button"
+            );
+
+
+        sendYourFile.textContent =
+            "Send Your File";
+
+
+        sendYourFile.style.minWidth =
+            "110px";
+
+
+        sendYourFile.style.height =
+            "38px";
+
+
+        sendYourFile.style.fontSize =
+            "15px";
+
+
+        sendYourFile.onclick =
+            async () =>
+            {
+                //await this.selectSendFile();
+            };
+
+
+        /*
+            --------------------------------------------------
+            CANCEL
+            --------------------------------------------------
+        */
+
+        const cancel =
+            document.createElement(
+                "button"
+            );
+
+
+        cancel.textContent =
+            "Cancel";
+
+
+        cancel.style.minWidth =
+            "110px";
+
+
+        cancel.style.height =
+            "38px";
+
+
+        cancel.style.fontSize =
+            "15px";
+
+
+        cancel.onclick =
+            async () =>
+            {
+                await this.stop();
+
+                await this.close();
+            };
+
+
+        bottomRow.appendChild(
+            sendYourFile
         );
 
+
+        bottomRow.appendChild(
+            cancel
+        );
+
+
+        /*
+            --------------------------------------------------
+            NORMAL APPEND
+            --------------------------------------------------
+        */
 
         normal.appendChild(
             pathLabel
         );
 
-        normal.appendChild(
-            path
-        );
 
         normal.appendChild(
-            file
+            receiveRow
         );
+
 
         normal.appendChild(
-            fileButton
+            bottomRow
         );
 
-        normal.appendChild(
-            buttons
-        );
 
+        /*
+            --------------------------------------------------
+            PROGRESS
+            --------------------------------------------------
+        */
 
         const progress =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         progress.id =
             "fileCopyProgressControls";
 
+
         progress.style.display =
             "none";
 
+
         progress.style.flexDirection =
             "column";
+
 
         progress.style.alignItems =
             "stretch";
 
 
         const fileName =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
+
 
         fileName.id =
             "fileCopyFileName";
 
+
         fileName.style.color =
             "#222222";
 
+
         fileName.style.textAlign =
             "center";
+
 
         fileName.style.marginBottom =
             "12px";
 
 
         const progressBar =
-            document.createElement("progress");
+            document.createElement(
+                "progress"
+            );
+
 
         progressBar.id =
             "fileCopyProgress";
 
+
         progressBar.value =
             "0";
 
+
         progressBar.max =
             "100";
+
 
         progressBar.style.width =
             "100%";
 
 
         const stop =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
+
 
         stop.textContent =
             "Stop";
 
+
         stop.style.alignSelf =
             "flex-end";
+
 
         stop.style.minWidth =
             "110px";
 
+
         stop.style.height =
             "38px";
 
+
         stop.style.fontSize =
             "15px";
+
 
         stop.style.marginTop =
             "20px";
 
 
         stop.onclick =
-            () =>
+            async () =>
             {
-                this.stop();
+                await this.stop();
             };
 
 
@@ -437,59 +674,35 @@ class FileCopy
             fileName
         );
 
+
         progress.appendChild(
             progressBar
         );
+
 
         progress.appendChild(
             stop
         );
 
 
-        const cancel =
-            document.createElement("button");
-
-        cancel.textContent =
-            "Cancel";
-
-        cancel.style.display =
-            "block";
-
-        cancel.style.margin =
-            "20px auto 0";
-
-        cancel.style.minWidth =
-            "110px";
-
-        cancel.style.height =
-            "38px";
-
-        cancel.style.fontSize =
-            "15px";
-
-
-        cancel.onclick =
-            () =>
-            {
-                this.stop();
-                this.close();
-            };
-
+        /*
+            --------------------------------------------------
+            WINDOW APPEND
+            --------------------------------------------------
+        */
 
         box.appendChild(
             title
         );
 
+
         box.appendChild(
             normal
         );
 
-        box.appendChild(
-            progress
-        );
 
         box.appendChild(
-            cancel
+            progress
         );
 
 
@@ -504,48 +717,417 @@ class FileCopy
     }
 
 
-    async selectSendFile()
+    /*
+    --------------------------------------------------
+    PARSE FILE PATH
+    --------------------------------------------------
+
+    Input:
+
+        C:\Folder\Test\132918.jpg
+
+    Result:
+
+        m_sPathFile =
+            C:\Folder\Test\
+
+        m_sNameFile =
+            132918.jpg
+    --------------------------------------------------
+    */
+
+    parseFilePath()
     {
-        /*
-            File System Access API.
-        */
-        if(
-            !window.showOpenFilePicker
-        )
-        {
-            this.showError(
-                "File System Access API is not supported by this browser."
+        const path =
+            document.getElementById(
+                "fileCopyPath"
             );
 
-            return;
+
+        if(!path)
+        {
+            this.showError(
+                "File path field not found."
+            );
+
+            return false;
         }
 
 
-        try
-        {
-            const handles =
-                await window.showOpenFilePicker(
-                {
-                    multiple: false
-                });
+        const sFilePath =
+            path.value.trim();
 
+
+        if(
+            sFilePath.length === 0
+        )
+        {
+            this.showError(
+                "Enter file path and file name."
+            );
+
+            return false;
+        }
+
+
+        /*
+            --------------------------------------------------
+            LAST SLASH
+            --------------------------------------------------
+        */
+
+        const iSlash1 =
+            sFilePath.lastIndexOf("/");
+
+
+        const iSlash2 =
+            sFilePath.lastIndexOf("\\");
+
+
+        const iSlash =
+            Math.max(
+                iSlash1,
+                iSlash2
+            );
+
+
+        /*
+            --------------------------------------------------
+            PATH
+            --------------------------------------------------
+        */
+
+        if(
+            iSlash >= 0
+        )
+        {
+            this.m_sPathFile =
+                sFilePath.substring(
+                    0,
+                    iSlash + 1
+                );
+
+
+            this.m_sNameFile =
+                sFilePath.substring(
+                    iSlash + 1
+                );
+        }
+        else
+        {
+            this.m_sPathFile =
+                "";
+
+
+            this.m_sNameFile =
+                sFilePath;
+        }
+
+
+        /*
+            --------------------------------------------------
+            NAME CHECK
+            --------------------------------------------------
+        */
+
+        if(
+            this.m_sNameFile.length === 0
+        )
+        {
+            this.showError(
+                "Invalid file name."
+            );
+
+            return false;
+        }
+
+
+        /*
+            --------------------------------------------------
+            LOG
+            --------------------------------------------------
+        */
+
+        console.log(
+            "FileCopy: PathFile =",
+            this.m_sPathFile
+        );
+
+
+        console.log(
+            "FileCopy: NameFile =",
+            this.m_sNameFile
+        );
+
+
+        return true;
+    }
+
+
+    /*
+    --------------------------------------------------
+    START
+    --------------------------------------------------
+    */
+
+    async start(
+        sType
+    )
+    {
+        /*
+            --------------------------------------------------
+            SEND
+            --------------------------------------------------
+        */
+
+        if(
+            sType === "send"
+        )
+        {
+            /*
+                Читаємо шлях і назву
+                з поля.
+            */
 
             if(
-                !handles ||
-                handles.length === 0
+                !this.parseFilePath()
             )
             {
                 return;
             }
 
 
-            this.m_oSendFileHandle =
-                handles[0];
+            /*
+                --------------------------------------------------
+                SAVE STATE
+                --------------------------------------------------
+            */
+
+            this.m_bCopying =
+                true;
+
+            this.m_sCopyType =
+                "send";
 
 
-            const file =
-                await this.m_oSendFileHandle.getFile();
+            /*
+                --------------------------------------------------
+                SHOW PROGRESS
+                --------------------------------------------------
+            */
 
+            const normal =
+                document.getElementById(
+                    "fileCopyNormal"
+                );
+
+
+            const progress =
+                document.getElementById(
+                    "fileCopyProgressControls"
+                );
+
+
+            const fileName =
+                document.getElementById(
+                    "fileCopyFileName"
+                );
+
+
+            if(normal)
+            {
+                normal.style.display =
+                    "none";
+            }
+
+
+            if(progress)
+            {
+                progress.style.display =
+                    "flex";
+            }
+
+
+            if(fileName)
+            {
+                fileName.textContent =
+                    this.m_sNameFile;
+            }
+
+
+            this.setProgress(
+                0
+            );
+
+
+            console.log(
+                "FileCopy: Send started.",
+                "path =",
+                this.m_sPathFile,
+                "name =",
+                this.m_sNameFile
+            );
+
+
+            /*
+                --------------------------------------------------
+                SEND
+                --------------------------------------------------
+
+                Передачу файла поки не реалізуємо.
+                --------------------------------------------------
+            */
+
+            return;
+        }
+
+
+        /*
+            --------------------------------------------------
+            RECEIVE
+            --------------------------------------------------
+        */
+
+        if(
+            sType === "receive"
+        )
+        {
+            /*
+                --------------------------------------------------
+                READ PATH + FILE NAME
+                --------------------------------------------------
+            */
+
+            if(
+                !this.parseFilePath()
+            )
+            {
+                return;
+            }
+
+
+            /*
+                --------------------------------------------------
+                SAVE STATE
+                --------------------------------------------------
+            */
+
+            
+            this.m_sCopyType =
+                "receive";
+
+
+            /*
+                --------------------------------------------------
+                SAVE FILE PICKER
+                --------------------------------------------------
+            */
+
+            const bOk =
+                await this.selectReceiveFile();
+
+
+            if(!bOk)
+            {
+                this.m_bCopying =
+                    false;
+
+                this.m_sCopyType =
+                    "";
+
+                return;
+            }
+
+
+            /*
+                --------------------------------------------------
+                OPEN FILE
+                --------------------------------------------------
+            */
+
+            const bOpen =
+                await this.openReceiveFile();
+
+
+            if(!bOpen)
+            {
+                this.m_bCopying =
+                    false;
+
+                this.m_sCopyType =
+                    "";
+
+                return;
+            }
+
+
+            /*
+                --------------------------------------------------
+                SHOW PROGRESS
+                --------------------------------------------------
+            */
+
+            const normal =
+                document.getElementById(
+                    "fileCopyNormal"
+                );
+
+
+            const progress =
+                document.getElementById(
+                    "fileCopyProgressControls"
+                );
+
+
+            const fileName =
+                document.getElementById(
+                    "fileCopyFileName"
+                );
+
+
+            if(normal)
+            {
+                normal.style.display =
+                    "none";
+            }
+
+
+            if(progress)
+            {
+                progress.style.display =
+                    "flex";
+            }
+
+
+            if(fileName)
+            {
+                fileName.textContent =
+                    this.m_sNameFile;
+            }
+
+
+            this.setProgress(
+                0
+            );
+
+
+            console.log(
+                "FileCopy: Receive started.",
+                "path =",
+                this.m_sPathFile,
+                "name =",
+                this.m_sNameFile
+            );
+
+
+            /*
+                --------------------------------------------------
+                SEND FIRST REQUEST
+                --------------------------------------------------
+
+                Повний шлях формується
+                з path + name.
+            */
 
             const path =
                 document.getElementById(
@@ -553,48 +1135,220 @@ class FileCopy
                 );
 
 
-            if(path)
-            {
-                path.value =
-                    file.name;
-            }
-        }
-        catch(error)
-        {
-            /*
-                Користувач закрив
-                діалог вибору файла.
-            */
+            const sPath =
+                path
+                    ? path.value.trim()
+                    : "";
+
+
             if(
-                error &&
-                error.name ===
-                    "AbortError"
+                sPath.length === 0
             )
             {
+                this.showError(
+                    "File path is empty."
+                );
+
                 return;
             }
 
+            this.m_bCopying =
+                true;
 
-            console.error(
-                "File selection error:",
-                error
-            );
+            const result =
+                this.sendGetFileRequest(
+                    sPath,
+                    0
+                );
 
 
-            this.showError(
-                "Unable to open the selected file."
-            );
+            if(!result)
+            {
+                console.error(
+                    "FileCopy: sendGetFileRequest failed."
+                );
+
+                return;
+            }
+
+            this.m_iTimeCopying =
+                0;
+
+
+            return;
         }
+
+
+        /*
+            --------------------------------------------------
+            UNKNOWN TYPE
+            --------------------------------------------------
+        */
+
+        this.showError(
+            "Unknown file operation."
+        );
     }
 
+    /*
+    --------------------------------------------------
+    SEND GET FILE REQUEST
+    --------------------------------------------------
+
+    sPath:
+        повний шлях до файла
+
+    iPosition:
+        позиція читання
+    --------------------------------------------------
+    */
+
+    sendGetFileRequest(
+        sPath,
+        iPosition
+    )
+    {
+        if(
+            !sPath ||
+            sPath.length === 0
+        )
+        {
+            console.error(
+                "FileCopy: file path is empty."
+            );
+
+            return false;
+        }
+
+
+        if(
+            !Number.isInteger(iPosition) ||
+            iPosition < 0
+        )
+        {
+            console.error(
+                "FileCopy: invalid file position.",
+                iPosition
+            );
+
+            return false;
+        }
+
+
+        if(
+            typeof Protocol ===
+            "undefined" ||
+            typeof Protocol.fGetFile !==
+            "function"
+        )
+        {
+            console.error(
+                "FileCopy: Protocol.fGetFile() is not available."
+            );
+
+            return false;
+        }
+
+
+        if(
+            typeof AppState ===
+            "undefined" ||
+            !AppState.sDeskId ||
+            !AppState.sMyId
+        )
+        {
+            console.error(
+                "FileCopy: client IDs are not available."
+            );
+
+            return false;
+        }
+
+
+        if(
+            typeof wsClient ===
+            "undefined" ||
+            !wsClient ||
+            typeof wsClient.send !==
+            "function"
+        )
+        {
+            console.error(
+                "FileCopy: WebSocket is not available."
+            );
+
+            return false;
+        }
+
+
+        /*
+            --------------------------------------------------
+            CREATE PACKET
+            --------------------------------------------------
+        */
+
+        const packet =
+            Protocol.fGetFile(
+                AppState.sDeskId,
+                AppState.sMyId,
+                sPath,
+                iPosition
+            );
+
+
+        if(!packet)
+        {
+            console.error(
+                "FileCopy: failed to create fGetFile packet."
+            );
+
+            return false;
+        }
+
+
+        /*
+            --------------------------------------------------
+            SEND
+            --------------------------------------------------
+        */
+
+        const result =
+            wsClient.send(
+                packet
+            );
+
+
+        if(result === false)
+        {
+            console.error(
+                "FileCopy: failed to send fGetFile."
+            );
+
+            return false;
+        }
+
+
+        console.log(
+            "FileCopy: fGetFile sent.",
+            "path =",
+            sPath,
+            "position =",
+            iPosition
+        );
+
+
+        return true;
+    }
+
+    /*
+    --------------------------------------------------
+    RECEIVE:
+    SELECT SAVE FILE
+    --------------------------------------------------
+    */
 
     async selectReceiveFile()
     {
-        /*
-            File System Access API.
-            На цьому етапі файл тільки
-            вибирається для майбутнього запису.
-        */
         if(
             !window.showSaveFilePicker
         )
@@ -607,84 +1361,40 @@ class FileCopy
         }
 
 
-        const path =
-            document.getElementById(
-                "fileCopyPath"
-            );
-
-
-        let sFileName =
-            "";
-
-
-        if(path)
-        {
-            sFileName =
-                path.value.trim();
-        }
-
-
-        if(
-            sFileName.length === 0
-        )
-        {
-            this.showError(
-                "Enter file path and file name."
-            );
-
-            return false;
-        }
-
-
-        /*
-            З повного введеного шляху
-            беремо тільки ім'я файла.
-        */
-        const iSlash1 =
-            sFileName.lastIndexOf("/");
-
-        const iSlash2 =
-            sFileName.lastIndexOf("\\");
-
-        const iSlash =
-            Math.max(
-                iSlash1,
-                iSlash2
-            );
-
-        if(iSlash >= 0)
-        {
-            sFileName =
-                sFileName.substring(
-                    iSlash + 1
-                );
-        }
-
-
-        if(
-            sFileName.length === 0
-        )
-        {
-            this.showError(
-                "Invalid file name."
-            );
-
-            return false;
-        }
-
-        console.log(
-            "Save file name:",
-            sFileName
-        );
-
         try
         {
+            /*
+                --------------------------------------------------
+                SAVE AS
+                --------------------------------------------------
+
+                Для suggestedName використовуємо
+                m_sNameFile.
+            */
+
             this.m_oReceiveFileHandle =
                 await window.showSaveFilePicker(
                 {
                     suggestedName:
-                        sFileName
+                        this.m_sNameFile
                 });
+
+
+            /*
+                --------------------------------------------------
+                HANDLE SAVED
+                --------------------------------------------------
+            */
+
+            console.log(
+                "FileCopy: Save picker OK."
+            );
+
+
+            console.log(
+                "FileCopy: local save file name =",
+                this.m_oReceiveFileHandle.name
+            );
 
 
             return true;
@@ -697,12 +1407,16 @@ class FileCopy
                     "AbortError"
             )
             {
+                console.log(
+                    "FileCopy: Save picker cancelled."
+                );
+
                 return false;
             }
 
 
             console.error(
-                "File save selection error:",
+                "FileCopy: Save picker error:",
                 error
             );
 
@@ -716,102 +1430,422 @@ class FileCopy
         }
     }
 
+    /*
+    --------------------------------------------------
+    OPEN RECEIVE FILE
+    --------------------------------------------------
 
-    async start(
-        sType
-    )
+    Створює writable stream для
+    вибраного локального файла.
+
+    Поки що дані не записуються.
+    --------------------------------------------------
+    */
+
+    async openReceiveFile()
     {
-        /*
-            Receive:
-            спочатку отримуємо handle
-            файла для майбутнього запису.
-        */
         if(
-            sType === "receive"
+            !this.m_oReceiveFileHandle
         )
         {
-            const bOk =
-                await this.selectReceiveFile();
+            this.showError(
+                "Destination file is not selected."
+            );
 
-
-            if(!bOk)
-            {
-                return;
-            }
+            return false;
         }
 
 
         /*
-            Send:
-            перевіряємо вибраний файл
-            та ім'я в полі.
+            Якщо файл вже відкритий —
+            повторно не відкриваємо.
         */
+
         if(
-            sType === "send"
+            this.m_oReceiveWritable
         )
         {
-            if(
-                !this.m_oSendFileHandle
-            )
+            return true;
+        }
+
+
+        try
+        {
+            console.log(
+                "FileCopy: opening receive file..."
+            );
+
+
+            this.m_oReceiveWritable =
+                await this.m_oReceiveFileHandle.createWritable();
+
+
+            console.log(
+                "FileCopy: receive file opened."
+            );      
+
+            return true;
+        }
+        catch(error)
+        {
+            console.error(
+                "FileCopy: open receive file error:",
+                error
+            );
+
+
+            this.m_oReceiveWritable =
+                null;
+
+
+            this.showError(
+                "Cannot open file for writing."
+            );
+
+
+            return false;
+        }
+           
+    }
+
+    /*
+    --------------------------------------------------
+    WRITE RECEIVE FILE
+    --------------------------------------------------
+
+    iPosition:
+        позиція запису у файлі.
+
+    baData:
+        Uint8Array з бінарними даними.
+    --------------------------------------------------
+    */
+
+    async writeReceiveFile(
+        {
+            sFilePath,
+            iFileSize,
+            iPosition,
+            baData
+        }
+    )
+    {
+        // console.log(
+        //     "FileCopy: writeReceiveFile ENTER"
+        // );
+
+        // console.log(
+        //     "sFilePath =",
+        //     sFilePath
+        // );
+
+        // console.log(
+        //     "iFileSize =",
+        //     iFileSize
+        // );
+
+        // console.log(
+        //     "iPosition =",
+        //     iPosition
+        // );
+
+        // console.log(
+        //     "baData =",
+        //     baData
+        // );
+
+        // console.log(
+        //     "baData instanceof Uint8Array =",
+        //     baData instanceof Uint8Array
+        // );
+
+        // console.log(
+        //     "baData.length =",
+        //     baData ? baData.length : "undefined"
+        // );
+
+
+        if(
+            !this.m_oReceiveWritable
+        )
+        {
+            console.error(
+                "FileCopy: receive file is not opened."
+            );
+
+            return false;
+        }
+
+
+        let data =
+            baData;
+
+
+        if(
+            data instanceof ArrayBuffer
+        )
+        {
+            data =
+                new Uint8Array(
+                    data
+                );
+        }
+
+
+        if(
+            !(data instanceof Uint8Array)
+        )
+        {
+            console.error(
+                "FileCopy: invalid binary data."
+            );
+
+            return false;
+        }
+
+        this.m_iTimeCopying =
+            0;
+
+        if(sFilePath === "stopCopy" )
+        {
+            await this.stop();
+
+            await this.closeReceiveFile();
+        }
+        else{
+
+            /*
+                --------------------------------------------------
+                WRITE
+                --------------------------------------------------
+
+                Записуємо chunk безпосередньо
+                у вказану позицію.
+            */
+
+            try
             {
-                this.showError(
-                    "Select a file first."
+                // console.log(
+                //     "FileCopy: write file:",
+                //     "position=",
+                //     iPosition,
+                //     "size=",
+                //     data.length
+                // );
+
+
+                await this.m_oReceiveWritable.write(
+                    {
+                        type:
+                            "write",
+
+                        position:
+                            iPosition,
+
+                        data:
+                            data
+                    }
                 );
 
-                return;
+
+                // console.log(
+                //     "FileCopy: write OK:",
+                //     "position=",
+                //     iPosition,
+                //     "size=",
+                //     data.length
+                // );
+
+            }
+            catch(error)
+            {
+                console.error(
+                    "FileCopy: write receive file error:",
+                    error
+                );
+
+
+                return false;
+            }
+
+            const iReceived =
+                iPosition +
+                data.length;
+
+            if(iReceived < iFileSize && this.m_bCopying)
+            {
+                const result =
+                    this.sendGetFileRequest(
+                        sFilePath,
+                        iReceived
+                    );
+
+
+                // if(!result)
+                // {
+                //     console.error("FileCopy: writeReceiveFile no send!");
+                // }
+                // else{
+                //     console.log("FileCopy: writeReceiveFile writed = "
+                //         , iReceived
+                //         , " bayts"
+                //         , " | iFileSize = "
+                //         , iFileSize
+                //     );
+                // }
+            }
+            else{
+
+                // console.log("FileCopy: writeReceiveFile Fin. Writed = "
+                //         , iReceived
+                //         , " bayts"
+                //         , " | iFileSize = "
+                //         , iFileSize
+                //     );
+
+                if(this.m_bCopying)
+                {
+                    await this.stop();
+
+                    await this.closeReceiveFile();
+
+                    showMessage(
+                        0,
+                        "File received successfully."
+                    );
+                }
+                else{
+
+                    console.log("FileCopy: writeReceiveFile Fin. Writing STOPED ");
+
+                }
+                
+                
             }
 
 
-            const path =
-                document.getElementById(
-                    "fileCopyPath"
-                );
+            const percent =
+                iFileSize > 0
+                    ?
+                        (
+                            iReceived *
+                            100
+                        ) /
+                        iFileSize
+                    :
+                        100;
 
 
-            const sFileName =
-                path
-                    ? path.value.trim()
-                    : "";
+            this.setProgress(
+                percent
+            );
+
+        }
 
 
-            if(
-                sFileName.length === 0
-            )
-            {
-                this.showError(
-                    "Enter file name."
-                );
-
-                return;
-            }
+        
 
 
-            const file =
-                await this.m_oSendFileHandle.getFile();
+        
+    }
+
+    /*
+    --------------------------------------------------
+    CLOSE RECEIVE FILE
+    --------------------------------------------------
+
+    Закриває writable stream
+    та звільняє ресурс.
+    --------------------------------------------------
+    */
+
+    async closeReceiveFile()
+    {
+        if(
+            !this.m_oReceiveWritable
+        )
+        {
+            return true;
+        }
+
+
+        try
+        {
+            console.log(
+                "FileCopy: closing receive file..."
+            );
+
+
+            await this.m_oReceiveWritable.close();
+
+
+            console.log(
+                "FileCopy: receive file closed."
+            );
+
+
+            this.m_oReceiveWritable =
+                null;
+
+
+            this.m_oReceiveFileHandle =
+                null;
+
+            this.m_bCopying =
+                false;
+
+            this.m_sCopyType =
+                "";
+
+            this.m_iTimeCopying =
+                0;
+
+
+            return true;
+        }
+        catch(error)
+        {
+            console.error(
+                "FileCopy: close receive file error:",
+                error
+            );
 
 
             /*
-                На цьому етапі перевіряємо,
-                що ім'я в полі відповідає
-                вибраному файлу.
-
-                Сам файл поки НЕ читаємо.
+                Навіть після помилки
+                прибираємо посилання,
+                щоб ресурс більше
+                не використовувався.
             */
-            if(
-                sFileName !== file.name
-            )
-            {
-                this.showError(
-                    "The specified file does not exist."
-                );
 
-                return;
-            }
+            this.m_oReceiveWritable =
+                null;
+
+
+            return false;
         }
+    }
 
+    /*
+    --------------------------------------------------
+    STOP
+    --------------------------------------------------
+    */
 
-        this.m_bCopying = true;
-        this.m_sCopyType = sType;
+    async stop()
+    {
+        
+        this.sendGetFileRequest(
+            "stopCopy",
+            10
+        );
+               
+
+        this.m_bCopying =
+            false;
+
+        this.m_sCopyType =
+            "";
 
 
         const normal =
@@ -819,56 +1853,6 @@ class FileCopy
                 "fileCopyNormal"
             );
 
-        const progress =
-            document.getElementById(
-                "fileCopyProgressControls"
-            );
-
-        const fileName =
-            document.getElementById(
-                "fileCopyFileName"
-            );
-
-
-        normal.style.display =
-            "none";
-
-        progress.style.display =
-            "flex";
-
-
-        const path =
-            document.getElementById(
-                "fileCopyPath"
-            );
-
-
-        if(
-            sType === "send" &&
-            this.m_oSendFileHandle
-        )
-        {
-            fileName.textContent =
-                sFileName;
-        }
-        else
-        {
-            fileName.textContent =
-                path.value;
-        }
-    }
-
-
-    stop()
-    {
-        this.m_bCopying = false;
-        this.m_sCopyType = "";
-
-
-        const normal =
-            document.getElementById(
-                "fileCopyNormal"
-            );
 
         const progress =
             document.getElementById(
@@ -876,16 +1860,32 @@ class FileCopy
             );
 
 
-        normal.style.display =
-            "block";
+        if(normal)
+        {
+            normal.style.display =
+                "block";
+        }
 
-        progress.style.display =
-            "none";
+
+        if(progress)
+        {
+            progress.style.display =
+                "none";
+        }
     }
 
 
-    close()
+    /*
+    --------------------------------------------------
+    CLOSE
+    --------------------------------------------------
+    */
+
+    async close()
     {
+        await this.closeReceiveFile();
+
+
         const window =
             document.getElementById(
                 "fileCopyWindow"
@@ -898,25 +1898,107 @@ class FileCopy
         }
 
 
-        this.m_bVisible = false;
-        this.m_bCopying = false;
-        this.m_sCopyType = "";
+        this.m_bVisible =
+            false;
 
-        this.m_oSendFileHandle = null;
-        this.m_oReceiveFileHandle = null;
+        this.m_bCopying =
+            false;
+
+        this.m_sCopyType =
+            "";
+
+
+        this.m_sPathFile =
+            "";
+
+        this.m_sNameFile =
+            "";
+
+        this.m_oReceiveFileHandle =
+            null;
     }
 
+    /*
+    --------------------------------------------------
+    PROGRESS
+    --------------------------------------------------
+    */
+
+    setProgress(
+        value
+    )
+    {
+        let percent =
+            Number(
+                value
+            );
+
+
+        if(
+            !Number.isFinite(percent)
+        )
+        {
+            percent =
+                0;
+        }
+
+
+        if(percent < 0)
+        {
+            percent =
+                0;
+        }
+
+
+        if(percent > 100)
+        {
+            percent =
+                100;
+        }
+
+
+        const progress =
+            document.getElementById(
+                "fileCopyProgress"
+            );
+
+
+        if(progress)
+        {
+            progress.value =
+                percent;
+        }
+    }
+
+    /*
+    --------------------------------------------------
+    ERROR
+    --------------------------------------------------
+    */
 
     showError(
         sMessage
     )
     {
         /*
-            Тимчасово використовуємо
-            стандартний alert.
-            Пізніше можемо підключити
-            існуючий механізм showMessage().
+            Використовуємо існуюче
+            повідомлення app.js.
         */
+
+        if(
+            typeof showMessage ===
+            "function"
+        )
+        {
+            showMessage(
+                0,
+                sMessage
+            );
+
+            return;
+        }
+
+
         alert(
             sMessage
         );
@@ -924,9 +2006,21 @@ class FileCopy
 }
 
 
+/*
+--------------------------------------------------
+GLOBAL INSTANCE
+--------------------------------------------------
+*/
+
 const fileCopy =
     new FileCopy();
 
+
+/*
+--------------------------------------------------
+DOM READY
+--------------------------------------------------
+*/
 
 document.addEventListener(
     "DOMContentLoaded",
