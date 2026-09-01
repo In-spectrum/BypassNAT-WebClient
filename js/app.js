@@ -842,7 +842,7 @@ function(text)
     --------------------------------------------------
 */
 
-ParserData.slFileCopy =
+ParserData.slFileCopyRecive =
 async function(
     sForId,
     sFromId,
@@ -870,6 +870,26 @@ async function(
         }
     );
 };
+
+ParserData.slFileCopySend =
+async function(
+    sForId,
+    sFromId,
+    sFilePath,
+    iPosition,
+)
+{
+    if(!fileCopy)
+    {
+        return;
+    }
+
+    await fileCopy.sendFile(
+        sFilePath,
+        iPosition
+    );
+};
+//////////////////
 
 
 wsClient.onConnected =
@@ -1800,18 +1820,18 @@ function startAppTimer() {
         {
             fileCopy.m_iTimeCopying++;
 
-            if(fileCopy.m_iTimeCopying == 5)
+            if(fileCopy.m_iTimeCopying == 7)
             {
-                // log(
-                //     "startAppTimer::fileCopy: closeReceiveFile. "
-                // );  
+                log(
+                    "startAppTimer::fileCopy: closeTransferFile. "
+                );  
                 
                 showMessage(
                     0,
                     "Error.\n\nFile transfer failed.\nPlease check the connection to the remote device."
                 );
 
-                fileCopy.closeReceiveFile();
+                fileCopy.closeTransferFile();
             }
         }
         

@@ -13,7 +13,7 @@ class FileCopy
 
         this.m_bCopying =
             false;
-        
+
         this.m_iTimeCopying =
             0;
 
@@ -54,6 +54,57 @@ class FileCopy
 
         this.m_oReceiveFileHandle =
             null;
+
+        this.m_oReceiveWritable =
+            null;
+
+
+        /*
+            --------------------------------------------------
+            SEND
+            --------------------------------------------------
+        */
+
+        /*
+            Handle файла, вибраного
+            через Open File Picker.
+        */
+
+        this.m_oSendFileHandle =
+            null;
+
+
+        /*
+            Об'єкт File для читання.
+        */
+
+        this.m_oSendFile =
+            null;
+
+
+        /*
+            Розмір файла.
+        */
+
+        this.m_iFileSize =
+            0;
+
+
+        /*
+            Кількість реально
+            прочитаних байт.
+        */
+
+        this.m_iFileRead =
+            0;
+
+
+        /*
+            Розмір одного chunk.
+        */
+
+        this.m_iSendChunkSize =
+            256 * 1024;
     }
 
 
@@ -149,6 +200,19 @@ class FileCopy
 
         this.m_oReceiveWritable =
             null;
+
+
+        this.m_oSendFileHandle =
+            null;
+
+        this.m_oSendFile =
+            null;
+
+        this.m_iFileSize =
+            0;
+
+        this.m_iFileRead =
+            0;
 
 
         /*
@@ -337,7 +401,6 @@ class FileCopy
             --------------------------------------------------
         */
 
-      
         const path =
             document.createElement(
                 "input"
@@ -374,9 +437,6 @@ class FileCopy
 
         path.placeholder =
             "File path";
-
-        path.value =
-            "c:\\Users\\Oleksandr\\Downloads\\DiscordSetup.exe";
 
 
         /*
@@ -489,7 +549,9 @@ class FileCopy
         sendYourFile.onclick =
             async () =>
             {
-                //await this.selectSendFile();
+                await this.start(
+                    "send"
+                );
             };
 
 
@@ -818,7 +880,6 @@ class FileCopy
             this.m_sPathFile =
                 "";
 
-
             this.m_sNameFile =
                 sFilePath;
         }
@@ -885,14 +946,45 @@ class FileCopy
         )
         {
             /*
-                Читаємо шлях і назву
-                з поля.
+                --------------------------------------------------
+                SELECT FILE
+                --------------------------------------------------
             */
 
-            if(
-                !this.parseFilePath()
-            )
+            const bOk =
+                await this.selectSendFile();
+
+
+            if(!bOk)
             {
+                this.m_bCopying =
+                    false;
+
+                this.m_sCopyType =
+                    "";
+
+                return;
+            }
+
+
+            /*
+                --------------------------------------------------
+                OPEN FILE
+                --------------------------------------------------
+            */
+
+            const bOpen =
+                await this.openSendFile();
+
+
+            if(!bOpen)
+            {
+                this.m_bCopying =
+                    false;
+
+                this.m_sCopyType =
+                    "";
+
                 return;
             }
 
@@ -903,11 +995,12 @@ class FileCopy
                 --------------------------------------------------
             */
 
-            this.m_bCopying =
-                true;
-
             this.m_sCopyType =
                 "send";
+
+
+            this.m_iFileRead =
+                0;
 
 
             /*
@@ -960,23 +1053,33 @@ class FileCopy
             );
 
 
+            this.m_iTimeCopying =
+                0;
+
+
             console.log(
                 "FileCopy: Send started.",
-                "path =",
-                this.m_sPathFile,
                 "name =",
-                this.m_sNameFile
+                this.m_sNameFile,
+                "size =",
+                this.m_iFileSize
             );
 
 
             /*
                 --------------------------------------------------
-                SEND
-                --------------------------------------------------
-
-                Передачу файла поки не реалізуємо.
+                SEND FIRST CHUNK
                 --------------------------------------------------
             */
+
+            this.m_bCopying =
+                true;
+
+            await this.sendFile(
+                ("/web-client/" + this.m_sNameFile)
+                , 0
+            );
+
 
             return;
         }
@@ -1012,7 +1115,6 @@ class FileCopy
                 --------------------------------------------------
             */
 
-            
             this.m_sCopyType =
                 "receive";
 
@@ -1152,8 +1254,10 @@ class FileCopy
                 return;
             }
 
+
             this.m_bCopying =
                 true;
+
 
             const result =
                 this.sendGetFileRequest(
@@ -1170,6 +1274,7 @@ class FileCopy
 
                 return;
             }
+
 
             this.m_iTimeCopying =
                 0;
@@ -1189,6 +1294,664 @@ class FileCopy
             "Unknown file operation."
         );
     }
+
+
+    /*
+    --------------------------------------------------
+    SEND:
+    SELECT FILE
+    --------------------------------------------------
+    */
+
+    async selectSendFile()
+    {
+        if(
+            !window.showOpenFilePicker
+        )
+        {
+            this.showError(
+                "File System Access API is not supported by this browser."
+            );
+
+            return false;
+        }
+
+
+        try
+        {
+            const aHandles =
+                await window.showOpenFilePicker();
+
+
+            if(
+                !aHandles ||
+                aHandles.length === 0
+            )
+            {
+                return false;
+            }
+
+
+            this.m_oSendFileHandle =
+                aHandles[0];
+
+
+            console.log(
+                "FileCopy: Open picker OK."
+            );
+
+
+            console.log(
+                "FileCopy: selected file name =",
+                this.m_oSendFileHandle.name
+            );
+
+
+            return true;
+        }
+        catch(error)
+        {
+            if(
+                error &&
+                error.name ===
+                    "AbortError"
+            )
+            {
+                console.log(
+                    "FileCopy: Open picker cancelled."
+                );
+
+                return false;
+            }
+
+
+            console.error(
+                "FileCopy: Open picker error:",
+                error
+            );
+
+
+            this.showError(
+                "Unable to select the file."
+            );
+
+
+            return false;
+        }
+    }
+
+
+    /*
+    --------------------------------------------------
+    OPEN SEND FILE
+    --------------------------------------------------
+
+    Отримує об'єкт File для читання.
+
+    m_iFileSize:
+        розмір файла.
+
+    m_sNameFile:
+        ім'я файла.
+    --------------------------------------------------
+    */
+
+    async openSendFile()
+    {
+        if(
+            !this.m_oSendFileHandle
+        )
+        {
+            this.showError(
+                "File is not selected."
+            );
+
+            return false;
+        }
+
+
+        try
+        {
+            this.m_oSendFile =
+                await this.m_oSendFileHandle.getFile();
+
+
+            if(
+                !this.m_oSendFile
+            )
+            {
+                this.showError(
+                    "Cannot open selected file."
+                );
+
+                return false;
+            }
+
+
+            /*
+                --------------------------------------------------
+                FILE SIZE
+                --------------------------------------------------
+            */
+
+            this.m_iFileSize =
+                this.m_oSendFile.size;
+
+
+            /*
+                --------------------------------------------------
+                FILE NAME
+                --------------------------------------------------
+            */
+
+            this.m_sNameFile =
+                this.m_oSendFile.name;
+
+
+            /*
+                Для локального файла браузер
+                не дає повний filesystem path.
+            */
+
+            this.m_sPathFile =
+                "";
+
+
+            console.log(
+                "FileCopy: send file opened."
+            );
+
+
+            console.log(
+                "FileCopy: NameFile =",
+                this.m_sNameFile
+            );
+
+
+            console.log(
+                "FileCopy: FileSize =",
+                this.m_iFileSize
+            );
+
+
+            return true;
+        }
+        catch(error)
+        {
+            console.error(
+                "FileCopy: open send file error:",
+                error
+            );
+
+
+            this.m_oSendFile =
+                null;
+
+
+            this.m_iFileSize =
+                0;
+
+
+            this.showError(
+                "Cannot open selected file."
+            );
+
+
+            return false;
+        }
+    }
+
+
+    /*
+    --------------------------------------------------
+    SEND FILE
+    --------------------------------------------------
+
+    _iPos:
+        позиція, з якої потрібно читати файл.
+
+    Читає 256 * 1024 байт.
+
+    a_baFileData:
+        Uint8Array з прочитаними даними.
+
+    a_iFileRead:
+        кількість реально прочитаних байт.
+    --------------------------------------------------
+    */
+
+    async sendFile(
+        _sFilePath
+        , _iPos
+    )
+    {
+        if(
+            !this.m_oSendFile
+        )
+        {
+            console.error(
+                "FileCopy: send file is not opened."
+            );
+
+            return false;
+        }
+
+
+        if(
+            !this.m_bCopying
+        )
+        {
+            console.log(
+                "FileCopy: send cancelled."
+            );
+
+            return false;
+        }
+
+
+        if(
+            !Number.isInteger(_iPos) ||
+            _iPos < 0
+        )
+        {
+            console.error(
+                "FileCopy: invalid send position.",
+                _iPos
+            );
+
+            return false;
+        }
+
+
+        /*
+            --------------------------------------------------
+            FILE ALREADY COMPLETE
+            --------------------------------------------------
+        */
+
+        if(
+            _iPos >=
+            this.m_iFileSize
+        )
+        {
+            await this.stop();
+
+
+            showMessage(
+                0,
+                "File sent successfully."
+            );
+
+
+            return true;
+        }
+
+
+        /*
+            --------------------------------------------------
+            CALCULATE READ SIZE
+            --------------------------------------------------
+        */
+
+        const iRemain =
+            this.m_iFileSize -
+            _iPos;
+
+
+        const iReadSize =
+            Math.min(
+                this.m_iSendChunkSize,
+                iRemain
+            );
+
+
+        /*
+            --------------------------------------------------
+            READ FILE
+            --------------------------------------------------
+        */
+
+        try
+        {
+            const oBlob =
+                this.m_oSendFile.slice(
+                    _iPos,
+                    _iPos +
+                    iReadSize
+                );
+
+
+            const aBuffer =
+                await oBlob.arrayBuffer();
+
+
+            const a_baFileData =
+                new Uint8Array(
+                    aBuffer
+                );
+
+
+            const a_iFileRead =
+                a_baFileData.length;
+
+
+            /*
+                --------------------------------------------------
+                CHECK READ
+                --------------------------------------------------
+            */
+
+            if(
+                a_iFileRead <= 0
+            )
+            {
+                console.error(
+                    "FileCopy: file read returned zero bytes."
+                );
+
+
+                await this.stop();
+
+
+                return false;
+            }
+
+
+            /*
+                --------------------------------------------------
+                SAVE READ STATE
+                --------------------------------------------------
+            */
+
+            this.m_iFileRead =
+                a_iFileRead;
+
+
+            this.m_iTimeCopying =
+                0;
+
+
+            // console.log(
+            //     "FileCopy: file chunk read.",
+            //     "position =",
+            //     _iPos,
+            //     "read =",
+            //     a_iFileRead,
+            //     "file size =",
+            //     this.m_iFileSize
+            // );
+
+
+            /*
+                --------------------------------------------------
+                PROTOCOL CHECK
+                --------------------------------------------------
+            */
+
+            if(
+                typeof Protocol ===
+                "undefined" ||
+                typeof Protocol.fSendFile !==
+                "function"
+            )
+            {
+                console.error(
+                    "FileCopy: Protocol.fSendFile() is not available."
+                );
+
+
+                await this.closeTransferFile();
+
+
+                return false;
+            }
+
+
+            if(
+                typeof AppState ===
+                "undefined" ||
+                !AppState.sMyId ||
+                !AppState.sDeskId
+            )
+            {
+                console.error(
+                    "FileCopy: client IDs are not available."
+                );
+
+
+                await this.closeTransferFile();
+
+
+                return false;
+            }
+
+
+            if(
+                typeof wsClient ===
+                "undefined" ||
+                !wsClient ||
+                typeof wsClient.send !==
+                "function"
+            )
+            {
+                console.error(
+                    "FileCopy: WebSocket is not available."
+                );
+
+
+                await this.closeTransferFile();
+
+
+                return false;
+            }
+
+
+            /*
+                --------------------------------------------------
+                FILE PATH ON SERVER
+                --------------------------------------------------
+            */
+
+            const sFilePath =
+                _sFilePath;
+
+
+            /*
+                --------------------------------------------------
+                CREATE PACKET
+                --------------------------------------------------
+            */
+
+            const packet =
+                Protocol.fSendFile(
+                    AppState.sDeskId,                    
+                    AppState.sMyId,
+                    sFilePath,
+                    this.m_iFileSize,
+                    _iPos,
+                    a_baFileData
+                );
+
+
+            if(!packet)
+            {
+                console.error(
+                    "FileCopy: failed to create fSendFile packet."
+                );
+
+
+                await this.closeTransferFile();
+
+
+                return false;
+            }
+
+
+            /*
+                --------------------------------------------------
+                SEND PACKET
+                --------------------------------------------------
+            */
+
+            const result =
+                wsClient.send(
+                    packet
+                );
+
+
+            if(result === false)
+            {
+                console.error(
+                    "FileCopy: failed to send fSendFile packet."
+                );
+
+
+                await this.closeTransferFile();
+
+
+                return false;
+            }
+
+
+            /*
+                --------------------------------------------------
+                CURRENT POSITION
+                --------------------------------------------------
+            */
+
+            const iCurrent =
+                _iPos +
+                a_iFileRead;
+
+
+            /*
+                --------------------------------------------------
+                PROGRESS
+                --------------------------------------------------
+            */
+
+            const percent =
+                this.m_iFileSize > 0
+                    ?
+                    (
+                        iCurrent *
+                        100
+                    ) /
+                    this.m_iFileSize
+                    :
+                    100;
+
+
+            this.setProgress(
+                percent
+            );
+
+
+            // console.log(
+            //     "FileCopy: fSendFile sent.",
+            //     "position =",
+            //     _iPos,
+            //     "read =",
+            //     a_iFileRead,
+            //     "current =",
+            //     iCurrent,
+            //     "size =",
+            //     this.m_iFileSize,
+            //     "percent =",
+            //     percent
+            // );
+
+
+            /*
+                --------------------------------------------------
+                FILE COMPLETE
+                --------------------------------------------------
+            */
+
+            if(
+                _iPos +
+                a_iFileRead >=
+                this.m_iFileSize
+            )
+            {
+                await this.stop();
+
+
+                showMessage(
+                    0,
+                    "File sent successfully."
+                );
+            }
+
+
+            return true;
+        }
+        catch(error)
+        {
+            console.error(
+                "FileCopy: send file read error:",
+                error
+            );
+
+
+            await this.closeTransferFile();
+
+
+            return false;
+        }
+    }
+
+
+     /*
+    --------------------------------------------------
+    CLOSE SEND FILE
+    --------------------------------------------------
+    */
+
+    async closeSendFile()
+    {
+        // console.log(
+        //     "FileCopy: closing send file..."
+        // );
+
+
+        this.m_oSendFile =
+            null;
+
+
+        this.m_oSendFileHandle =
+            null;
+
+
+        this.m_iFileSize =
+            0;
+
+
+        this.m_iFileRead =
+            0;
+
+
+        this.m_bCopying =
+            false;
+
+
+        this.m_sCopyType =
+            "";
+
+
+        this.m_iTimeCopying =
+            0;
+
+
+        console.log(
+            "FileCopy: send file closed."
+        );
+
+
+        return true;
+    }
+
+
 
     /*
     --------------------------------------------------
@@ -1328,17 +2091,18 @@ class FileCopy
         }
 
 
-        console.log(
-            "FileCopy: fGetFile sent.",
-            "path =",
-            sPath,
-            "position =",
-            iPosition
-        );
+        // console.log(
+        //     "FileCopy: fGetFile sent.",
+        //     "path =",
+        //     sPath,
+        //     "position =",
+        //     iPosition
+        // );
 
 
         return true;
     }
+
 
     /*
     --------------------------------------------------
@@ -1430,6 +2194,7 @@ class FileCopy
         }
     }
 
+
     /*
     --------------------------------------------------
     OPEN RECEIVE FILE
@@ -1482,7 +2247,8 @@ class FileCopy
 
             console.log(
                 "FileCopy: receive file opened."
-            );      
+            );
+
 
             return true;
         }
@@ -1505,8 +2271,8 @@ class FileCopy
 
             return false;
         }
-           
     }
+
 
     /*
     --------------------------------------------------
@@ -1530,41 +2296,6 @@ class FileCopy
         }
     )
     {
-        // console.log(
-        //     "FileCopy: writeReceiveFile ENTER"
-        // );
-
-        // console.log(
-        //     "sFilePath =",
-        //     sFilePath
-        // );
-
-        // console.log(
-        //     "iFileSize =",
-        //     iFileSize
-        // );
-
-        // console.log(
-        //     "iPosition =",
-        //     iPosition
-        // );
-
-        // console.log(
-        //     "baData =",
-        //     baData
-        // );
-
-        // console.log(
-        //     "baData instanceof Uint8Array =",
-        //     baData instanceof Uint8Array
-        // );
-
-        // console.log(
-        //     "baData.length =",
-        //     baData ? baData.length : "undefined"
-        // );
-
-
         if(
             !this.m_oReceiveWritable
         )
@@ -1603,17 +2334,20 @@ class FileCopy
             return false;
         }
 
+
         this.m_iTimeCopying =
             0;
 
-        if(sFilePath === "stopCopy" )
+
+        if(
+            sFilePath ===
+            "stopCopy"
+        )
         {
             await this.stop();
-
-            await this.closeReceiveFile();
         }
-        else{
-
+        else
+        {
             /*
                 --------------------------------------------------
                 WRITE
@@ -1625,15 +2359,6 @@ class FileCopy
 
             try
             {
-                // console.log(
-                //     "FileCopy: write file:",
-                //     "position=",
-                //     iPosition,
-                //     "size=",
-                //     data.length
-                // );
-
-
                 await this.m_oReceiveWritable.write(
                     {
                         type:
@@ -1646,16 +2371,6 @@ class FileCopy
                             data
                     }
                 );
-
-
-                // console.log(
-                //     "FileCopy: write OK:",
-                //     "position=",
-                //     iPosition,
-                //     "size=",
-                //     data.length
-                // );
-
             }
             catch(error)
             {
@@ -1668,86 +2383,66 @@ class FileCopy
                 return false;
             }
 
+
             const iReceived =
                 iPosition +
                 data.length;
 
-            if(iReceived < iFileSize && this.m_bCopying)
+
+            if(
+                iReceived <
+                iFileSize &&
+                this.m_bCopying
+            )
             {
-                const result =
-                    this.sendGetFileRequest(
-                        sFilePath,
-                        iReceived
-                    );
-
-
-                // if(!result)
-                // {
-                //     console.error("FileCopy: writeReceiveFile no send!");
-                // }
-                // else{
-                //     console.log("FileCopy: writeReceiveFile writed = "
-                //         , iReceived
-                //         , " bayts"
-                //         , " | iFileSize = "
-                //         , iFileSize
-                //     );
-                // }
+                this.sendGetFileRequest(
+                    sFilePath,
+                    iReceived
+                );
             }
-            else{
-
-                // console.log("FileCopy: writeReceiveFile Fin. Writed = "
-                //         , iReceived
-                //         , " bayts"
-                //         , " | iFileSize = "
-                //         , iFileSize
-                //     );
-
-                if(this.m_bCopying)
+            else
+            {
+                if(
+                    this.m_bCopying
+                )
                 {
                     await this.stop();
 
-                    await this.closeReceiveFile();
 
                     showMessage(
                         0,
                         "File received successfully."
                     );
                 }
-                else{
-
-                    console.log("FileCopy: writeReceiveFile Fin. Writing STOPED ");
-
+                else
+                {
+                    console.log(
+                        "FileCopy: writeReceiveFile Fin. Writing STOPED"
+                    );
                 }
-                
-                
             }
 
 
             const percent =
                 iFileSize > 0
                     ?
-                        (
-                            iReceived *
-                            100
-                        ) /
-                        iFileSize
+                    (
+                        iReceived *
+                        100
+                    ) /
+                    iFileSize
                     :
-                        100;
+                    100;
 
 
             this.setProgress(
                 percent
             );
-
         }
 
-
-        
-
-
-        
+        return true;
     }
+
 
     /*
     --------------------------------------------------
@@ -1758,6 +2453,28 @@ class FileCopy
     та звільняє ресурс.
     --------------------------------------------------
     */
+
+    async closeTransferFile()
+    {
+         if(
+            this.m_sCopyType ===
+            "send"
+        )
+        {
+            await this.closeSendFile();
+        }
+        else
+        if(
+            this.m_sCopyType ===
+            "receive"
+        )
+        {
+            await this.closeReceiveFile();
+        }
+
+        return true;
+
+    }
 
     async closeReceiveFile()
     {
@@ -1791,11 +2508,14 @@ class FileCopy
             this.m_oReceiveFileHandle =
                 null;
 
+
             this.m_bCopying =
                 false;
 
+
             this.m_sCopyType =
                 "";
+
 
             this.m_iTimeCopying =
                 0;
@@ -1826,6 +2546,7 @@ class FileCopy
         }
     }
 
+
     /*
     --------------------------------------------------
     STOP
@@ -1834,12 +2555,58 @@ class FileCopy
 
     async stop()
     {
-        
-        this.sendGetFileRequest(
-            "stopCopy",
-            10
-        );
-               
+        /*
+            --------------------------------------------------
+            SEND
+            --------------------------------------------------
+        */
+
+        if(
+            this.m_sCopyType ===
+            "send"
+        )
+        {
+
+            const packet =
+                Protocol.fSendFile(
+                    AppState.sDeskId,                    
+                    AppState.sMyId,
+                    "stopCopy",
+                    this.m_iFileSize,
+                    10,
+                    "STOP"
+                );
+
+            if(packet)
+            {
+                wsClient.send(
+                        packet
+                    );
+            }
+          
+            await this.closeTransferFile();
+        }
+
+
+        /*
+            --------------------------------------------------
+            RECEIVE
+            --------------------------------------------------
+        */
+
+        if(
+            this.m_sCopyType ===
+            "receive"
+        )
+        {
+            this.sendGetFileRequest(
+                "stopCopy",
+                10
+            );
+
+            await this.closeTransferFile();
+        }
+
 
         this.m_bCopying =
             false;
@@ -1883,7 +2650,7 @@ class FileCopy
 
     async close()
     {
-        await this.closeReceiveFile();
+        await this.closeTransferFile();
 
 
         const window =
@@ -1914,9 +2681,32 @@ class FileCopy
         this.m_sNameFile =
             "";
 
+
         this.m_oReceiveFileHandle =
             null;
+
+
+        this.m_oReceiveWritable =
+            null;
+
+
+        this.m_oSendFileHandle =
+            null;
+
+
+        this.m_oSendFile =
+            null;
+
+
+        this.m_iFileSize =
+            0;
+
+
+        this.m_iFileRead =
+            0;
+
     }
+
 
     /*
     --------------------------------------------------
@@ -1969,6 +2759,7 @@ class FileCopy
                 percent;
         }
     }
+
 
     /*
     --------------------------------------------------

@@ -7,7 +7,6 @@ const ParserData =
         у WebSocketClient.
     */
     slControl: null,
-    onFileData: null,
 
 
 
@@ -583,10 +582,10 @@ const ParserData =
                     }
 
                     /*
-                        Send File
+                         Send File
                     */
 
-                    case 0x0D:
+                    case 0x0C:
                     {
                         const packet =
                             this.parseSendFile(
@@ -619,6 +618,44 @@ const ParserData =
 
                         break;
                     }
+
+                    /*
+                        Recive File
+                    */
+
+                    case 0x0D:
+                    {
+                        const packet =
+                            this.parseReciveFile(
+                                data
+                            );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        break;
+                    }                   
 
 
                     /*
@@ -2783,10 +2820,10 @@ const ParserData =
         };
     },
 
-    parseSendFile(data)
+    parseReciveFile(data)
     {
         // this.log(
-        //     "ParserData::parseSendFile: " +
+        //     "ParserData::parseReciveFile: " +
         //     ", DATA=" +
         //     this.toHex(data)
         // );
@@ -2794,7 +2831,7 @@ const ParserData =
             --------------------------------------------------
             Аналог:
 
-                ParserSocketData::fSendFile()
+                ParserSocketData::fReciveFile()
 
             Формат:
 
@@ -2998,7 +3035,7 @@ const ParserData =
                     0x0D,
 
                 name:
-                    "SEND_FILE",
+                    "RECIVE_FILE",
 
                 validCRC:
                     false
@@ -3077,7 +3114,7 @@ const ParserData =
                     0x0D,
 
                 name:
-                    "SEND_FILE",
+                    "RECIVE_FILE",
 
                 validCRC:
                     false
@@ -3182,7 +3219,7 @@ const ParserData =
             );
 
         // this.log(
-        //     "ParserData::parseSendFile 8: " +
+        //     "ParserData::parseReciveFile 8: " +
         //     ", fileData.length = " +
         //     fileData.length
         // );
@@ -3289,7 +3326,7 @@ const ParserData =
         )
         {
             this.log(
-                "ParserData::parseSendFile: CRC ПОМИЛКА. " +
+                "ParserData::parseReciveFile: CRC ПОМИЛКА. " +
                 "отримано=" +
                 receivedCRC +
                 ", розраховано=" +
@@ -3306,7 +3343,7 @@ const ParserData =
                     0x0D,
 
                 name:
-                    "SEND_FILE",
+                    "RECIVE_FILE",
 
                 validCRC:
                     false
@@ -3357,11 +3394,13 @@ const ParserData =
                 fileData
             );
 
-        // this.log(
-        //     "ParserData::parseSendFile 8: " +
-        //     ", baData.length = " +
-        //     baData.length
-        // );
+        this.log(
+            "ParserData::parseReciveFile 8: " +
+            ", sFilePath = " +
+            sFilePath +
+            ", iPosition = " +
+            iPosition
+        );
 
         /*
             --------------------------------------------------
@@ -3370,10 +3409,10 @@ const ParserData =
         */
 
         if(
-            this.slFileCopy
+            this.slFileCopyRecive
         )
         {
-            this.slFileCopy(
+            this.slFileCopyRecive(
                 sForId,
                 sFromId,
                 sFilePath,
@@ -3382,32 +3421,6 @@ const ParserData =
                 baData
             );
         }
-
-        // let data =
-        //     baData;
-
-
-        // if(
-        //     data instanceof ArrayBuffer
-        // )
-        // {
-        //     data =
-        //         new Uint8Array(
-        //             data
-        //         );
-        // }
-
-
-        // if(
-        //     !(data instanceof Uint8Array)
-        // )
-        // {
-        //     console.error(
-        //         "FileCopy: invalid binary data."
-        //     );
-
-        //     //return false;
-        // }
 
         /*
             --------------------------------------------------
@@ -3424,7 +3437,7 @@ const ParserData =
                 0x0D,
 
             name:
-                "SEND_FILE",
+                "RECIVE_FILE",
 
             validCRC:
                 true,
@@ -3446,6 +3459,417 @@ const ParserData =
 
             data:
                 baData
+        };
+    },
+
+    /*
+    --------------------------------------------------
+    PARSE SET FILE
+    --------------------------------------------------
+    */
+
+    parseSendFile(
+        data
+    )
+    {
+        /*
+            --------------------------------------------------
+            CHECK DATA
+            --------------------------------------------------
+        */
+
+        if(!data)
+            return null;
+
+
+        if(data.length < 4)
+            return null;
+
+
+        /*
+            --------------------------------------------------
+            POSITION
+            --------------------------------------------------
+        */
+
+        let pos =
+            2;
+
+
+        /*
+            --------------------------------------------------
+            FOR ID
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const forIdLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            forIdLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const forIdBytes =
+            data.slice(
+                pos,
+                pos +
+                forIdLength
+            );
+
+
+        pos +=
+            forIdLength;
+
+
+        /*
+            --------------------------------------------------
+            FROM ID
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const fromIdLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            fromIdLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const fromIdBytes =
+            data.slice(
+                pos,
+                pos +
+                fromIdLength
+            );
+
+
+        pos +=
+            fromIdLength;
+
+
+        /*
+            --------------------------------------------------
+            FILE PATH
+            --------------------------------------------------
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const filePathLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            pos +
+            filePathLength +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const filePathBytes =
+            data.slice(
+                pos,
+                pos +
+                filePathLength
+            );
+
+
+        pos +=
+            filePathLength;
+
+
+        /*
+            --------------------------------------------------
+            POSITION
+            --------------------------------------------------
+
+            C++:
+
+                a_baRequest.append(0x04);
+                a_baSz.append(
+                    position >> 24,
+                    position >> 16,
+                    position >> 8,
+                    position
+                );
+
+            Position = 4 bytes,
+            Big Endian.
+        */
+
+        if(pos >= data.length)
+            return null;
+
+
+        const positionLength =
+            data[pos];
+
+
+        pos++;
+
+
+        if(positionLength !== 4)
+        {
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x0C,
+
+                name:
+                    "SEND_FILE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        if(
+            data.length <
+            pos +
+            4 +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const position =
+            (
+                (data[pos] << 24) >>> 0
+            ) |
+            (
+                data[pos + 1] << 16
+            ) |
+            (
+                data[pos + 2] << 8
+            ) |
+            data[pos + 3];
+
+
+        pos +=
+            4;
+
+
+        /*
+            --------------------------------------------------
+            CRC
+            --------------------------------------------------
+
+            C++:
+
+                fCRC_isOk(
+                    _baIn.mid(1, ...),
+                    _baIn.at(...)
+                )
+
+            FF НЕ входить у CRC.
+        */
+
+        if(
+            pos >= data.length
+        )
+        {
+            return null;
+        }
+
+
+        const receivedCRC =
+            data[pos];
+
+
+        /*
+            CRC має бути останнім
+            байтом пакета.
+        */
+
+        if(
+            pos + 1 !== data.length
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            CRC DATA
+            --------------------------------------------------
+        */
+
+        const crcData =
+            data.slice(
+                1,
+                pos
+            );
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseSendFile: CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    0x0C,
+
+                name:
+                    "SEND_FILE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            --------------------------------------------------
+            DECODE
+            --------------------------------------------------
+        */
+
+        const sForId =
+            this.decodeUtf8(
+                forIdBytes
+            );
+
+
+        const sFromId =
+            this.decodeUtf8(
+                fromIdBytes
+            );
+
+
+        const sFilePath =
+            this.decodeUtf8(
+                filePathBytes
+            );
+
+        const iPosition =
+            position;            
+
+        /*
+            --------------------------------------------------
+            Передаємо дані у FileCopy
+            --------------------------------------------------
+        */
+
+            //  this.log(
+            //     "ParserData::parseSendFile:8: " +
+            //     "sFilePath=" +
+            //     sFilePath +
+            //     ", iPosition=" +
+            //     iPosition
+            // );
+
+        if(
+            this.slFileCopySend
+        )
+        {
+            this.slFileCopySend(
+                sForId,
+                sFromId,
+                sFilePath,
+                iPosition,
+            );
+        }
+
+
+        /*
+            --------------------------------------------------
+            RESULT
+            --------------------------------------------------
+        */
+
+        return {
+
+            size:
+                data.length,
+
+            type:
+                0x0C,
+
+            name:
+                "GET_FILE",
+
+            validCRC:
+                true,
+
+            forId:
+                sForId,
+
+            fromId:
+                sFromId,
+
+            filePath:
+                sFilePath,
+
+            position:
+                position
         };
     },
 

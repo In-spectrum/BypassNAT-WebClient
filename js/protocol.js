@@ -1496,7 +1496,7 @@ const Protocol =
     {
         console.log("Protocol:fGetFile 0: "
             , sFilePath );
-            
+
         const encoder =
             new TextEncoder();
 
@@ -1701,6 +1701,401 @@ const Protocol =
                 offset - 1
             );
 
+
+        return packet.buffer;
+    },
+
+    /*
+    --------------------------------------------------
+    SEND FILE
+    --------------------------------------------------
+
+    sForId:
+        ID отримувача
+
+    sFromId:
+        ID відправника
+
+    sFilePath:
+        шлях файла
+
+    iFileSize:
+        повний розмір файла
+
+    iPos:
+        позиція chunk у файлі
+
+    baData:
+        дані chunk
+    --------------------------------------------------
+    */
+
+    fSendFile(
+        sForId,
+        sFromId,    
+        sFilePath,
+        iFileSize,
+        iPos,
+        baData
+    )
+    {
+        // console.log(
+        //     "Protocol:fSendFile 0: ",
+        //     sFilePath,
+        //     "position =",
+        //     iPos,
+        //     "fileSize =",
+        //     iFileSize,
+        //     "dataSize =",
+        //     baData
+        //         ? baData.length
+        //         : 0
+        // );
+
+
+        const encoder =
+            new TextEncoder();
+
+
+        /*
+            --------------------------------------------------
+            ENCODE DATA
+            --------------------------------------------------
+        */
+
+        const forIdBytes =
+            encoder.encode(
+                sForId || ""
+            );
+
+
+        const fromIdBytes =
+            encoder.encode(
+                sFromId || ""
+            );
+
+
+        const filePathBytes =
+            encoder.encode(
+                sFilePath || ""
+            );
+
+
+        /*
+            --------------------------------------------------
+            FILE DATA
+            --------------------------------------------------
+        */
+
+        let fileDataBytes =
+            baData;
+
+
+        if(
+            fileDataBytes instanceof ArrayBuffer
+        )
+        {
+            fileDataBytes =
+                new Uint8Array(
+                    fileDataBytes
+                );
+        }
+
+
+        if(
+            !(fileDataBytes instanceof Uint8Array)
+        )
+        {
+            fileDataBytes =
+                new Uint8Array(
+                    0
+                );
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA SIZE
+            --------------------------------------------------
+        */
+
+        const dataSize =
+            fileDataBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FULL SIZE
+            --------------------------------------------------
+
+            FF
+            0D
+
+            ForId size + ForId
+            FromId size + FromId
+            FilePath size + FilePath
+
+            FileSize size + FileSize
+            Position size + Position
+
+            Data size + Data
+
+            CRC
+        */
+
+        const totalSize =
+            2 +
+
+            1 + forIdBytes.length +
+            1 + fromIdBytes.length +
+            1 + filePathBytes.length +
+
+            1 + 4 +
+
+            1 + 4 +
+
+            4 + dataSize +
+
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset =
+            0;
+
+
+        /*
+            --------------------------------------------------
+            FF
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            0xFF;
+
+
+        /*
+            --------------------------------------------------
+            TYPE
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            0x0D;
+
+
+        /*
+            --------------------------------------------------
+            FOR ID
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            forIdBytes.length & 0xFF;
+
+
+        packet.set(
+            forIdBytes,
+            offset
+        );
+
+
+        offset +=
+            forIdBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FROM ID
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            fromIdBytes.length & 0xFF;
+
+
+        packet.set(
+            fromIdBytes,
+            offset
+        );
+
+
+        offset +=
+            fromIdBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FILE PATH
+            --------------------------------------------------
+        */
+
+        packet[offset++] =
+            filePathBytes.length & 0xFF;
+
+
+        packet.set(
+            filePathBytes,
+            offset
+        );
+
+
+        offset +=
+            filePathBytes.length;
+
+
+        /*
+            --------------------------------------------------
+            FILE SIZE
+            --------------------------------------------------
+
+            C++:
+
+                a_iSz = _iFileSize;
+
+                a_baRequest.append(0x04);
+                a_baRequest.append(a_baSz);
+
+            4 bytes, Big Endian.
+        */
+
+        packet[offset++] =
+            0x04;
+
+
+        packet[offset++] =
+            (iFileSize >>> 24) & 0xFF;
+
+
+        packet[offset++] =
+            (iFileSize >>> 16) & 0xFF;
+
+
+        packet[offset++] =
+            (iFileSize >>> 8) & 0xFF;
+
+
+        packet[offset++] =
+            iFileSize & 0xFF;
+
+
+        /*
+            --------------------------------------------------
+            POSITION
+            --------------------------------------------------
+
+            C++:
+
+                a_iSz = _iPos;
+
+                a_baRequest.append(0x04);
+                a_baRequest.append(a_baSz);
+
+            Position = 4 bytes, Big Endian.
+        */
+
+        packet[offset++] =
+            0x04;
+
+
+        packet[offset++] =
+            (iPos >>> 24) & 0xFF;
+
+
+        packet[offset++] =
+            (iPos >>> 16) & 0xFF;
+
+
+        packet[offset++] =
+            (iPos >>> 8) & 0xFF;
+
+
+        packet[offset++] =
+            iPos & 0xFF;
+
+
+        /*
+            --------------------------------------------------
+            DATA SIZE
+            --------------------------------------------------
+
+            C++:
+
+                a_iSz = _baData.length();
+
+                a_baRequest.append(a_baSz);
+                a_baRequest.append(_baData);
+
+            Data size = 4 bytes, Big Endian.
+        */
+
+        packet[offset++] =
+            (dataSize >>> 24) & 0xFF;
+
+
+        packet[offset++] =
+            (dataSize >>> 16) & 0xFF;
+
+
+        packet[offset++] =
+            (dataSize >>> 8) & 0xFF;
+
+
+        packet[offset++] =
+            dataSize & 0xFF;
+
+
+        /*
+            --------------------------------------------------
+            DATA
+            --------------------------------------------------
+        */
+
+        packet.set(
+            fileDataBytes,
+            offset
+        );
+
+
+        offset +=
+            dataSize;
+
+
+        /*
+            --------------------------------------------------
+            CRC
+            --------------------------------------------------
+
+            C++:
+
+                fGetCRC(
+                    a_baRequest.mid(1),
+                    a_baRequest.size() - 1
+                )
+
+            FF НЕ входить у CRC.
+        */
+
+        packet[offset] =
+            this.getCRC(
+                packet.subarray(
+                    1,
+                    offset
+                ),
+                offset - 1
+            );
+
+
+        /*
+            --------------------------------------------------
+            RESULT
+            --------------------------------------------------
+        */
 
         return packet.buffer;
     }
