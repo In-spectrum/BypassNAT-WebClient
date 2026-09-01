@@ -167,7 +167,9 @@ document.getElementById('btnClear').onclick = () =>
 
 function searchClient()
 {
-    //log("searchClient 2: " + desktopLogin);
+    log("searchClient 0: "
+        + AppState.sMyId
+    );
     
     if (AppState.sMyId.length  === 0)
         return;
@@ -175,6 +177,10 @@ function searchClient()
     lstClients.innerHTML = "";
 
     const desktopLogin = txtFindClient.value;
+
+    log("searchClient 2: "
+        + desktopLogin
+    );
 
     if (desktopLogin.length === 0)
         return;
@@ -458,9 +464,7 @@ function setConnectionStatus(connected)
     {
         // Підключено
         indicator.style.setProperty("--indicator-color", "#4da6ff");
-        btnConnectServer.innerHTML = "Server disconnect"; 
-        
-        searchClient();
+        btnConnectServer.innerHTML = "Server disconnect";
     }
     else
     {
@@ -900,12 +904,12 @@ function()
         "WebSocket: підключення успішне."
     );
 
-    setConnectionStatus(false);
+    setConnectionStatus(false);    
+
+    sendLogin();
 
     if(AppState.sMyId.length)
         setConnectionStatus(true);
-
-    sendLogin();
 };
 
 
@@ -1094,9 +1098,11 @@ function sendLogin()
                         if(wsClient.send(packet))
                         {
 
-                            log(
-                                "Авторизаційні дані відправлено."
-                            );
+                            // log(
+                            //     "Авторизаційні дані відправлено."
+                            // );
+
+                            searchClient();
 
                         }
                         else
@@ -1833,8 +1839,7 @@ function startAppTimer() {
 
                 fileCopy.closeTransferFile();
             }
-        }
-        
+        }        
 
     }, 1000);
 }
