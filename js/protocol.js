@@ -1494,8 +1494,8 @@ const Protocol =
         iPos
     )
     {
-        console.log("Protocol:fGetFile 0: "
-            , sFilePath );
+        // console.log("Protocol:fGetFile 0: "
+        //     , sFilePath );
 
         const encoder =
             new TextEncoder();

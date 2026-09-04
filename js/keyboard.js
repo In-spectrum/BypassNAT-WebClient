@@ -84,23 +84,37 @@ const Keyboard = {
     },
 
     init() {
+
         if (this.initialized)
             return;
 
-        document.addEventListener("keydown", (event) => this.onKeyDown(event), true);
-        document.addEventListener("keyup", (event) => this.onKeyUp(event), true);
+        document.addEventListener(
+            "keydown",
+            (event) => this.onKeyDown(event),
+            true
+        );
+
+        document.addEventListener(
+            "keyup",
+            (event) => this.onKeyUp(event),
+            true
+        );
 
         if (typeof playerArea !== "undefined" && playerArea)
         {
             playerArea.addEventListener("mouseenter", () => {
+
                 this.insidePlayer = true;
                 this.enabled = true;
+
                 playerArea.focus();
             });
 
             playerArea.addEventListener("mouseleave", () => {
+
                 this.insidePlayer = false;
                 this.enabled = false;
+
                 this.releasePressedKeys();
             });
         }
@@ -115,6 +129,10 @@ const Keyboard = {
             log("Keyboard capture initialized");
     },
 
+
+    // ---------------------------------------------------------
+    // KEY DOWN
+
     async onKeyDown(event) {
 
         if (!keyboardCapture)
@@ -128,19 +146,20 @@ const Keyboard = {
         const text = this.getText(event);
 
         log(
-                "KEY DOWN:" +
-                " key = " + event.key +
-                " code = " + event.code +
-                " keyCode = " + event.keyCode +
-                " text = " + text
-            );
+            "KEY DOWN:" +
+            " key = " + event.key +
+            " code = " + event.code +
+            " keyCode = " + event.keyCode +
+            " text = " + text
+        );
 
         event.preventDefault();
 
-        /*
-            Ctrl+V
 
-            Спочатку передаємо clipboard.
+        /*
+            --------------------------------------------------
+            Ctrl+C
+            --------------------------------------------------
         */
 
         if(
@@ -150,8 +169,15 @@ const Keyboard = {
             !event.metaKey
         )
         {
-            AppState.iClipboardTimeCopy = 0;            
+            AppState.iClipboardTimeCopy = 0;
         }
+
+
+        /*
+            --------------------------------------------------
+            Ctrl+V
+            --------------------------------------------------
+        */
 
         if(
             event.code === "KeyV" &&
@@ -163,12 +189,23 @@ const Keyboard = {
             await Clipboard.readAndSend();
         }
 
+
+        /*
+            --------------------------------------------------
+            Send KEY DOWN
+            --------------------------------------------------
+        */
+
         this.sendKeyEvent(
             1,
             key,
             text
         );
     },
+
+
+    // ---------------------------------------------------------
+    // KEY UP
 
     onKeyUp(event) {
 
@@ -183,14 +220,21 @@ const Keyboard = {
         const text = this.getText(event);
 
         log(
-                "KEY UP:" +
-                " key = " + event.key +
-                " code = " + event.code +
-                " keyCode = " + event.keyCode +
-                " text = " + text
-            );
+            "KEY UP:" +
+            " key = " + event.key +
+            " code = " + event.code +
+            " keyCode = " + event.keyCode +
+            " text = " + text
+        );
 
         event.preventDefault();
+
+
+        /*
+            --------------------------------------------------
+            Send KEY UP
+            --------------------------------------------------
+        */
 
         this.sendKeyEvent(
             2,
@@ -199,26 +243,36 @@ const Keyboard = {
         );
     },
 
+
+    // ---------------------------------------------------------
+    // SEND KEY EVENT
+
     sendKeyEvent(variable, key, text) {
-        // C++ Control::slSendKeyEvent() stops here when there is no
-        // active client/stream connection.
+
+        // C++ Control::slSendKeyEvent() stops here when there
+        // is no active client/stream connection.
+
         if (!AppState.serverConnected || !AppState.sDeskId)
             return;
+
 
         const packet = Protocol.fSendKeyEvents(
             AppState.sMyId,
             AppState.sDeskId,
             variable,
             key,
-            0,          // Browser has no HKL. C++ uses 0 on Linux too.
+            0,          // Browser has no HKL.
             text
         );
+
 
         if (packet == null)
             return;
 
+
         if (!wsClient.send(packet))
             return;
+
 
         if (typeof log === "function")
         {
@@ -231,153 +285,386 @@ const Keyboard = {
         }
     },
 
+
+    // ---------------------------------------------------------
+    // GET TEXT
+    //
+    // Equivalent to QML:
+    //
+    //     event.text
+    //
+    // For printable characters browser event.key is used.
+    // Non-printable keys have empty text.
+    // ---------------------------------------------------------
+
     getText(event) {
-        // KeyboardEvent.key corresponds most closely to QML event.text
-        // for printable characters. For non-printable keys it is ignored
-        // by the receiver's KeyControler mapping.
+
         if (typeof event.key !== "string")
             return "";
 
         if (event.key.length === 1)
             return event.key;
 
-        if (event.key === "Enter")
-            return "\n";
-
-        if (event.key === "Tab")
-            return "\t";
-
         return "";
     },
 
+
+    // ---------------------------------------------------------
+    // CONVERT BROWSER KEY TO Qt::Key
+    // ---------------------------------------------------------
+
     toQtKey(event) {
+
         const code = event.code || "";
         const key = event.key || "";
         const qt = this.QT;
 
-        // Letters. The original Qt client sends Qt::Key_A ... Qt::Key_Z.
+
+        /*
+            --------------------------------------------------
+            Letters
+            --------------------------------------------------
+
+            Physical key is used here.
+
+            EN:
+                KeyA -> Qt::Key_A
+
+            UA:
+                KeyA -> Qt::Key_A
+                text -> "ф"
+            --------------------------------------------------
+        */
+
         if (/^Key[A-Z]$/.test(code))
             return code.charCodeAt(3);
 
-        // Main keyboard digits and numpad digits both map to Qt::Key_0...9.
-        if (/^Digit[0-9]$/.test(code) || /^Numpad[0-9]$/.test(code))
+
+        /*
+            --------------------------------------------------
+            Main keyboard digits
+            --------------------------------------------------
+        */
+
+        if (/^Digit[0-9]$/.test(code))
             return Number(code.slice(-1)) + 0x30;
 
-        // Standard printable keys represented by their Qt/ASCII values.
+
+        /*
+            --------------------------------------------------
+            Numpad digits
+            --------------------------------------------------
+        */
+
+        if (/^Numpad[0-9]$/.test(code))
+            return Number(code.slice(-1)) + 0x30;
+
+
+        /*
+            --------------------------------------------------
+            Printable physical keys
+            --------------------------------------------------
+
+            IMPORTANT:
+
+            Use event.code, not event.key.
+
+            Example:
+
+                [       -> BracketLeft -> 0x5B
+                Shift+[ -> BracketLeft -> 0x5B
+
+            The actual generated character is carried separately
+            through event.key / getText():
+
+                [       -> "["
+                Shift+[ -> "{"
+            --------------------------------------------------
+        */
+
         const printable = {
-            " ": 0x20,
-            "-": 0x2D,
-            "=": 0x3D,
-            "[": 0x5B,
-            "]": 0x5D,
-            "\\": 0x5C,
-            ";": 0x3B,
-            "'": 0x27,
-            ",": 0x2C,
-            ".": 0x2E,
-            "/": 0x2F,
-            "`": 0x60
+
+            "Space":       0x20,
+
+            "Minus":       0x2D,
+            "Equal":       0x3D,
+
+            "BracketLeft":  0x5B,
+            "BracketRight": 0x5D,
+
+            "Backslash":   0x5C,
+
+            "Semicolon":   0x3B,
+            "Quote":       0x27,
+
+            "Comma":       0x2C,
+            "Period":      0x2E,
+            "Slash":       0x2F,
+
+            "Backquote":   0x60
         };
 
-        // These are intentionally kept close to the browser event.code.
-        // The C++ receiver has special handling for several OEM keys.
-        if (Object.prototype.hasOwnProperty.call(printable, key))
-            return printable[key];
+
+        if (
+            Object.prototype.hasOwnProperty.call(
+                printable,
+                code
+            )
+        )
+        {
+            return printable[code];
+        }
+
+
+        /*
+            --------------------------------------------------
+            Special keys
+            --------------------------------------------------
+        */
 
         switch (key)
         {
-            case "Escape": return qt.Escape;
-            case "Tab": return qt.Tab;
-            case "Backspace": return qt.Backspace;
-            case "Enter": return qt.Return;
-            case "Insert": return qt.Insert;
-            case "Delete": return qt.Delete;
-            case "Pause": return qt.Pause;
-            case "PrintScreen": return qt.Print;
-            case "Clear": return qt.Clear;
+            case "Escape":
+                return qt.Escape;
 
-            case "Home": return qt.Home;
-            case "End": return qt.End;
-            case "ArrowLeft": return qt.Left;
-            case "ArrowUp": return qt.Up;
-            case "ArrowRight": return qt.Right;
-            case "ArrowDown": return qt.Down;
-            case "PageUp": return qt.PageUp;
-            case "PageDown": return qt.PageDown;
+            case "Tab":
+                return qt.Tab;
 
-            case "Shift": return qt.Shift;
-            case "Control": return qt.Control;
-            case "Alt": return qt.Alt;
-            case "Meta": return qt.Meta;
-            case "CapsLock": return qt.CapsLock;
-            case "NumLock": return qt.NumLock;
-            case "ScrollLock": return qt.ScrollLock;
-            case "ContextMenu": return qt.Menu;
+            case "Backspace":
+                return qt.Backspace;
 
-            case "F1": return qt.F1;
-            case "F2": return qt.F2;
-            case "F3": return qt.F3;
-            case "F4": return qt.F4;
-            case "F5": return qt.F5;
-            case "F6": return qt.F6;
-            case "F7": return qt.F7;
-            case "F8": return qt.F8;
-            case "F9": return qt.F9;
-            case "F10": return qt.F10;
-            case "F11": return qt.F11;
-            case "F12": return qt.F12;
-            case "F13": return qt.F13;
-            case "F14": return qt.F14;
-            case "F15": return qt.F15;
-            case "F16": return qt.F16;
-            case "F17": return qt.F17;
-            case "F18": return qt.F18;
-            case "F19": return qt.F19;
-            case "F20": return qt.F20;
-            case "F21": return qt.F21;
-            case "F22": return qt.F22;
-            case "F23": return qt.F23;
-            case "F24": return qt.F24;
+            case "Enter":
+                return qt.Return;
 
-            case "BrowserBack": return qt.BrowserBack;
-            case "BrowserForward": return qt.BrowserForward;
-            case "BrowserRefresh": return qt.Refresh;
-            case "AudioVolumeDown": return qt.VolumeDown;
-            case "AudioVolumeMute": return qt.VolumeMute;
-            case "AudioVolumeUp": return qt.VolumeUp;
-            case "MediaPlayPause": return qt.MediaPlay;
-            case "MediaStop": return qt.MediaStop;
-            case "MediaTrackPrevious": return qt.MediaPrevious;
-            case "MediaTrackNext": return qt.MediaNext;
+            case "Insert":
+                return qt.Insert;
+
+            case "Delete":
+                return qt.Delete;
+
+            case "Pause":
+                return qt.Pause;
+
+            case "PrintScreen":
+                return qt.Print;
+
+            case "Clear":
+                return qt.Clear;
+
+
+            case "Home":
+                return qt.Home;
+
+            case "End":
+                return qt.End;
+
+            case "ArrowLeft":
+                return qt.Left;
+
+            case "ArrowUp":
+                return qt.Up;
+
+            case "ArrowRight":
+                return qt.Right;
+
+            case "ArrowDown":
+                return qt.Down;
+
+            case "PageUp":
+                return qt.PageUp;
+
+            case "PageDown":
+                return qt.PageDown;
+
+
+            case "Shift":
+                return qt.Shift;
+
+            case "Control":
+                return qt.Control;
+
+            case "Alt":
+                return qt.Alt;
+
+            case "Meta":
+                return qt.Meta;
+
+            case "CapsLock":
+                return qt.CapsLock;
+
+            case "NumLock":
+                return qt.NumLock;
+
+            case "ScrollLock":
+                return qt.ScrollLock;
+
+            case "ContextMenu":
+                return qt.Menu;
+
+
+            case "F1":
+                return qt.F1;
+
+            case "F2":
+                return qt.F2;
+
+            case "F3":
+                return qt.F3;
+
+            case "F4":
+                return qt.F4;
+
+            case "F5":
+                return qt.F5;
+
+            case "F6":
+                return qt.F6;
+
+            case "F7":
+                return qt.F7;
+
+            case "F8":
+                return qt.F8;
+
+            case "F9":
+                return qt.F9;
+
+            case "F10":
+                return qt.F10;
+
+            case "F11":
+                return qt.F11;
+
+            case "F12":
+                return qt.F12;
+
+            case "F13":
+                return qt.F13;
+
+            case "F14":
+                return qt.F14;
+
+            case "F15":
+                return qt.F15;
+
+            case "F16":
+                return qt.F16;
+
+            case "F17":
+                return qt.F17;
+
+            case "F18":
+                return qt.F18;
+
+            case "F19":
+                return qt.F19;
+
+            case "F20":
+                return qt.F20;
+
+            case "F21":
+                return qt.F21;
+
+            case "F22":
+                return qt.F22;
+
+            case "F23":
+                return qt.F23;
+
+            case "F24":
+                return qt.F24;
+
+
+            case "BrowserBack":
+                return qt.BrowserBack;
+
+            case "BrowserForward":
+                return qt.BrowserForward;
+
+            case "BrowserRefresh":
+                return qt.Refresh;
+
+
+            case "AudioVolumeDown":
+                return qt.VolumeDown;
+
+            case "AudioVolumeMute":
+                return qt.VolumeMute;
+
+            case "AudioVolumeUp":
+                return qt.VolumeUp;
+
+
+            case "MediaPlayPause":
+                return qt.MediaPlay;
+
+            case "MediaStop":
+                return qt.MediaStop;
+
+            case "MediaTrackPrevious":
+                return qt.MediaPrevious;
+
+            case "MediaTrackNext":
+                return qt.MediaNext;
+
+
+            case "AltGraph":
+                return qt.AltGr;
         }
 
-        // Numpad operators use the Qt keypad values that are represented
-        // by the corresponding printable key in the receiver.
+
+        /*
+            --------------------------------------------------
+            Numpad operators
+            --------------------------------------------------
+        */
+
         switch (code)
         {
-            case "NumpadMultiply": return 0x2A; // Qt::Key_Asterisk
-            case "NumpadAdd": return 0x2B;      // Qt::Key_Plus
-            case "NumpadSubtract": return 0x2D; // Qt::Key_Minus
-            case "NumpadDecimal": return 0x2E;  // Qt::Key_Period
-            case "NumpadDivide": return 0x2F;   // Qt::Key_Slash
-            case "NumpadEqual": return 0x3D;    // Qt::Key_Equal
-            case "NumpadEnter": return qt.Enter;
+            case "NumpadMultiply":
+                return 0x2A;
+
+            case "NumpadAdd":
+                return 0x2B;
+
+            case "NumpadSubtract":
+                return 0x2D;
+
+            case "NumpadDecimal":
+                return 0x2E;
+
+            case "NumpadDivide":
+                return 0x2F;
+
+            case "NumpadEqual":
+                return 0x3D;
+
+            case "NumpadEnter":
+                return qt.Enter;
         }
 
-        // AltGr is represented by Ctrl+Alt by browsers. Qt has a dedicated
-        // Key_AltGr, but the receiver's original table handles Alt keys.
-        if (key === "AltGraph")
-            return qt.AltGr;
 
-        // Unsupported browser keys are not sent. This mirrors the original
-        // KeyControler behavior for keys it cannot map.
+        /*
+            --------------------------------------------------
+            Unsupported key
+            --------------------------------------------------
+        */
+
         return null;
     },
 
+
+    // ---------------------------------------------------------
+    // RELEASE PRESSED KEYS
+
     releasePressedKeys() {
-        // Browser keyup is not guaranteed when the window/tab loses focus.
-        // Do not synthesize arbitrary key releases here because the original
-        // protocol does not carry a key-state snapshot.
+
+        // Browser keyup is not guaranteed when the window/tab
+        // loses focus.
+
+        // Do not synthesize arbitrary key releases because the
+        // original protocol does not carry a key-state snapshot.
+
         this.enabled = this.insidePlayer;
     }
 };

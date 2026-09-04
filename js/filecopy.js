@@ -2488,17 +2488,17 @@ class FileCopy
 
         try
         {
-            console.log(
-                "FileCopy: closing receive file..."
-            );
+            // console.log(
+            //     "FileCopy: closing receive file..."
+            // );
 
 
             await this.m_oReceiveWritable.close();
 
 
-            console.log(
-                "FileCopy: receive file closed."
-            );
+            // console.log(
+            //     "FileCopy: receive file closed."
+            // );
 
 
             this.m_oReceiveWritable =

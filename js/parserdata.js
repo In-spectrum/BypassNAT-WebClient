@@ -3394,13 +3394,13 @@ const ParserData =
                 fileData
             );
 
-        this.log(
-            "ParserData::parseReciveFile 8: " +
-            ", sFilePath = " +
-            sFilePath +
-            ", iPosition = " +
-            iPosition
-        );
+        // this.log(
+        //     "ParserData::parseReciveFile 9: " +
+        //     ", sFilePath = " +
+        //     sFilePath +
+        //     ", iPosition = " +
+        //     iPosition
+        // );
 
         /*
             --------------------------------------------------
