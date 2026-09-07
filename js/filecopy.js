@@ -1672,7 +1672,7 @@ class FileCopy
 
         try
         {
-            const t0 = performance.now();
+            //const t0 = performance.now();
 
             const oBlob =
                 this.m_oSendFile.slice(
@@ -1681,13 +1681,13 @@ class FileCopy
                     iReadSize
                 );
 
-            const t1 = performance.now();
+            //const t1 = performance.now();
 
 
             const aBuffer =
                 await oBlob.arrayBuffer();
 
-            const t2 = performance.now();
+            //const t2 = performance.now();
 
 
             const a_baFileData =
@@ -1695,7 +1695,7 @@ class FileCopy
                     aBuffer
                 );
 
-            const t3 = performance.now();
+            //const t3 = performance.now();
 
 
             const a_iFileRead =
@@ -1840,7 +1840,7 @@ class FileCopy
                 );
 
             
-            const t4 = performance.now();
+            //const t4 = performance.now();
 
 
             if(!packet)
@@ -1882,7 +1882,7 @@ class FileCopy
                 return false;
             }
 
-            const t5 = performance.now();
+            //const t5 = performance.now();
 
             // console.log(
             //     "SEND:",
@@ -2387,6 +2387,22 @@ class FileCopy
         }
     )
     {
+
+        if(
+            iFileSize === 0
+        )
+        {
+            await this.stop();
+
+
+             showMessage(
+                    0,
+                    "Error.\n\nFile transfer failed.\nInvalid file path."
+                );        
+
+            return false;
+        }
+
         if(
             !this.m_oReceiveWritable
         )
@@ -2399,7 +2415,7 @@ class FileCopy
         }
 
 
-        const t2 = performance.now();
+        //const t2 = performance.now();
 
         let data =
             baData;
@@ -2450,7 +2466,7 @@ class FileCopy
                 у вказану позицію.
             */
 
-            const t3 = performance.now();
+            //const t3 = performance.now();
 
             try
             {
@@ -2480,14 +2496,14 @@ class FileCopy
 
             this.m_iFileSize = iFileSize;
 
-            const t4 = performance.now();
+            //const t4 = performance.now();
 
             const iReceived =
                 iPosition +
                 data.length;
 
 
-            const t5 = performance.now();
+            //const t5 = performance.now();
 
             // console.log(
             //     "WRITE:",
@@ -2677,15 +2693,15 @@ class FileCopy
             --------------------------------------------------
         */
 
+        this.m_bCopying =
+            false;
+
         if(
             this.m_sCopyType ===
             "send"
         )
         {
-            this.finishTransferTimer(
-                "SEND"
-            );
-
+           
             const packet =
                 Protocol.fSendFile(
                     AppState.sDeskId,                    
@@ -2703,7 +2719,13 @@ class FileCopy
                     );
             }
           
+
+            this.finishTransferTimer(
+                "SEND"
+            );
+
             await this.closeTransferFile();
+            
         }
 
 
@@ -2717,22 +2739,21 @@ class FileCopy
             this.m_sCopyType ===
             "receive"
         )
-        {
-            this.finishTransferTimer(
-                "RECEIVE"
-            );
+        {           
 
             this.sendGetFileRequest(
                 "stopCopy",
                 10
             );
 
-            await this.closeTransferFile();
+            this.finishTransferTimer(
+                "RECEIVE"
+            );
+
+            await this.closeTransferFile();            
         }
 
-
-        this.m_bCopying =
-            false;
+        
 
         this.m_sCopyType =
             "";
