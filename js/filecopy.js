@@ -694,6 +694,29 @@ class FileCopy
         progressBar.style.width =
             "100%";
 
+        const progressPercent =
+            document.createElement(
+                "div"
+            );
+
+        progressPercent.id =
+            "fileCopyProgressPercent";
+
+        progressPercent.textContent =
+            "0.0%";
+
+        progressPercent.style.textAlign =
+            "left";
+
+        progressPercent.style.fontSize =
+            "14px";
+
+        progressPercent.style.color =
+            "#222222";
+
+        progressPercent.style.marginTop =
+            "5px";
+
 
         const stop =
             document.createElement(
@@ -739,6 +762,10 @@ class FileCopy
 
         progress.appendChild(
             progressBar
+        );
+
+        progress.appendChild(
+            progressPercent
         );
 
 
@@ -2757,6 +2784,17 @@ class FileCopy
         {
             progress.value =
                 percent;
+        }
+
+        const progressPercent =
+            document.getElementById(
+                "fileCopyProgressPercent"
+            );
+
+        if(progressPercent)
+        {
+            progressPercent.textContent =
+                percent.toFixed(1) + "%";
         }
     }
 
