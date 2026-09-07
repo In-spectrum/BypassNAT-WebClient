@@ -20,6 +20,32 @@ class FileCopy
         this.m_sCopyType =
             "";
 
+        /*
+            --------------------------------------------------
+            TRANSFER TIME
+            --------------------------------------------------
+
+            Час повного копіювання файла.
+
+            m_iTransferStartTime:
+                performance.now() на старті.
+
+            m_iTransferEndTime:
+                performance.now() на фініші.
+
+            m_iTransferElapsedTime:
+                повний час копіювання в ms.
+        */
+
+        this.m_iTransferStartTime =
+            0;
+
+        this.m_iTransferEndTime =
+            0;
+
+        this.m_iTransferElapsedTime =
+            0;
+
 
         /*
             --------------------------------------------------
@@ -1093,6 +1119,9 @@ class FileCopy
             );
 
 
+            this.startTransferTimer();
+
+
             /*
                 --------------------------------------------------
                 SEND FIRST CHUNK
@@ -1106,6 +1135,8 @@ class FileCopy
                 ("/web-client/" + this.m_sNameFile)
                 , 0
             );
+
+
 
 
             return;
@@ -1285,6 +1316,7 @@ class FileCopy
             this.m_bCopying =
                 true;
 
+            this.startTransferTimer();
 
             const result =
                 this.sendGetFileRequest(
@@ -1640,6 +1672,8 @@ class FileCopy
 
         try
         {
+            const t0 = performance.now();
+
             const oBlob =
                 this.m_oSendFile.slice(
                     _iPos,
@@ -1647,15 +1681,21 @@ class FileCopy
                     iReadSize
                 );
 
+            const t1 = performance.now();
+
 
             const aBuffer =
                 await oBlob.arrayBuffer();
+
+            const t2 = performance.now();
 
 
             const a_baFileData =
                 new Uint8Array(
                     aBuffer
                 );
+
+            const t3 = performance.now();
 
 
             const a_iFileRead =
@@ -1771,7 +1811,7 @@ class FileCopy
 
                 return false;
             }
-
+            
 
             /*
                 --------------------------------------------------
@@ -1798,6 +1838,9 @@ class FileCopy
                     _iPos,
                     a_baFileData
                 );
+
+            
+            const t4 = performance.now();
 
 
             if(!packet)
@@ -1839,6 +1882,28 @@ class FileCopy
                 return false;
             }
 
+            const t5 = performance.now();
+
+            // console.log(
+            //     "SEND:",
+            //     "slice",
+            //     (t1 - t0).toFixed(2),
+
+            //     "read",
+            //     (t2 - t1).toFixed(2),
+
+            //     "Uint8",
+            //     (t3 - t2).toFixed(2),
+
+            //     "packet",
+            //     (t4 - t3).toFixed(2),
+
+            //     "send",
+            //     (t5 - t4).toFixed(2),
+
+            //     "totall",
+            //     (t5 - t0).toFixed(2)
+            // );
 
             /*
                 --------------------------------------------------
@@ -1902,6 +1967,8 @@ class FileCopy
             )
             {
                 await this.stop();
+                
+
 
 
                 showMessage(
@@ -1968,7 +2035,6 @@ class FileCopy
 
         this.m_iTimeCopying =
             0;
-
 
         console.log(
             "FileCopy: send file closed."
@@ -2070,7 +2136,6 @@ class FileCopy
             return false;
         }
 
-
         /*
             --------------------------------------------------
             CREATE PACKET
@@ -2095,7 +2160,6 @@ class FileCopy
             return false;
         }
 
-
         /*
             --------------------------------------------------
             SEND
@@ -2115,7 +2179,7 @@ class FileCopy
             );
 
             return false;
-        }
+        }        
 
 
         // console.log(
@@ -2335,6 +2399,8 @@ class FileCopy
         }
 
 
+        const t2 = performance.now();
+
         let data =
             baData;
 
@@ -2384,6 +2450,8 @@ class FileCopy
                 у вказану позицію.
             */
 
+            const t3 = performance.now();
+
             try
             {
                 await this.m_oReceiveWritable.write(
@@ -2410,13 +2478,51 @@ class FileCopy
                 return false;
             }
 
+            this.m_iFileSize = iFileSize;
+
+            const t4 = performance.now();
 
             const iReceived =
                 iPosition +
                 data.length;
 
 
-            if(
+            const t5 = performance.now();
+
+            // console.log(
+            //     "WRITE:",
+
+            //     "data",
+            //     (t3 - t2).toFixed(2),
+
+            //     "write",
+            //     (t4 - t3).toFixed(2),
+
+            //     "packet",
+            //     (t5 - t4).toFixed(2),
+
+            //     "totall",
+            //     (t5 - t2).toFixed(2)
+            // );    
+
+
+            const percent =
+                iFileSize > 0
+                    ?
+                    (
+                        iReceived *
+                        100
+                    ) /
+                    iFileSize
+                    :
+                    100;
+
+
+            this.setProgress(
+                percent
+            );
+
+             if(
                 iReceived <
                 iFileSize &&
                 this.m_bCopying
@@ -2448,23 +2554,6 @@ class FileCopy
                     );
                 }
             }
-
-
-            const percent =
-                iFileSize > 0
-                    ?
-                    (
-                        iReceived *
-                        100
-                    ) /
-                    iFileSize
-                    :
-                    100;
-
-
-            this.setProgress(
-                percent
-            );
         }
 
         return true;
@@ -2593,6 +2682,9 @@ class FileCopy
             "send"
         )
         {
+            this.finishTransferTimer(
+                "SEND"
+            );
 
             const packet =
                 Protocol.fSendFile(
@@ -2626,6 +2718,10 @@ class FileCopy
             "receive"
         )
         {
+            this.finishTransferTimer(
+                "RECEIVE"
+            );
+
             this.sendGetFileRequest(
                 "stopCopy",
                 10
@@ -2830,6 +2926,149 @@ class FileCopy
 
         alert(
             sMessage
+        );
+    }
+
+    /*
+    --------------------------------------------------
+    TRANSFER START
+    --------------------------------------------------
+    */
+
+    startTransferTimer()
+    {
+        this.m_iTransferStartTime =
+            performance.now();
+
+        this.m_iTransferEndTime =
+            0;
+
+        this.m_iTransferElapsedTime =
+            0;
+
+
+        console.log(
+            "FileCopy: transfer started.",
+            "time =",
+            new Date().toLocaleTimeString()
+        );
+    }
+
+    /*
+    --------------------------------------------------
+    TRANSFER FINISH
+    --------------------------------------------------
+    */
+
+    finishTransferTimer(
+        sType
+    )
+    {
+        if(
+            this.m_iTransferStartTime <= 0
+        )
+        {
+            console.warn(
+                "FileCopy: transfer start time is not set."
+            );
+
+            return;
+        }
+
+
+        this.m_iTransferEndTime =
+            performance.now();
+
+
+        this.m_iTransferElapsedTime =
+            this.m_iTransferEndTime -
+            this.m_iTransferStartTime;
+
+
+        const iSeconds =
+            this.m_iTransferElapsedTime /
+            1000;
+
+
+        const iFileSizeMB =
+            this.m_iFileSize /
+            (1024 * 1024);
+
+
+        const iSpeedMB =
+            iSeconds > 0
+                ?
+                iFileSizeMB / iSeconds
+                :
+                0;
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        console.log(
+            "FileCopy: TRANSFER FINISHED"
+        );
+
+
+        console.log(
+            "type =",
+            sType
+        );
+
+
+        console.log(
+            "file =",
+            this.m_sNameFile
+        );
+
+
+        console.log(
+            "size =",
+            this.m_iFileSize,
+            "bytes"
+        );
+
+
+        console.log(
+            "start =",
+            this.m_iTransferStartTime.toFixed(2),
+            "ms"
+        );
+
+
+        console.log(
+            "end =",
+            this.m_iTransferEndTime.toFixed(2),
+            "ms"
+        );
+
+
+        console.log(
+            "elapsed =",
+            this.m_iTransferElapsedTime.toFixed(2),
+            "ms"
+        );
+
+
+        console.log(
+            "elapsed =",
+            iSeconds.toFixed(3),
+            "sec"
+        );
+
+
+        console.log(
+            "speed =",
+            iSpeedMB.toFixed(2),
+            "MB/s"
+        );
+
+
+        console.log(
+            "========================================"
         );
     }
 }
