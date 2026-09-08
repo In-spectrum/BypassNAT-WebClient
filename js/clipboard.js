@@ -676,6 +676,9 @@ const Clipboard =
         sData
     )
     {
+
+        AppState.iClipboardTimeCopy = 0;
+
         // log(
         //     "Clipboard.fBufferWrite: " +
         //     iVar +
@@ -742,6 +745,8 @@ const Clipboard =
             iVar === 2
         )
         {
+
+            AppState.iClipboardTimeCopy = 10;
 
             document.getElementById(
                 "clipboardRiadWrite"

@@ -1732,6 +1732,8 @@ function startAppTimer() {
         {
             //log("startAppTimer 5.0:" + AppState.iTimeDeskActive );
 
+            //перевірка, чи приходять від Девайса сигнали активності
+            //, якщо ні - то перепідключаємося
             if(AppState.iTimeDeskActive >= 3)
             {
                 //log("startAppTimer 5.1:");
@@ -1774,6 +1776,8 @@ function startAppTimer() {
             }
             else{
                 
+                //якщо звязок з Девайсом є, а відео відсутне - йде перепідключення 
+                // (можливо змінився стрім-УРЛ, або не працює відео-сервер)
                 if(AppState.iTimeDeskActive >= 2)
                 {
                     if(AppState.bStream && !AppState.bRunStream)
@@ -1790,6 +1794,7 @@ function startAppTimer() {
             AppState.iTimeDeskActive++;
 
 
+            //припиняє дозвіл на отримання Clipboard від кліента
             if(AppState.bStream 
                 && AppState.bRunStream
                 && AppState.iClipboardTimeCopy < 10
@@ -1802,9 +1807,13 @@ function startAppTimer() {
         }
 
     
-
+        //відправка клієнту повідомлення
+        // , що його дивляться (щоб продовжував стрім)
         fStreamWatcher();
 
+        //повторне підключення до сервера
+        // , якщо конект пропав
+        // , а команда на підключення не відмінялася
         if(AppState.serverConnectTime == 3)
         {
             AppState.serverConnectTime = 0;
@@ -1817,6 +1826,7 @@ function startAppTimer() {
 
         AppState.serverConnectTime++;    
         
+        //контроль активності копіювання файла
         if(fileCopy && fileCopy.m_bCopying && fileCopy.m_iTimeCopying < 10)
         {
             fileCopy.m_iTimeCopying++;

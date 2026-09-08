@@ -166,9 +166,11 @@ const Keyboard = {
             event.code === "KeyC" &&
             event.ctrlKey &&
             !event.altKey &&
-            !event.metaKey
+            !event.metaKey &&
+            AppState.iClipboardTimeCopy > 4
         )
         {
+            //дозвіл на отримання буфера від Девайса
             AppState.iClipboardTimeCopy = 0;
         }
 
