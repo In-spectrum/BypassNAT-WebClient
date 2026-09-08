@@ -731,12 +731,12 @@ const ParserData =
                         //     this.toHex(data)
                         // );
 
-                        this.log(
-                            "ParserData::nextStep: unknown TYPE = 0x" +
-                            data[1]
-                                .toString(16)
-                                .padStart(2, "0")
-                        );
+                        // this.log(
+                        //     "ParserData::nextStep: unknown TYPE = 0x" +
+                        //     data[1]
+                        //         .toString(16)
+                        //         .padStart(2, "0")
+                        // );
 
 
                         /*
@@ -764,10 +764,10 @@ const ParserData =
 
                         if(nextStart < 0)
                         {
-                            this.log(
-                                "ParserData::nextStep: " +
-                                "next FF not found"
-                            );
+                            // this.log(
+                            //     "ParserData::nextStep: " +
+                            //     "next FF not found"
+                            // );
 
 
                             pos =
@@ -1095,17 +1095,17 @@ const ParserData =
         this.sgControl("0", 22, sMyId, "");
 
 
-        this.log(
-            "ParserData::parseNewId: " +
-            "ID=" +
-            sMyId +
-            ", DEV=" +
-            (
-                devServerData.length > 0
-                    ? devServerData[0]
-                    : 0
-            )
-        );
+        // this.log(
+        //     "ParserData::parseNewId: " +
+        //     "ID=" +
+        //     sMyId +
+        //     ", DEV=" +
+        //     (
+        //         devServerData.length > 0
+        //             ? devServerData[0]
+        //             : 0
+        //     )
+        // );
 
 
         /*

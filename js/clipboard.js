@@ -118,9 +118,9 @@ const Clipboard =
                 true;
 
 
-            log(
-                "Clipboard: доступ на читання дозволено."
-            );
+            // log(
+            //     "Clipboard: доступ на читання дозволено."
+            // );
 
 
             return true;

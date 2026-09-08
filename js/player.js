@@ -48,13 +48,9 @@ function startPlayer(url)
     }
 
 
-    log(
-        "Player: start"
-    );
-
 
     log(
-        "Player URL: " +
+        "startPlayer 2: URL: " +
         url
     );
 
@@ -128,24 +124,24 @@ function startPlayer(url)
 
             onTrack: function(event)
             {
-                log(
-                    "Player: received " +
-                    event.track.kind +
-                    " track"
-                );
+                // log(
+                //     "Player: received " +
+                //     event.track.kind +
+                //     " track"
+                // );
 
 
                 /*
                     Діагностика.
                 */
 
-                if(event.streams)
-                {
-                    log(
-                        "Player: event.streams.length = " +
-                        event.streams.length
-                    );
-                }
+                // if(event.streams)
+                // {
+                //     log(
+                //         "Player: event.streams.length = " +
+                //         event.streams.length
+                //     );
+                // }
 
 
                 /*
@@ -194,9 +190,9 @@ function startPlayer(url)
 
                 if(video.srcObject === stream)
                 {
-                    log(
-                        "Player: MediaStream already assigned"
-                    );
+                    // log(
+                    //     "Player: MediaStream already assigned"
+                    // );
 
                     return;
                 }
@@ -210,9 +206,9 @@ function startPlayer(url)
                     stream;
 
 
-                log(
-                    "Player: MediaStream assigned"
-                );
+                // log(
+                //     "Player: MediaStream assigned"
+                // );
 
 
                 /*
@@ -234,9 +230,9 @@ function startPlayer(url)
                     playPromise
                         .then(function()
                         {
-                            log(
-                                "Player: playback started"
-                            );
+                            // log(
+                            //     "Player: playback started 1"
+                            // );
 
 
                             /*
@@ -286,9 +282,9 @@ function startPlayer(url)
                         який не повертає Promise.
                     */
 
-                    log(
-                        "Player: playback started"
-                    );
+                    // log(
+                    //     "Player: playback started 2"
+                    // );
 
 
                     setPlayerStatus(

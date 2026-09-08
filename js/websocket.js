@@ -106,10 +106,10 @@ class WebSocketClient
                 ID, отриманий від сервера під час попередньої
                 авторизації.
             */
-            this.log(
-                "WebSocket: Client ID = " +
-                (AppState.sMyId || "<порожній>")
-            );
+            // this.log(
+            //     "WebSocket: Client ID = " +
+            //     (AppState.sMyId || "<порожній>")
+            // );
 
 
             if(this.onConnected)

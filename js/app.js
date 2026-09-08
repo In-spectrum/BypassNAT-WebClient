@@ -167,9 +167,9 @@ document.getElementById('btnClear').onclick = () =>
 
 function searchClient()
 {
-    log("searchClient 0: "
-        + AppState.sMyId
-    );
+    // log("searchClient 0: "
+    //     + AppState.sMyId
+    // );
     
     if (AppState.sMyId.length  === 0)
         return;
@@ -178,9 +178,9 @@ function searchClient()
 
     const desktopLogin = txtFindClient.value;
 
-    log("searchClient 2: "
-        + desktopLogin
-    );
+    // log("searchClient 2: "
+    //     + desktopLogin
+    // );
 
     if (desktopLogin.length === 0)
         return;
@@ -387,7 +387,7 @@ function fConnectDevice()
 function fDisconnectDevice()
 {
 
-    log("fDisconnectDevice 0: " + AppState.sDeskId);
+    //log("fDisconnectDevice 0: " + AppState.sDeskId);
 
     document.getElementById(
                 "clipboardRiadWrite"
@@ -635,11 +635,11 @@ wsClient.slControl =
     //     ", Data=" + sData
     // );
 
-        log(
-        "app.wsClient.slControl: " +
-        "Id=" + sId +
-        ", Var=" + iVar
-    );
+    //     log(
+    //     "app.wsClient.slControl: " +
+    //     "Id=" + sId +
+    //     ", Var=" + iVar
+    // );
 
         switch(iVar)
         {
@@ -694,7 +694,7 @@ wsClient.slControl =
             }  
             case 4:
             {
-                log("app.slControl 4.0: " + AppState.iTimeDeskActive );
+                //log("app.slControl 4.0: " + AppState.iTimeDeskActive );
 
                 AppState.bTimeDeskNoActiveShow = false;
                 AppState.iTimeDeskActive = 0;
@@ -764,16 +764,11 @@ wsClient.slControl =
                         || id === 200 + 9
                         || id === 200 + 10)
                     {
-                        //slDisConnectDesktop(1);
+                        fDisconnectDevice();
 
                         if (id === 200 + 9)
                         {
                             fClientDisconnect();
-
-                            // if (m_obMenu)
-                            // {
-                            //     m_obMenu.fConnectServer("0");
-                            // }
                         }
                     }
                 }
@@ -900,9 +895,9 @@ wsClient.onConnected =
 function()
 {  
 
-    log(
-        "WebSocket: підключення успішне."
-    );
+    // log(
+    //     "WebSocket: підключення успішне."
+    // );
 
     setConnectionStatus(false);    
 
@@ -916,9 +911,9 @@ function()
 wsClient.onDisconnected =
 function()
 {
-    log(
-        "WebSocket: з'єднання закрито."
-    );
+    // log(
+    //     "WebSocket: з'єднання закрито."
+    // );
     setConnectionStatus(false);
 };
 
@@ -1053,10 +1048,10 @@ function toHex(data)
 function sendLogin()
 {
 
-    log(
-        "LOGIN: використовується Client ID = " +
-        (AppState.sMyId || "<порожній>")
-    );
+    // log(
+    //     "sendLogin: використовується Client ID = " +
+    //     (AppState.sMyId || "<порожній>")
+    // );
 
      const keyDevServer = "";
         // document.getElementById(
@@ -1130,9 +1125,9 @@ function handleServerData(data)
 
     if(!Array.isArray(data))
     {
-        log(
-            "app.handleServerData: SERVER: ParserData повернув дані невідомого формату."
-        );
+        // log(
+        //     "app.handleServerData: SERVER: ParserData повернув дані невідомого формату."
+        // );
 
         return;
     }
@@ -1159,11 +1154,11 @@ function handleServerData(data)
 
         if(packet.type === 0x10)
         {
-            log(
-                "app.handleServerData: SERVER: MESSAGE_STATUS. " +
-                "VAR=" + packet.variable +
-                ", DATA=" + (packet.dataText || "")
-            );
+            // log(
+            //     "app.handleServerData: SERVER: MESSAGE_STATUS. " +
+            //     "VAR=" + packet.variable +
+            //     ", DATA=" + (packet.dataText || "")
+            // );
 
             if(packet.validCRC === false)
             {
@@ -1174,15 +1169,15 @@ function handleServerData(data)
         }
         else if(packet.type === 0x07)
         {
-            log(
-                "app.handleServerData: SERVER: NEW_ID. " +
-                "ID=" +
-                (AppState.sMyId || "") +
-                ", DEV=" +
-                (packet.devServer !== undefined ?
-                    packet.devServer :
-                    "")
-            );
+            // log(
+            //     "app.handleServerData: SERVER: NEW_ID. " +
+            //     "ID=" +
+            //     (AppState.sMyId || "") +
+            //     ", DEV=" +
+            //     (packet.devServer !== undefined ?
+            //         packet.devServer :
+            //         "")
+            // );
 
 
             if(packet.validCRC === false)
@@ -1378,9 +1373,9 @@ function startConnectServer() {
     )
     {
 
-        log(
-            "Активне підключення. Виконується disconnect."
-        );
+        // log(
+        //     "Активне підключення. Виконується disconnect."
+        // );
 
 
         wsClient.disconnect();
@@ -1397,9 +1392,9 @@ function startConnectServer() {
         portNumber;
 
 
-    log(
-        "Підключення до " + url
-    );
+    // log(
+    //     "Підключення до " + url
+    // );
 
 
     wsClient.connect(url);
@@ -1603,9 +1598,9 @@ document.getElementById(
 
         AppState.sWebRTCPort = WebRTC_port;
 
-         log(
-                "btnConnectClient::sWebRTCPort: " +  AppState.sWebRTCPort
-            );
+        //  log(
+        //         "btnConnectClient::sWebRTCPort: " +  AppState.sWebRTCPort
+        //     );
     }
 
    
@@ -1653,15 +1648,15 @@ document.getElementById(
 
  function fStreamStart()
  {
-    log("app.fStreamStart 0: " +
-        AppState.serverIP.length +
-        " " + AppState.sWebRTCPort.length +
-        " " +  AppState.sStreamNewUrl.length);
+    // log("app.fStreamStart 0: " +
+    //     AppState.serverIP.length +
+    //     " " + AppState.sWebRTCPort.length +
+    //     " " +  AppState.sStreamNewUrl.length);
 
     if(!AppState.serverIP.length || !AppState.sWebRTCPort.length || !AppState.sStreamNewUrl.length)
         return;
 
-    log("app.fStreamStart 1: ");
+    //log("app.fStreamStart 1: ");
 
     const url =
         "http://" +
@@ -1674,7 +1669,7 @@ document.getElementById(
 
     startPlayer(url);
 
-    log("app.fStreamStart 10: ");
+    //log("app.fStreamStart 10: ");
  }
 
 
@@ -1710,10 +1705,10 @@ function fStreamWatcher()
                     const now =
                         performance.now();
 
-                    log(
-                       "fWatcher: пакет відправлено. " +
-                        now.toFixed(0)
-                    );
+                    // log(
+                    //    "fWatcher: пакет відправлено. " +
+                    //     now.toFixed(0)
+                    // );
                 }
                 else
                 {
