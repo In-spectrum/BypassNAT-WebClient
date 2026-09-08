@@ -30,7 +30,7 @@ const AppState =
     , sDeskId: ""
     , sDeskLogin: ""
     , sDeskPassword: ""
-    , bDeskConnecting: false
+    , iDeskConnectStatus: 0
     , iDeskConnectTime: 0
     , iTimeDeskActive: 0
     , bTimeDeskNoActiveShow: false

@@ -308,6 +308,8 @@ function setStatusConnectToDevice(connectedv)
 
     if (connectedv)
     {
+        AppState.iDeskConnectStatus = 2;
+
         // Підключено
         indicator.style.setProperty("--indicator-color", "#4da6ff");
         document.getElementById("deviceConnectionText").style.display = "none";  // сховати
@@ -320,6 +322,8 @@ function setStatusConnectToDevice(connectedv)
     {
         // Не підключено
         indicator.style.setProperty("--indicator-color", "#808080");
+        
+        AppState.iDeskConnectStatus = 0;
 
         if(AppState.sDeskId)
         {
@@ -327,6 +331,8 @@ function setStatusConnectToDevice(connectedv)
             document.getElementById(
                 "btnConnectClient"
             ).innerHTML = "Connecting...";
+
+            AppState.iDeskConnectStatus = 1;
         }
     }
 }
@@ -364,15 +370,7 @@ function fConnectDevice()
         //     AppState.sDeskLogin +
         //     ", id=" +
         //     AppState.sDeskId
-        // );
-
-        AppState.iTimeDeskActive = 0;
-        AppState.bTimeDeskNoActiveShow = false;
-
-
-        document.getElementById(
-            "btnConnectClient"
-        ).innerHTML = "Connecting...";
+        // );       
         
         
     }
@@ -382,6 +380,17 @@ function fConnectDevice()
             "ConnectClient: не вдалося відправити пакет"
         );
     }
+
+
+    AppState.iTimeDeskActive = 0;
+    AppState.bTimeDeskNoActiveShow = false;
+
+
+    document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "Connecting...";
+
+    AppState.iDeskConnectStatus = 1;
 }
 
 function fDisconnectDevice()
@@ -397,10 +406,9 @@ function fDisconnectDevice()
 
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
 
-    if(!AppState.sDeskId.length)
-        return;   
-
-    const packet =
+    if(AppState.sDeskId.length > 0)
+    {
+        const packet =
         Protocol.createConnectToDesktop(
             "0",
             "0",
@@ -409,41 +417,46 @@ function fDisconnectDevice()
         );
 
 
-    /*
-        Відправляємо на сервер.
-    */
+        /*
+            Відправляємо на сервер.
+        */
 
-    if(
-        wsClient.send(packet)
-    )
-    {
-        // log(
-        //     "fDisconnectDevice: пакет відправлено. "
-        // );
-
-        AppState.sDeskId = "";
-        AppState.sDeskLogin = "";
-        AppState.sDeskPassword = "";
-        AppState.bDeskConnecting = false;
-        AppState.iTimeDeskActive = 0;
-
-        AppState.sStreamNewUrl = "";
-
-        document.getElementById(
-            "btnConnectClient"
-        ).innerHTML = "NEW connect";
+        if(
+            wsClient.send(packet)
+        )
+        {
+            // log(
+            //     "fDisconnectDevice: пакет відправлено. "
+            // );
 
         
-        setStatusConnectToDevice(false);
+
+        }
+        else
+        {
+            log(
+                "fDisconnectDevice: не вдалося відправити пакет"
+            );
+        }
 
     }
-    else
-    {
-        log(
-            "fDisconnectDevice: не вдалося відправити пакет"
-        );
-    }
+
     
+    
+
+    AppState.sDeskId = "";
+    AppState.sDeskLogin = "";
+    AppState.sDeskPassword = "";
+    AppState.iTimeDeskActive = 0;
+
+    AppState.sStreamNewUrl = "";
+  
+        
+    setStatusConnectToDevice(false);
+
+    document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "NEW connect";    
 
 }
 
@@ -465,6 +478,13 @@ function setConnectionStatus(connected)
         // Підключено
         indicator.style.setProperty("--indicator-color", "#4da6ff");
         btnConnectServer.innerHTML = "Server disconnect";
+
+        //перепідключаємося
+        if(AppState.iDeskConnectStatus == 1)
+        {
+            fConnectDevice();
+        }
+        
     }
     else
     {
@@ -473,6 +493,12 @@ function setConnectionStatus(connected)
 
         if(!AppState.serverConnecting)
             btnConnectServer.innerHTML = "Server connect";
+
+        //перепідключаємося
+        if(AppState.iDeskConnectStatus == 2)
+        {
+            fConnectDevice();
+        }
     }
 
     document.getElementById("serverConnectionText").style.display = "none";  // сховати
@@ -1740,6 +1766,10 @@ function startAppTimer() {
 
                 if(AppState.bTimeDeskNoActiveShow)
                 {
+                    log(
+                            "startAppTimer::fGetActiveClient 5: AppState.bTimeDeskNoActiveShow"
+                        );
+
                     fConnectDevice();
                 }           
 
@@ -1784,6 +1814,10 @@ function startAppTimer() {
                     {
                         if(AppState.bStreamError)
                         {
+                            log(
+                                "startAppTimer::fGetActiveClient 6: AppState.bStreamError"
+                            );
+
                             AppState.bStreamError = false;
                             fConnectDevice();
                         }
@@ -1820,6 +1854,10 @@ function startAppTimer() {
 
             if(AppState.serverConnecting && !AppState.serverConnected)
             {                
+                log(
+                        "startAppTimer::fGetActiveClient 7: AppState.serverConnecting"
+                    );
+
                 startConnectServer();
             }
         }
