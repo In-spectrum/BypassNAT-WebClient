@@ -63,6 +63,9 @@ let loggerVisible = true;
 
 let menuVisible = true;
 
+let m_bOldClient = false;
+let m_iTimeSearchClient = 0;
+
 let wsClient = new WebSocketClient();
 
 
@@ -165,16 +168,78 @@ document.getElementById('btnClear').onclick = () =>
     loggerBody.innerHTML = "";
 };
 
+function oldClient()
+{
+    if(m_bOldClient)
+    {
+        for (let i = lstClients.options.length - 1; i >= 0; i--) {
+            const option = lstClients.options[i];
+
+            if (option.dataset.connected === "false") {
+                option.remove();
+            }
+        }
+    }
+    else
+    {
+       for (const option of lstClients.options) {
+            option.dataset.connected = "false";
+       }
+    }
+
+    m_bOldClient = !m_bOldClient;
+
+    m_iTimeSearchClient = 0;
+   
+}
+
+function addClient( _optionIn )
+{
+    m_iTimeSearchClient = 0;
+
+    let a_bAdd = false;
+
+    for (const option of lstClients.options) {
+        if (option.value === _optionIn.value) {
+            option.dataset.connected = "true";
+            option.textContent = _optionIn.textContent;
+
+            if(_optionIn.value === AppState.sDeskId)
+            {
+                AppState.sDeskLogin = option.textContent;
+                option.selected = true;
+            }
+
+            a_bAdd = true;
+            break;
+        }
+    }
+
+    if(!a_bAdd)
+    {    
+        lstClients.appendChild(
+            _optionIn
+        );
+
+    }
+
+    m_iTimeSearchClient = 0;
+}
+
 function searchClient()
 {
     // log("searchClient 0: "
     //     + AppState.sMyId
     // );
+
+    m_iTimeSearchClient = 0;
+
+    oldClient();
     
     if (AppState.sMyId.length  === 0)
         return;
 
-    lstClients.innerHTML = "";
+    //lstClients.innerHTML = "";
 
     const desktopLogin = txtFindClient.value;
 
@@ -183,7 +248,11 @@ function searchClient()
     // );
 
     if (desktopLogin.length === 0)
+    {
+        lstClients.innerHTML = "";
         return;
+    }
+       
 
      const packet =
             Protocol.createSearchDesktop(
@@ -317,11 +386,17 @@ function setStatusConnectToDevice(connectedv)
         document.getElementById(
             "btnConnectClient"
         ).innerHTML = "NEW connect";
+
+        document.getElementById("btnConnectClient").style.display = "none";  // сховати
+
+
     }
     else
     {
         // Не підключено
         indicator.style.setProperty("--indicator-color", "#808080");
+
+        document.getElementById("btnConnectClient").style.display = "flex";  // показати
         
         AppState.iDeskConnectStatus = 0;
 
@@ -338,7 +413,8 @@ function setStatusConnectToDevice(connectedv)
 }
 
 function fConnectDevice()
-{
+{   
+
     setStatusConnectToDevice(false);
     stopPlayer();
 
@@ -752,11 +828,9 @@ wsClient.slControl =
                 option.value =
                     sId;
 
+                option.dataset.connected = "true";
 
-                lstClients.appendChild(
-                    option
-                );
-
+                addClient(option);
 
                 break;
             }   
@@ -1480,9 +1554,6 @@ document.getElementById(
     AppState.serverConnecting = true;
     startConnectServer();
 
-    txtFindClient.value = "";    
-    //lstClients.innerHTML = "";
-
 };
 
 document.getElementById(
@@ -1490,6 +1561,8 @@ document.getElementById(
 )
 .onclick = async function()
 {
+    if(AppState.iDeskConnectStatus == 1)
+        return;
 
     fDisconnectDevice();
 
@@ -1766,9 +1839,9 @@ function startAppTimer() {
 
                 if(AppState.bTimeDeskNoActiveShow)
                 {
-                    log(
-                            "startAppTimer::fGetActiveClient 5: AppState.bTimeDeskNoActiveShow"
-                        );
+                    // log(
+                    //         "startAppTimer::fGetActiveClient 5: AppState.bTimeDeskNoActiveShow"
+                    //     );
 
                     fConnectDevice();
                 }           
@@ -1814,9 +1887,9 @@ function startAppTimer() {
                     {
                         if(AppState.bStreamError)
                         {
-                            log(
-                                "startAppTimer::fGetActiveClient 6: AppState.bStreamError"
-                            );
+                            // log(
+                            //     "startAppTimer::fGetActiveClient 6: AppState.bStreamError"
+                            // );
 
                             AppState.bStreamError = false;
                             fConnectDevice();
@@ -1854,9 +1927,9 @@ function startAppTimer() {
 
             if(AppState.serverConnecting && !AppState.serverConnected)
             {                
-                log(
-                        "startAppTimer::fGetActiveClient 7: AppState.serverConnecting"
-                    );
+                // log(
+                //         "startAppTimer::fGetActiveClient 7: AppState.serverConnecting"
+                //     );
 
                 startConnectServer();
             }
@@ -1871,9 +1944,9 @@ function startAppTimer() {
 
             if(fileCopy.m_iTimeCopying == 7)
             {
-                log(
-                    "startAppTimer::fileCopy: closeTransferFile. "
-                );  
+                // log(
+                //     "startAppTimer::fileCopy: closeTransferFile. "
+                // );  
                 
                 showMessage(
                     0,
@@ -1882,7 +1955,21 @@ function startAppTimer() {
 
                 fileCopy.closeTransferFile();
             }
-        }        
+        }       
+        
+        if( AppState.serverConnected)
+        {
+            m_iTimeSearchClient++;
+
+            if(m_iTimeSearchClient >= 3)
+            {
+                // log(
+                //     "startAppTimer::searchClient 1: "
+                // );
+
+                searchClient();
+            }
+        }
 
     }, 1000);
 }
