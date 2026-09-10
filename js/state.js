@@ -34,9 +34,9 @@ const AppState =
     , iDeskConnectTime: 0
     , iTimeDeskActive: 0
     , bTimeDeskNoActiveShow: false
+    , bScreanCapture: false
 
     
-    , bStream: true
     , sStreamNewUrl: ""
     , sWithoutStream: "WITHOUT_STREAM"
     , m_iTimeForWatcher: 0

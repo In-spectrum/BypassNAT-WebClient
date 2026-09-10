@@ -8,6 +8,7 @@ const txtFindClient = document.getElementById("txtFindClient");
 const lstClients = document.getElementById("lstClients");
 const video = document.getElementById("video");
 const playerArea = document.getElementById("playerArea");
+const cbScreenCapture = document.getElementById("cbScreenCapture");
 
 
 // =====================================================
@@ -168,6 +169,27 @@ document.getElementById('btnClear').onclick = () =>
     loggerBody.innerHTML = "";
 };
 
+
+cbScreenCapture.addEventListener("change", () => {
+
+    AppState.bScreanCapture = cbScreenCapture.checked;
+
+    if(!cbScreenCapture.checked)
+    {
+        document.getElementById("idTxtWebRTCPort").style.display = "none";  // сховати
+    }
+    else
+    {
+       document.getElementById("idTxtWebRTCPort").style.display = "flex";  // показати
+    }
+
+    if(AppState.iDeskConnectStatus > 0)
+    {
+        fConnectDevice();
+    }
+
+});
+
 function oldClient()
 {
     if(m_bOldClient)
@@ -209,7 +231,7 @@ function addClient( _optionIn )
                 AppState.sDeskLogin = option.textContent;
                 option.selected = true;
 
-                document.querySelector('label[for="txtDeviceUse"]').textContent = "DEVICE:";
+                document.querySelector('label[for="txtDeviceUse"]').textContent = "Device control:";
                 document.querySelector('label[for="txtLogDeviceUse"]').textContent = AppState.sDeskLogin;
             }
 
@@ -436,7 +458,7 @@ function fConnectDevice()
             AppState.sDeskLogin,
             AppState.sDeskPassword,
             AppState.sDeskId,
-            AppState.bStream
+            AppState.bScreanCapture
         );
 
 
@@ -1664,7 +1686,7 @@ document.getElementById(
     }
 
 
-    if(AppState.bStream)
+    if(AppState.bScreanCapture)
     {       
 
         const WebRTC_port =
@@ -1719,7 +1741,7 @@ document.getElementById(
     AppState.sDeskPassword = password;   
     AppState.bTimeDeskNoActiveShow = false; 
 
-    document.querySelector('label[for="txtDeviceUse"]').textContent = "DEVICE:";
+    document.querySelector('label[for="txtDeviceUse"]').textContent = "Device control:";
     document.querySelector('label[for="txtLogDeviceUse"]').textContent = AppState.sDeskLogin;            
 
 
@@ -1777,7 +1799,10 @@ document.getElementById(
 
 function fStreamWatcher()
 {
-    if(AppState.sStreamNewUrl.length && AppState.sDeskId.length)
+    if(AppState.bScreanCapture
+        && AppState.sStreamNewUrl.length 
+        && AppState.sDeskId.length
+    )
     {
             AppState.m_iTimeForWatcher++;
 
@@ -1886,7 +1911,7 @@ function startAppTimer() {
                 // (можливо змінився стрім-УРЛ, або не працює відео-сервер)
                 if(AppState.iTimeDeskActive >= 2)
                 {
-                    if(AppState.bStream && !AppState.bRunStream)
+                    if(AppState.bScreanCapture && !AppState.bRunStream)
                     {
                         if(AppState.bStreamError)
                         {
@@ -1905,7 +1930,7 @@ function startAppTimer() {
 
 
             //припиняє дозвіл на отримання Clipboard від кліента
-            if(AppState.bStream 
+            if(AppState.bScreanCapture 
                 && AppState.bRunStream
                 && AppState.iClipboardTimeCopy < 10
             )
@@ -2007,6 +2032,15 @@ function startThePage() {
             ).style.display = "none";
 
     Keyboard.init();
+
+    if(!cbScreenCapture.checked)
+    {
+        document.getElementById("idTxtWebRTCPort").style.display = "none";  // сховати
+    }
+    else
+    {
+       document.getElementById("idTxtWebRTCPort").style.display = "flex";  // показати
+    }
 
      showMessage(
         0,

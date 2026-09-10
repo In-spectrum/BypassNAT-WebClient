@@ -327,6 +327,38 @@ button {
 }
 
 
+
+.deviceMode {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.deviceMode .checkboxOption {
+    display: inline-flex;
+    align-items: center;
+    width: auto !important;
+    margin: 0 !important;
+    gap: 6px;
+}
+
+.deviceMode .checkboxOption input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    padding: 0;
+}
+
+.deviceMode .checkboxOption span {
+    display: flex;
+    align-items: center;
+    line-height: 1;
+    font-weight: 700;
+}
+
+
 /* =====================================================
    LOGGER
    ===================================================== */

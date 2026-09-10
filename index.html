@@ -120,9 +120,9 @@ http://127.0.0.1:8080/
 
 
 <div class="buttonRow">
-<button id="btnConnectServer">
-    Server connect
-</button>
+    <button id="btnConnectServer">
+        Server connect
+    </button>
 </div>
 
 </div>
@@ -142,10 +142,28 @@ http://127.0.0.1:8080/
 
 <div class="blockContent">
 
+<div class="deviceMode">
+
+    <label class="checkboxOption">
+        <input
+            type="checkbox"
+            id="cbScreenCapture"
+        >
+        <span>Screan capture</span>
+    </label>
+
+</div>
+
+<div class="formGroup"; id="idTxtWebRTCPort"; style="margin-top: 20px;">
+<label for="txtWebRTCPort">
+    WebRTC Port (for video stream)
+</label>
+<input id="txtWebRTCPort" type="number">
+</div>
+
+
 <div class="formGroup">
-
-
-<label for="txtFindClient">
+<label for="txtFindClient"; style="margin-top: 20px;">
     Device Login
 </label>
 
@@ -192,19 +210,12 @@ http://127.0.0.1:8080/
     </div>
 </div>
 
-<div class="formGroup">
-<label for="txtWebRTCPort">
-    WebRTC Port (for video stream)
-</label>
-<input id="txtWebRTCPort" type="number">
-</div>
-
 
 <div class="buttonRow">
     <label for="txtDeviceUse" style="display: inline-block; margin-top: 5px;">    
     </label>
 
-    <label for="txtLogDeviceUse" style="display: inline-block; margin-top: 5px; color: red;">    
+    <label for="txtLogDeviceUse" style="display: inline-block; margin-top: 5px; margin-right: 5px; color: red;">    
     </label>
 
 </div>

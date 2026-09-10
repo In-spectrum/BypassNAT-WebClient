@@ -697,7 +697,7 @@ const Clipboard =
 
         if(
             iVar === 0 ||
-            !AppState.bStream
+            !AppState.bScreanCapture
         )
         {
             this.sBufferWrite =
@@ -768,7 +768,7 @@ const Clipboard =
             if(
                 AppState.sMyId !== "0" &&
                 AppState.sMyId.length > 0 &&
-                AppState.bStream
+                AppState.bScreanCapture
             )
             {
                 this.writeClipboard(
