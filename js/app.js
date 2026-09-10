@@ -208,6 +208,9 @@ function addClient( _optionIn )
             {
                 AppState.sDeskLogin = option.textContent;
                 option.selected = true;
+
+                document.querySelector('label[for="txtDeviceUse"]').textContent = "DEVICE:";
+                document.querySelector('label[for="txtLogDeviceUse"]').textContent = AppState.sDeskLogin;
             }
 
             a_bAdd = true;
@@ -385,9 +388,9 @@ function setStatusConnectToDevice(connectedv)
 
         document.getElementById(
             "btnConnectClient"
-        ).innerHTML = "NEW connect";
+        ).innerHTML = "Disconnect";
 
-        document.getElementById("btnConnectClient").style.display = "none";  // сховати
+        //document.getElementById("btnConnectClient").style.display = "none";  // сховати
 
 
     }
@@ -396,7 +399,7 @@ function setStatusConnectToDevice(connectedv)
         // Не підключено
         indicator.style.setProperty("--indicator-color", "#808080");
 
-        document.getElementById("btnConnectClient").style.display = "flex";  // показати
+        //document.getElementById("btnConnectClient").style.display = "flex";  // показати
         
         AppState.iDeskConnectStatus = 0;
 
@@ -405,7 +408,7 @@ function setStatusConnectToDevice(connectedv)
             document.getElementById("deviceConnectionText").style.display = "flex";  // показати
             document.getElementById(
                 "btnConnectClient"
-            ).innerHTML = "Connecting...";
+            ).innerHTML = "Connecting... STOP";
 
             AppState.iDeskConnectStatus = 1;
         }
@@ -414,12 +417,17 @@ function setStatusConnectToDevice(connectedv)
 
 function fConnectDevice()
 {   
-
     setStatusConnectToDevice(false);
     stopPlayer();
 
     if(!AppState.sDeskLogin.length || !AppState.sDeskPassword.length || !AppState.sDeskId.length )
         return;
+
+    document.getElementById(
+            "btnConnectClient"
+        ).innerHTML = "Connecting... STOP";
+
+    AppState.iDeskConnectStatus = 1;
 
     AppState.iTimeDeskActive = 0;
 
@@ -460,13 +468,7 @@ function fConnectDevice()
 
     AppState.iTimeDeskActive = 0;
     AppState.bTimeDeskNoActiveShow = false;
-
-
-    document.getElementById(
-            "btnConnectClient"
-        ).innerHTML = "Connecting...";
-
-    AppState.iDeskConnectStatus = 1;
+    
 }
 
 function fDisconnectDevice()
@@ -524,6 +526,9 @@ function fDisconnectDevice()
     AppState.sDeskLogin = "";
     AppState.sDeskPassword = "";
     AppState.iTimeDeskActive = 0;
+
+    document.querySelector('label[for="txtDeviceUse"]').textContent = "";
+    document.querySelector('label[for="txtLogDeviceUse"]').textContent = "";
 
     AppState.sStreamNewUrl = "";
   
@@ -1561,10 +1566,12 @@ document.getElementById(
 )
 .onclick = async function()
 {
-    if(AppState.iDeskConnectStatus == 1)
+     if(AppState.iDeskConnectStatus > 0)
+    {
+        fDisconnectDevice();
+        
         return;
-
-    fDisconnectDevice();
+    }
 
     /*
         Перевіряємо наявність елементів
@@ -1712,6 +1719,10 @@ document.getElementById(
     AppState.sDeskPassword = password;   
     AppState.bTimeDeskNoActiveShow = false; 
 
+    document.querySelector('label[for="txtDeviceUse"]').textContent = "DEVICE:";
+    document.querySelector('label[for="txtLogDeviceUse"]').textContent = AppState.sDeskLogin;            
+
+
     /*
         Одноразовий запит дозволу
         на читання локального clipboard.
@@ -1734,14 +1745,6 @@ document.getElementById(
         Підключення до remote PC.
     */
     fConnectDevice();
-}
-
-document.getElementById(
-    "btnDisConnectClient"
-)
-.onclick = function()
-{
-    fDisconnectDevice();    
 }
 
 
