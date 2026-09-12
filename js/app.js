@@ -792,7 +792,7 @@ wsClient.slControl =
                 /*
                     CommandLine Data.
                 */
-               log("app.slControl 11: " + sData );
+                //log("app.slControl 11: " + sData );
 
                 fCommandLineResponse(sData);               
 

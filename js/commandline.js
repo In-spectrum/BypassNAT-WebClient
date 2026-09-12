@@ -67,6 +67,32 @@ function loadCommandLine()
                 // );
             }
 
+            const btnKill =
+                document.getElementById(
+                    "btnCommandLineKill"
+                );
+
+            if(btnKill)
+            {
+                btnKill.addEventListener(
+                    "click",
+                    commandLineKill
+                );
+            }
+
+            const btnClear =
+                document.getElementById(
+                    "btnCommandLineClear"
+                );
+
+            if(btnClear)
+            {
+                btnClear.addEventListener(
+                    "click",
+                    commandLineClear
+                );
+            }
+
             commandLineLoaded = true;
 
             showCommandLine();
@@ -229,10 +255,17 @@ function commandLineRequest()
     }
 
 
-    const command =
+    let command =
         input.value;
 
+    command =
+        command
+            .replace(/[\r\n]+/g, " ")
+            .replace(/\\/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
 
+   
     // console.log(
     //     "CommandLine: command = [" +
     //     command +
@@ -427,4 +460,148 @@ function fCommandLineResponse(sData)
 
     output.scrollTop =
         output.scrollHeight;
+}
+
+function commandLineKill()
+{
+    //console.log("CommandLine: Kill pressed");
+
+    if(AppState.iDeskConnectStatus !== 2)
+    {
+        //console.log("CommandLine: ERROR - not connected to desktop");
+        showMessage(0,
+            "ERROR\n\nNot connected to desktop.",
+            document.getElementById("commandLineOverlay")
+        );
+        return;
+    }
+
+
+    const input =
+        document.getElementById(
+            "commandLineInput"
+        );
+
+    if(!input)
+    {
+        //console.log("CommandLine: Input element not found");
+        return;
+    }
+
+
+    const command =
+        input.value;
+
+
+    if(command.length < 2)
+    {
+        // console.log(
+        //     "CommandLine: command is too short"
+        // );
+
+        return;
+    }
+
+
+    /*
+        Формування packet.
+    */
+
+    const packet =
+        Protocol.createCommandLineRequest(
+            AppState.sDeskId,
+            AppState.sMyId,
+            "stopRun",
+            1
+        );
+
+
+    if(!packet)
+    {
+        // console.log(
+        //     "CommandLine: ERROR - packet is empty"
+        // );
+
+        return;
+    }
+
+
+    /*
+        Вивід packet у HEX.
+    */
+
+    const packetBytes =
+        new Uint8Array(packet);
+
+
+    // console.log(
+    //     "CommandLine: packet size = " +
+    //     packetBytes.length
+    // );
+
+
+    // console.log(
+    //     "CommandLine: packet = " +
+    //     WebSocketClient.toHex(packet)
+    // );
+
+
+    /*
+        Перевірка WebSocket.
+    */
+
+    if(!wsClient)
+    {
+        console.log(
+            "CommandLine: ERROR - wsClient is not defined"
+        );
+
+        return;
+    }
+
+
+    if(!wsClient.socket)
+    {
+        console.log(
+            "CommandLine: ERROR - WebSocket socket is null"
+        );
+
+        return;
+    }
+
+
+    // console.log(
+    //     "CommandLine: WebSocket state = " +
+    //     wsClient.socket.readyState
+    // );
+
+
+    /*
+        Відправлення.
+    */
+
+    const sent =
+        wsClient.send(packet);
+
+
+    if(!sent)
+    {
+        console.log(
+            "CommandLine: ERROR - packet was NOT sent"
+        );
+    }
+}
+
+function commandLineClear()
+{
+    const output =
+        document.getElementById(
+            "commandLineOutput"
+        );
+
+    if(!output)
+        return;
+
+    output.value = "";
+    output.scrollTop = 0;
 }
