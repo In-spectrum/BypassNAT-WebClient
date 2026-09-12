@@ -32,8 +32,13 @@ function toggleSettingsSection(section)
 
 document.querySelectorAll(".settingsSection .blockTitle").forEach(title =>
 {
-    const section = title.closest(".settingsSection");
+    const section =
+        title.closest(".settingsSection");
+
     if(!section)
+        return;
+
+    if(section.id === "commandLineSection")
         return;
 
     title.addEventListener("click", () =>
@@ -50,6 +55,7 @@ document.querySelectorAll(".settingsSection .blockTitle").forEach(title =>
         }
     });
 });
+
 
 const playerState =
 {
@@ -2042,7 +2048,10 @@ function startThePage() {
        document.getElementById("idTxtWebRTCPort").style.display = "flex";  // показати
     }
 
-     showMessage(
+    
+    initializeCommandLine();
+
+    showMessage(
         0,
         "This application is intended for remote device control.\n\n" +
         "No one can use this application to control your device\n" +
