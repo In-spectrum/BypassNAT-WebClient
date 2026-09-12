@@ -2098,6 +2098,172 @@ const Protocol =
         */
 
         return packet.buffer;
+    },
+
+    createCommandLineRequest(
+        forId,
+        fromId,
+        command,
+        variable
+    )
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        const forIdBytes =
+            encoder.encode(
+                forId === undefined ||
+                forId === null
+                    ? ""
+                    : String(forId)
+            );
+
+
+        const fromIdBytes =
+            encoder.encode(
+                fromId === undefined ||
+                fromId === null
+                    ? ""
+                    : String(fromId)
+            );
+
+
+        const commandBytes =
+            encoder.encode(
+                command === undefined ||
+                command === null
+                    ? ""
+                    : String(command)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            0E
+        */
+
+
+        const totalSize =
+            2 +
+
+            1 + forIdBytes.length +
+            1 + fromIdBytes.length +
+            1 + commandBytes.length +
+
+            1 +             // 0x01
+            1 +             // variable
+
+            1;              // CRC
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x0E;
+
+
+        /*
+            FOR ID
+        */
+
+        packet[offset++] =
+            forIdBytes.length & 0xFF;
+
+        packet.set(
+            forIdBytes,
+            offset
+        );
+
+        offset +=
+            forIdBytes.length;
+
+
+        /*
+            FROM ID
+        */
+
+        packet[offset++] =
+            fromIdBytes.length & 0xFF;
+
+        packet.set(
+            fromIdBytes,
+            offset
+        );
+
+        offset +=
+            fromIdBytes.length;
+
+
+        /*
+            COMMAND
+        */
+
+        packet[offset++] =
+            commandBytes.length & 0xFF;
+
+        packet.set(
+            commandBytes,
+            offset
+        );
+
+        offset +=
+            commandBytes.length;
+
+
+        /*
+            C++:
+
+            a_iSz = _iVar;
+
+            a_baRequest.append(0x01);
+            a_baRequest.append(a_baSz.at(3));
+        */
+
+        packet[offset++] =
+            0x01;
+
+        packet[offset++] =
+            Number(variable) & 0xFF;
+
+
+        /*
+            CRC
+
+            C++:
+
+            fGetCRC(
+                a_baRequest.mid(1),
+                a_baRequest.size() - 1
+            )
+
+            FF не входить у CRC.
+        */
+
+        packet[offset] =
+            Protocol.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };

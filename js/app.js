@@ -883,6 +883,17 @@ wsClient.slControl =
 
                 break;
             }
+            case 11:
+            {
+                /*
+                    CommandLine Data.
+                */
+               log("app.slControl 11: " + sData );
+
+                fCommandLineResponse(sData);               
+
+                break;
+            }
             case 12:
             {
                 const id = parseInt(sId, 10);

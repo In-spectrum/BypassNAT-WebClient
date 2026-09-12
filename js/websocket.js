@@ -275,6 +275,15 @@ class WebSocketClient
 
                 break;
             }
+            case 15:
+            {
+                if(this.slControl)
+                {
+                    //log("WebSocketClient.sgControl 17: ");
+                    this.slControl(sId, 11, sData);
+                }
+                break;
+            } 
             case 17:
             {
                 if(this.slControl)

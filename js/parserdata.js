@@ -655,7 +655,41 @@ const ParserData =
 
 
                         break;
-                    }                   
+                    }      
+                    
+                    case 0x0F:
+                    {
+                        const packet =
+                            this.parseCommandLine(
+                                data
+                            );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        break;
+                    }
 
 
                     /*
@@ -3871,6 +3905,563 @@ const ParserData =
 
             position:
                 position
+        };
+    },
+
+        /*
+        Аналог:
+
+        ParserSocketData::fComandLine()
+    */
+
+    parseCommandLine(data)
+    {
+        // this.log(
+        //     "ParserData::parseCommandLine 0: " +
+        //     data.length +
+        //     " " +
+        //     this.toHex(data)
+        // );
+
+
+        /*
+            Мінімально:
+
+            FF
+            TYPE
+            SIZE-1
+            ...
+        */
+
+        if(data.length < 4)
+            return null;
+
+
+        let pos = 0;
+
+
+        /*
+            --------------------------------------------------
+            DATA-1 SIZE
+            --------------------------------------------------
+
+            ForId
+        */
+
+        const data1Length =
+            data[2];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA-2 SIZE
+            --------------------------------------------------
+
+            FromId
+        */
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA-3 SIZE
+            --------------------------------------------------
+
+            Command / Response
+        */
+
+        const data3Length =
+            data[
+                3 +
+                data1Length +
+                data2Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA-4 SIZE
+            --------------------------------------------------
+
+            Variable
+        */
+
+        const data4Length =
+            data[
+                3 +
+                data1Length +
+                data2Length +
+                data3Length +
+                pos -
+                1
+            ];
+
+
+        pos++;
+
+
+        /*
+            --------------------------------------------------
+            FULL PACKET SIZE
+            --------------------------------------------------
+        */
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            data3Length +
+            data4Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            --------------------------------------------------
+            CRC
+            --------------------------------------------------
+
+            Аналог C++:
+
+            MyProtocol::fCRC_isOk(
+                _baIn.mid(
+                    1,
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iData_3 +
+                    a_iData_4 +
+                    a_iPlasPos
+                ),
+                _baIn.at(
+                    1 +
+                    a_iData_1 +
+                    a_iData_2 +
+                    a_iData_3 +
+                    a_iData_4 +
+                    a_iPlasPos +
+                    1
+                )
+            )
+
+            FF у CRC НЕ входить.
+        */
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            data3Length +
+            data4Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseCommandLine: " +
+                "CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", " +
+                "розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+                size: 0,
+
+                type:
+                    data[1],
+
+                name:
+                    "COMMAND_LINE",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            --------------------------------------------------
+            DATA-1
+            --------------------------------------------------
+
+            ForId
+        */
+
+        pos = 0;
+
+
+        const forIdBytes =
+            data.slice(
+                3,
+                3 +
+                data1Length
+            );
+
+
+        const forId =
+            this.decodeUtf8(
+                forIdBytes
+            );
+
+
+        /*
+            --------------------------------------------------
+            DATA-2
+            --------------------------------------------------
+
+            FromId
+        */
+
+        pos++;
+
+
+        const fromIdStart =
+            3 +
+            data1Length +
+            pos;
+
+
+        const fromIdEnd =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const fromIdBytes =
+            data.slice(
+                fromIdStart,
+                fromIdEnd
+            );
+
+
+        const fromId =
+            this.decodeUtf8(
+                fromIdBytes
+            );
+
+
+        /*
+            --------------------------------------------------
+            DATA-3
+            --------------------------------------------------
+
+            Command / Response
+        */
+
+        pos++;
+
+
+        const commandStart =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const commandEnd =
+            3 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos;
+
+
+        const commandBytes =
+            data.slice(
+                commandStart,
+                commandEnd
+            );
+
+
+        const command =
+            this.decodeUtf8(
+                commandBytes
+            );
+
+
+        /*
+            --------------------------------------------------
+            DATA-4
+            --------------------------------------------------
+
+            Variable
+        */
+
+        pos++;
+
+
+        const variableStart =
+            3 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos;
+
+
+        const variableEnd =
+            3 +
+            data1Length +
+            data2Length +
+            data3Length +
+            data4Length +
+            pos;
+
+
+        const variableBytes =
+            data.slice(
+                variableStart,
+                variableEnd
+            );
+
+
+        /*
+            У C++:
+
+                QByteArray a_baVar;
+
+            Потім для 0x0F:
+
+                QString::number(
+                    a_baVar.toHex()
+                        .toInt(&a_bOk, 16)
+                )
+
+            Тобто тут фактично
+            отримуємо числове значення
+            з HEX-представлення.
+        */
+
+        let variable =
+            0;
+
+
+        if(variableBytes.length > 0)
+        {
+            let variableHex = "";
+
+
+            for(
+                let i = 0;
+                i < variableBytes.length;
+                i++
+            )
+            {
+                variableHex +=
+                    variableBytes[i]
+                        .toString(16)
+                        .padStart(2, "0");
+            }
+
+
+            variable =
+                parseInt(
+                    variableHex,
+                    16
+                );
+
+
+            if(
+                Number.isNaN(variable)
+            )
+            {
+                variable = 0;
+            }
+        }
+
+
+        /*
+            --------------------------------------------------
+            TYPE
+            --------------------------------------------------
+        */
+
+        const type =
+            data[1];
+
+
+        /*
+            --------------------------------------------------
+            0x0E
+            --------------------------------------------------
+
+            C++:
+
+                emit sgControl(
+                    QString::fromStdString(
+                        a_baForId.toStdString()
+                    ),
+                    13,
+                    QString::fromStdString(
+                        a_baFromId.toStdString()
+                    ),
+                    packet
+                );
+        */
+
+       this.sgControl(
+                String(variable),
+                15,
+                command,
+                new Uint8Array(0)
+            );
+
+
+        /*
+            --------------------------------------------------
+            RESULT
+            --------------------------------------------------
+        */
+
+        pos++;
+
+
+        return {
+            size:
+                packetSize,
+
+            type:
+                type,
+
+            name:
+                "COMMAND_LINE",
+
+            validCRC:
+                true,
+
+            forId:
+                forId,
+
+            fromId:
+                fromId,
+
+            command:
+                command,
+
+            commandBytes:
+                commandBytes,
+
+            variable:
+                variable,
+
+            variableBytes:
+                variableBytes,
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
+
+            data3Length:
+                data3Length,
+
+            data4Length:
+                data4Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
         };
     },
 
