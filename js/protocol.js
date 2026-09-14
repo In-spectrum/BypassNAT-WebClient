@@ -2264,6 +2264,200 @@ const Protocol =
 
 
         return packet.buffer;
+    },
+
+    videoQualitySet(
+        forId,
+        fromId,
+        sizeF,
+        fps,
+        encoderV,
+        encSpeed,
+        bitrate,
+        latencyZ,
+        rtsp,
+        sound
+    )
+    {
+        const encoder =
+            new TextEncoder();
+
+
+        const forIdBytes =
+            encoder.encode(
+                forId === undefined ||
+                forId === null
+                    ? ""
+                    : String(forId)
+            );
+
+
+        const fromIdBytes =
+            encoder.encode(
+                fromId === undefined ||
+                fromId === null
+                    ? ""
+                    : String(fromId)
+            );
+
+
+        /*
+            C++:
+
+            FF
+            12
+        */
+
+
+        /*
+            Повний пакет:
+
+            FF              1
+            12              1
+
+            For ID size     1
+            For ID          N
+
+            From ID size    1
+            From ID         N
+
+            Size = 8        1
+
+            SizeF           1
+            FPS             1
+            Encoder         1
+            Encoding speed  1
+            Bitrate         1
+            Zero latency    1
+            RTSP            1
+            Sound           1
+
+            CRC             1
+        */
+
+        const totalSize =
+            2 +
+            1 + forIdBytes.length +
+            1 + fromIdBytes.length +
+            1 +
+            8 +
+            1;
+
+
+        const packet =
+            new Uint8Array(
+                totalSize
+            );
+
+
+        let offset = 0;
+
+
+        /*
+            Header
+        */
+
+        packet[offset++] =
+            0xFF;
+
+        packet[offset++] =
+            0x12;
+
+
+        /*
+            For ID
+        */
+
+        packet[offset++] =
+            forIdBytes.length & 0xFF;
+
+        packet.set(
+            forIdBytes,
+            offset
+        );
+
+        offset +=
+            forIdBytes.length;
+
+
+        /*
+            From ID
+        */
+
+        packet[offset++] =
+            fromIdBytes.length & 0xFF;
+
+        packet.set(
+            fromIdBytes,
+            offset
+        );
+
+        offset +=
+            fromIdBytes.length;
+
+
+        /*
+            Size = 8
+        */
+
+        packet[offset++] =
+            0x08;
+
+
+        /*
+            Video quality
+        */
+
+        packet[offset++] =
+            Number(sizeF) & 0xFF;
+
+        packet[offset++] =
+            Number(fps) & 0xFF;
+
+        packet[offset++] =
+            Number(encoderV) & 0xFF;
+
+        packet[offset++] =
+            Number(encSpeed) & 0xFF;
+
+        packet[offset++] =
+            Number(bitrate) & 0xFF;
+
+        packet[offset++] =
+            Number(latencyZ) & 0xFF;
+
+
+        /*
+            RTSP
+
+            true  -> 0x01
+            false -> 0x00
+        */
+
+        packet[offset++] =
+            rtsp
+                ? 0x01
+                : 0x00;
+
+
+        packet[offset++] =
+            Number(sound) & 0xFF;
+
+
+        /*
+            CRC.
+
+            FF не входить у CRC.
+        */
+
+        packet[offset] =
+            this.getCRC(
+                packet.subarray(1, offset),
+                offset - 1
+            );
+
+
+        return packet.buffer;
     }
 
 };

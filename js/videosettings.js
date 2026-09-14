@@ -109,7 +109,7 @@ function loadVideoSettings()
             {
                 btnApply.addEventListener(
                     "click",
-                    hideVideoSettings
+                    videoSettingsApply
                 );
             }
 
@@ -316,6 +316,199 @@ function videoSettingsDefaults()
         soundCapture.checked = false;
 
     updateEncodingSpeedVisibility();
+}
+
+// -----------------------------------------------------
+// Apply
+// -----------------------------------------------------
+
+function videoSettingsApply()
+{
+    /*
+        Frame size
+    */
+
+    let sizeF = 0;
+
+    const frameSize =
+        document.querySelector(
+            'input[name="videoFrameSize"]:checked'
+        );
+
+    if(frameSize)
+    {
+        if(frameSize.value === "fullhd")
+            sizeF = 1;
+        else
+        if(frameSize.value === "hd")
+            sizeF = 2;
+        else
+        if(frameSize.value === "480")
+            sizeF = 3;
+    }
+
+
+    /*
+        Encoder
+    */
+
+    let encoderV = 0;
+
+    const encoder =
+        document.querySelector(
+            'input[name="videoEncoder"]:checked'
+        );
+
+    if(
+        encoder &&
+        encoder.value === "gpu"
+    )
+    {
+        encoderV = 1;
+    }
+
+
+    /*
+        Encoding speed
+    */
+
+    let encSpeed = 0;
+
+    const speed =
+        document.querySelector(
+            'input[name="videoSpeed"]:checked'
+        );
+
+    if(speed)
+    {
+        if(speed.value === "veryfast")
+            encSpeed = 1;
+        else
+        if(speed.value === "medium")
+            encSpeed = 2;
+        else
+        if(speed.value === "slower")
+            encSpeed = 3;
+    }
+
+
+    /*
+        FPS
+    */
+
+    const fps =
+        document.getElementById(
+            "videoSettingsFps"
+        );
+
+    const fpsValue =
+        fps
+            ? Number(fps.value)
+            : 30;
+
+
+    /*
+        Bitrate
+
+        QML:
+
+        10 * id_slBt.value
+    */
+
+    const bitrate =
+        document.getElementById(
+            "videoSettingsBitrate"
+        );
+
+    const bitrateValue =
+        bitrate
+            ? Math.round(
+                Number(bitrate.value) * 10
+            )
+            : 25;
+
+
+    /*
+        Zero latency
+    */
+
+    const zeroLatency =
+        document.getElementById(
+            "videoSettingsZeroLatency"
+        );
+
+    const latencyZ =
+        zeroLatency &&
+        zeroLatency.checked
+            ? 1
+            : 0;
+
+
+    /*
+        Stream
+
+        QML передає:
+        id_rbRTSP.checked
+    */
+
+    const rtsp =
+        document.querySelector(
+            'input[name="videoStream"][value="rtsp"]'
+        );
+
+    const isRtsp =
+        rtsp &&
+        rtsp.checked;
+
+
+    /*
+        Sound capture
+    */
+
+    const soundCapture =
+        document.getElementById(
+            "videoSettingsSoundCapture"
+        );
+
+    const sound =
+        soundCapture &&
+        soundCapture.checked
+            ? 1
+            : 0;
+
+
+    /*
+        Формуємо пакет.
+    */
+
+    const packet =
+        Protocol.videoQualitySet(
+            AppState.sDeskId,
+            AppState.sMyId,
+            sizeF,
+            fpsValue,
+            encoderV,
+            encSpeed,
+            bitrateValue,
+            latencyZ,
+            isRtsp,
+            sound
+        );
+
+
+    /*
+        Відправляємо на сервер.
+    */
+
+    if(
+        !wsClient.send(packet)
+    )
+    {
+       log(
+            "VideoSettings: " +
+            "не вдалося відправити пакет"
+        );
+    }
 }
 
 
