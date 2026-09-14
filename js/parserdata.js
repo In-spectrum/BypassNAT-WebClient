@@ -750,6 +750,71 @@ const ParserData =
                         break;
                     }
 
+                    /*
+                    Video Quality Current
+                    */
+
+                    case 0x13:
+                    {
+                        // this.log(
+                        //     "ParserData::nextStep 5.13.0: " +
+                        //     this.toHex(data)
+                        // );
+
+
+                        const packet =
+                            this.parseVideoQualityCurent(
+                                data
+                            );
+
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.13.1: " +
+                        //     this.toHex(packet)
+                        // );
+
+
+                        /*
+                            null означає,
+                            що весь пакет ще
+                            не отриманий.
+                        */
+
+                        if(packet === null)
+                            break;
+
+
+                        /*
+                            Аналог:
+
+                            a_iPos +=
+                                fVideoQualityCurent(...);
+                        */
+
+                        if(packet.size <= 0)
+                            break;
+
+
+                        pos +=
+                            packet.size;
+
+
+                        result.push(
+                            packet
+                        );
+
+
+                        // this.log(
+                        //     "ParserData::nextStep 5.13.10: " +
+                        //     this.toHex(result)
+                        // );
+
+
+                        break;
+                    }
+
+
+
 
                     /*
                         Невідомий тип.
@@ -4456,6 +4521,396 @@ const ParserData =
 
             data4Length:
                 data4Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+        /*
+        Аналог:
+
+        ParserSocketData::fVideoQualityCurent()
+    */
+
+    parseVideoQualityCurent(data)
+    {
+
+         this.log(
+                "ParserData::parseVideoQualityCurent 0: "
+            );
+
+        if(data.length < 4)
+        {
+            return null;
+        }
+
+
+        let pos = 0;
+
+
+        /*
+            SIZE-1
+
+            Desktop ID
+        */
+
+        const data1Length =
+            data[2];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            SIZE-2
+
+            Client ID
+        */
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            SIZE-3
+
+            Video Quality DATA
+        */
+
+        const data3Length =
+            data[
+                3 +
+                data1Length +
+                data2Length +
+                pos -
+                1
+            ];
+
+        pos++;
+
+
+        /*
+            Перевірка повного пакета.
+
+            FF
+            TYPE
+            SZ-1
+            DATA-1
+            SZ-2
+            DATA-2
+            SZ-3
+            DATA-3
+            CRC
+        */
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        /*
+            CRC.
+
+            FF у CRC НЕ входить.
+        */
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseVideoQualityCurent: " +
+                "CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+
+                size:
+                    0,
+
+                type:
+                    data[1],
+
+                name:
+                    "VIDEO_QUALITY_CURRENT",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        /*
+            Desktop ID
+        */
+
+        pos = 0;
+
+
+        const desktopIdStart =
+            3;
+
+
+        const desktopIdEnd =
+            3 +
+            data1Length +
+            pos;
+
+
+        const desktopIdBytes =
+            data.slice(
+                desktopIdStart,
+                desktopIdEnd
+            );
+
+
+        const desktopId =
+            this.decodeUtf8(
+                desktopIdBytes
+            );
+
+
+        /*
+            Client ID
+        */
+
+        pos++;
+
+
+        const clientIdStart =
+            3 +
+            data1Length +
+            pos;
+
+
+        const clientIdEnd =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const clientIdBytes =
+            data.slice(
+                clientIdStart,
+                clientIdEnd
+            );
+
+
+        const clientId =
+            this.decodeUtf8(
+                clientIdBytes
+            );
+
+
+        /*
+            Video Quality DATA
+        */
+
+        pos++;
+
+
+        const qualityDataStart =
+            3 +
+            data1Length +
+            data2Length +
+            pos;
+
+
+        const qualityDataEnd =
+            3 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos;
+
+
+        const qualityData =
+            data.slice(
+                qualityDataStart,
+                qualityDataEnd
+            );
+
+
+        /*
+            C++:
+
+            if(
+                QString::fromStdString(
+                    a_baLogClient.toStdString()
+                ) ==
+                StaticData::m_sDeskId
+            )
+            {
+                emit sgControl(
+                    "",
+                    21,
+                    "",
+                    a_baData
+                );
+            }
+
+            Тут clientId порівнюємо
+            з AppState.sDeskId.
+        */
+
+        if(
+            clientId ===
+            AppState.sDeskId
+        )
+        {
+            this.sgControl(
+                "",
+                21,
+                "",
+                qualityData
+            );
+        }
+
+
+        /*
+            C++:
+
+            a_iPlasPos++;
+
+            return
+                3 +
+                a_iData_1 +
+                a_iData_2 +
+                a_iData_3 +
+                a_iPlasPos;
+        */
+
+        pos++;
+
+
+        return {
+
+            size:
+                3 +
+                data1Length +
+                data2Length +
+                data3Length +
+                pos,
+
+            type:
+                data[1],
+
+            name:
+                "VIDEO_QUALITY_CURRENT",
+
+            validCRC:
+                true,
+
+            desktopId:
+                desktopId,
+
+            desktopIdBytes:
+                desktopIdBytes,
+
+            clientId:
+                clientId,
+
+            clientIdBytes:
+                clientIdBytes,
+
+            data:
+                qualityData,
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
+
+            data3Length:
+                data3Length,
 
             receivedCRC:
                 receivedCRC,

@@ -664,14 +664,14 @@ wsClient.slControl =
 (
     sId,
     iVar,
-    sData
+    aData
 ) =>
 {
     // log(
     //     "app.wsClient.slControl: " +
     //     "Id=" + sId +
     //     ", Var=" + iVar +
-    //     ", Data=" + sData
+    //     ", Data=" + aData
     // );
 
     //     log(
@@ -689,7 +689,7 @@ wsClient.slControl =
                 //     "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
                 // );
 
-                if(AppState.sWithoutStream === sData)
+                if(AppState.sWithoutStream === aData)
                 {
                     const mes = "User '" + AppState.sDeskLogin
                                          + "' not support screen capture."
@@ -704,9 +704,9 @@ wsClient.slControl =
                     //     "AppState.sStreamNewUrl = " + AppState.sStreamNewUrl
                     // );
 
-                    if(AppState.sStreamNewUrl !== sData)
+                    if(AppState.sStreamNewUrl !== aData)
                     {
-                        AppState.sStreamNewUrl = sData;                        
+                        AppState.sStreamNewUrl = aData;                        
                     }
 
                     AppState.m_iTimeForWatcher = 0;
@@ -755,7 +755,7 @@ wsClient.slControl =
                 */
 
                 option.textContent =
-                    sData;
+                    aData;
 
 
                 /*
@@ -782,7 +782,7 @@ wsClient.slControl =
                         sId,
                         10
                     ),
-                    sData
+                    aData
                 );
 
                 break;
@@ -792,9 +792,9 @@ wsClient.slControl =
                 /*
                     CommandLine Data.
                 */
-                //log("app.slControl 11: " + sData );
+                //log("app.slControl 11: " + aData );
 
-                fCommandLineResponse(sData);               
+                fCommandLineResponse(aData);               
 
                 break;
             }
@@ -833,7 +833,7 @@ wsClient.slControl =
                     || id === 200 + 11)
                 {
 
-                    showMessage(sId, sData);
+                    showMessage(sId, aData);
 
                     //сообщение низкой активности клиента
                     if (id === 200 + 11)
@@ -844,13 +844,20 @@ wsClient.slControl =
                 break;
             }
 
+            case 15: //поточні відео налаштування (bitrate, fps, resolution)
+            {               
+                fVideoQualityCurent(aData);                
+
+                break;
+            }
+
             case 16: //переконнектится к серверу с новым Id
             {               
-                if( AppState.sMyId !== sData)
+                if( AppState.sMyId !== aData)
                 {
                     setConnectionStatus(false);
 
-                    AppState.sMyId = sData;
+                    AppState.sMyId = aData;
                     startConnectServer();
                 }
 

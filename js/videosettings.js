@@ -4,6 +4,15 @@
 
 let videoSettingsLoaded = false;
 
+let videoSettingsSizeF = 0;
+let videoSettingsFPS = 30;
+let videoSettingsEncoderV = 0;
+let videoSettingsEncSpeed = 1;
+let videoSettingsBitrate = 25;
+let videoSettingsLatencyZ = 1;
+let videoSettingsRTSP = false;
+let videoSettingsSound = 0;
+
 
 // -----------------------------------------------------
 // Завантаження Video settings
@@ -50,7 +59,7 @@ function loadVideoSettings()
                     "click",
                     hideVideoSettings
                 );
-            }       
+            }
 
 
             const fps =
@@ -127,6 +136,7 @@ function loadVideoSettings()
                 );
             }
 
+
             // -----------------------------------------------------
             // Encoder
             // -----------------------------------------------------
@@ -164,6 +174,7 @@ function loadVideoSettings()
         });
 }
 
+
 // -----------------------------------------------------
 // Encoder
 // -----------------------------------------------------
@@ -189,6 +200,7 @@ function updateEncodingSpeedVisibility()
         gpu.checked ? "none" : "";
 }
 
+
 // -----------------------------------------------------
 // Показати
 // -----------------------------------------------------
@@ -202,6 +214,12 @@ function showVideoSettings()
 
     if(!overlay)
         return;
+
+
+    // При відкритті переносимо значення
+    // з серверних змінних у контроли.
+    applyVideoSettingsToControls();
+
 
     overlay.style.display = "flex";
 }
@@ -226,11 +244,196 @@ function hideVideoSettings()
 
 
 // -----------------------------------------------------
+// Значення змінних -> контроли
+// -----------------------------------------------------
+
+function applyVideoSettingsToControls()
+{
+    const original =
+        document.querySelector(
+            'input[name="videoFrameSize"][value="original"]'
+        );
+
+    const fullhd =
+        document.querySelector(
+            'input[name="videoFrameSize"][value="fullhd"]'
+        );
+
+    const hd =
+        document.querySelector(
+            'input[name="videoFrameSize"][value="hd"]'
+        );
+
+
+    if(original)
+        original.checked =
+            videoSettingsSizeF === 0;
+
+    if(fullhd)
+        fullhd.checked =
+            videoSettingsSizeF === 1;
+
+    if(hd)
+        hd.checked =
+            videoSettingsSizeF === 2;
+
+
+    const fps =
+        document.getElementById(
+            "videoSettingsFps"
+        );
+
+    const fpsValue =
+        document.getElementById(
+            "videoSettingsFpsValue"
+        );
+
+    if(fps)
+        fps.value =
+            videoSettingsFPS;
+
+    if(fpsValue)
+        fpsValue.textContent =
+            videoSettingsFPS;
+
+
+    const cpu =
+        document.querySelector(
+            'input[name="videoEncoder"][value="cpu"]'
+        );
+
+    const gpu =
+        document.querySelector(
+            'input[name="videoEncoder"][value="gpu"]'
+        );
+
+
+    if(cpu)
+        cpu.checked =
+            videoSettingsEncoderV === 0;
+
+    if(gpu)
+        gpu.checked =
+            videoSettingsEncoderV === 1;
+
+
+    const ultrafast =
+        document.querySelector(
+            'input[name="videoSpeed"][value="ultrafast"]'
+        );
+
+    const veryfast =
+        document.querySelector(
+            'input[name="videoSpeed"][value="veryfast"]'
+        );
+
+    const medium =
+        document.querySelector(
+            'input[name="videoSpeed"][value="medium"]'
+        );
+
+    const slower =
+        document.querySelector(
+            'input[name="videoSpeed"][value="slower"]'
+        );
+
+
+    if(ultrafast)
+        ultrafast.checked =
+            videoSettingsEncSpeed === 0;
+
+    if(veryfast)
+        veryfast.checked =
+            videoSettingsEncSpeed === 1;
+
+    if(medium)
+        medium.checked =
+            videoSettingsEncSpeed === 2;
+
+    if(slower)
+        slower.checked =
+            videoSettingsEncSpeed === 3;
+
+
+    const bitrate =
+        document.getElementById(
+            "videoSettingsBitrate"
+        );
+
+    const bitrateValue =
+        document.getElementById(
+            "videoSettingsBitrateValue"
+        );
+
+
+    if(bitrate)
+        bitrate.value =
+            videoSettingsBitrate / 10;
+
+    if(bitrateValue)
+        bitrateValue.textContent =
+            (videoSettingsBitrate / 10) +
+            " Mbit.";
+
+
+    const zeroLatency =
+        document.getElementById(
+            "videoSettingsZeroLatency"
+        );
+
+
+    if(zeroLatency)
+        zeroLatency.checked =
+            videoSettingsLatencyZ === 1;
+
+
+    const rtsp =
+        document.querySelector(
+            'input[name="videoStream"][value="rtsp"]'
+        );
+
+    const rtmp =
+        document.querySelector(
+            'input[name="videoStream"][value="rtmp"]'
+        );
+
+
+    if(rtsp)
+        rtsp.checked =
+            videoSettingsRTSP;
+
+    if(rtmp)
+        rtmp.checked =
+            !videoSettingsRTSP;
+
+
+    const soundCapture =
+        document.getElementById(
+            "videoSettingsSoundCapture"
+        );
+
+
+    if(soundCapture)
+        soundCapture.checked =
+            videoSettingsSound === 1;
+
+
+    updateEncodingSpeedVisibility();
+}
+
+
+// -----------------------------------------------------
 // Default properties
 // -----------------------------------------------------
 
 function videoSettingsDefaults()
 {
+    // -------------------------------------------------
+    // УВАГА:
+    // Змінюємо тільки контроли.
+    // videoSettings... НЕ змінюємо.
+    // -------------------------------------------------
+
     const rtmp =
         document.querySelector(
             'input[name="videoStream"][value="rtmp"]'
@@ -250,6 +453,7 @@ function videoSettingsDefaults()
         document.querySelector(
             'input[name="videoSpeed"][value="veryfast"]'
         );
+
 
     if(rtmp)
         rtmp.checked = true;
@@ -274,6 +478,7 @@ function videoSettingsDefaults()
             "videoSettingsFpsValue"
         );
 
+
     if(fps)
         fps.value = 30;
 
@@ -290,6 +495,7 @@ function videoSettingsDefaults()
         document.getElementById(
             "videoSettingsBitrateValue"
         );
+
 
     if(bitrate)
         bitrate.value = 2.5;
@@ -309,14 +515,17 @@ function videoSettingsDefaults()
             "videoSettingsSoundCapture"
         );
 
+
     if(zeroLatency)
         zeroLatency.checked = true;
 
     if(soundCapture)
         soundCapture.checked = false;
 
+
     updateEncodingSpeedVisibility();
 }
+
 
 // -----------------------------------------------------
 // Apply
@@ -324,6 +533,28 @@ function videoSettingsDefaults()
 
 function videoSettingsApply()
 {
+
+    if(AppState.sDeskId.length < 4
+        || AppState.sMyId.length < 4
+        || AppState.iDeskConnectStatus < 2
+        || !AppState.bScreanCapture
+
+    )            
+    {
+        showMessage(0,
+            "Unable to apply video settings."
+            , document.getElementById("videoSettingsOverlay")
+        );
+    }
+
+    /*
+        Значення беремо ТІЛЬКИ з контролів.
+
+        Змінні videoSettings... тут
+        НЕ змінюємо.
+    */
+
+
     /*
         Frame size
     */
@@ -480,6 +711,7 @@ function videoSettingsApply()
     /*
         Формуємо пакет.
     */
+    
 
     const packet =
         Protocol.videoQualitySet(
@@ -504,7 +736,7 @@ function videoSettingsApply()
         !wsClient.send(packet)
     )
     {
-       log(
+        log(
             "VideoSettings: " +
             "не вдалося відправити пакет"
         );
@@ -564,6 +796,48 @@ function initializeVideoSettings()
             }
         }
     );
+}
+
+// -----------------------------------------------------
+// Video Quality Current
+// -----------------------------------------------------
+
+function fVideoQualityCurent(data)
+{
+    if(!data)
+        return;
+
+
+    if(data.length !== 8)
+        return;
+
+
+    videoSettingsSizeF =
+        data[0];
+
+    videoSettingsFPS =
+        data[1];
+
+    videoSettingsEncoderV =
+        data[2];
+
+    videoSettingsEncSpeed =
+        data[3];
+
+    videoSettingsBitrate =
+        data[4];
+
+    videoSettingsLatencyZ =
+        data[5];
+
+    videoSettingsRTSP =
+        data[6];
+
+    videoSettingsSound =
+        data[7];
+
+
+    applyVideoSettingsToControls();
 }
 
 

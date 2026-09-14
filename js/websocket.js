@@ -302,7 +302,16 @@ class WebSocketClient
                     //this.slControl("", 4, "");
                 }
                 break;
-            }           
+            }       
+            case 21: //поточні відео налаштування (bitrate, fps, resolution)
+            {
+                if(this.slControl)
+                {
+                    this.slControl(sId, 15, baIn);
+                }
+
+                break;
+            }    
             case 22: //переконнектится к серверу с новым Id
             {
                 if(this.slControl)
