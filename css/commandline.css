@@ -1,48 +1,53 @@
 /* =====================================================
-   COMMAND LINE OVERLAY
+   COMMAND LINE
    ===================================================== */
 
-.commandLineOverlay {
+.commandLineOverlay
+{
     position: fixed;
 
-    left: 0;
     top: 0;
+    left: 0;
 
     width: 100%;
     height: 100%;
 
     display: flex;
 
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+
+    box-sizing: border-box;
 
     background: rgba(0, 0, 0, 0.55);
 
     z-index: 100000;
-
-    padding: 0;
 }
 
 
 /* =====================================================
-   COMMAND LINE WINDOW
+   WINDOW
    ===================================================== */
 
-.commandLineWindow {
+.commandLineWindow
+{
     position: relative;
 
-    width: 80%;
-    height: 80%;
-
-    padding: 10px;
+    width: calc(100% - 60px);
+    height: calc(100% - 70px);
 
     display: flex;
     flex-direction: column;
 
+    margin-top: 50px;
+
     box-sizing: border-box;
 
     background: #808080;
-    color: #000;
+
+    color: #222;
+
+    border: 2px solid #fff;
 }
 
 
@@ -50,17 +55,35 @@
    TITLE
    ===================================================== */
 
-.commandLineTitle {
-    flex: 0 0 auto;
+.commandLineTitle
+{
+    flex: 0 0 50px;
 
-    width: 100%;
+    display: flex;
 
-    text-align: right;
+    align-items: center;
+    justify-content: flex-end;
 
-    font-size: 22px;
+    padding: 0 16px;
+
+    box-sizing: border-box;
+
+    background: #000;
+
+    color: #fff;
+
+    font-size: 24px;
     font-weight: 700;
+}
 
-    margin-bottom: 15px;
+
+/* =====================================================
+   OLD BLACK LINE
+   ===================================================== */
+
+.commandLineTitle + .commandLineBlackLine
+{
+    display: none;
 }
 
 
@@ -68,13 +91,14 @@
    INPUT LABEL
    ===================================================== */
 
-.commandLineInputLabel {
+.commandLineInputLabel
+{
     flex: 0 0 auto;
 
-    font-size: 18px;
-    font-weight: 700;
+    margin: 26px 15px 9px 15px;
 
-    margin-bottom: 5px;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 
@@ -82,25 +106,31 @@
    INPUT
    ===================================================== */
 
-.commandLineInput {
+.commandLineInput
+{
     flex: 0 0 100px;
 
-    width: 100%;
-    height: 70px;
+    width: calc(100% - 14px);
+
+    height: 100px;
 
     min-height: 100px;
     max-height: 100px;
 
+    margin: 0 7px;
+
     resize: none;
 
-    padding: 5px;
+    padding: 8px 20px;
 
     box-sizing: border-box;
 
     background: #fff;
-    color: #000;
+    color: #111;
 
-    border: 1px solid #444;
+    border: 1px solid #bdbdbd;
+
+    font-size: 18px;
 }
 
 
@@ -108,7 +138,8 @@
    REQUEST / KILL
    ===================================================== */
 
-.commandLineRequestRow {
+.commandLineRequestRow
+{
     flex: 0 0 auto;
 
     display: flex;
@@ -118,31 +149,59 @@
 
     width: 100%;
 
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0 10px 0;
+
+    padding: 0 7px;
+
+    box-sizing: border-box;
 }
 
 
-.commandLineRequestRow button {
-    min-width: 100px;
+.commandLineRequestRow button
+{
+    height: 49px;
+
+    min-width: 120px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    border: 1px solid #555;
+
+    background: #fff;
+
+    color: #111;
 
     font-size: 18px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.commandLineRequestRow button:active
+{
+    transform: translateY(1px);
 }
 
 
 /* =====================================================
-   BLACK LINE
+   WHITE LINE
    ===================================================== */
 
-.commandLineBlackLine {
-    flex: 0 0 3px;
+.commandLineWhiteLine
+{
+    flex: 0 0 1px;
 
-    width: 100%;
-    height: 3px;
+    width: calc(100% - 14px);
+    height: 1px;
 
-    background: #000;
+    margin: 0 7px;
 
-    margin-bottom: 10px;
+    background: #fff;
 }
 
 
@@ -150,29 +209,35 @@
    OUTPUT HEADER
    ===================================================== */
 
-.commandLineOutputHeader {
+.commandLineOutputHeader
+{
     flex: 0 0 auto;
 
     display: flex;
 
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
 
     width: 100%;
 
-    margin-bottom: 5px;
+    margin-top: 15px;
+    margin-bottom: 9px;
 
-    font-size: 18px;
+    padding: 0 22px;
+
+    box-sizing: border-box;
+
+    font-size: 20px;
     font-weight: 700;
-    padding: 3px;
-    padding-bottom: 0px;
 }
 
 
-.commandLineOutputHeader > label:first-child {
-    font-size: 18px;
+.commandLineOutputHeader > label:first-child
+{
+    font-size: 20px;
     font-weight: 700;
-    margin-top: 15px;
+
+    margin-top: 0;
 }
 
 
@@ -180,23 +245,27 @@
    USE CIRILLIC
    ===================================================== */
 
-.commandLineCyrillic {
-    display: flex;
+.commandLineCyrillic
+{
+    display: inline-flex;
 
     align-items: center;
 
-    gap: 5px;
+    gap: 9px;
 
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 700;
+
+    cursor: pointer;
 }
 
 
-.commandLineCyrillic input {
-    margin: 0;
-
+.commandLineCyrillic input
+{
     width: 20px;
     height: 20px;
+
+    margin: 0;
 }
 
 
@@ -204,7 +273,8 @@
    OUTPUT AREA
    ===================================================== */
 
-.commandLineOutputContainer {
+.commandLineOutputContainer
+{
     position: relative;
 
     flex: 1 1 auto;
@@ -216,6 +286,10 @@
     display: flex;
 
     flex-direction: column;
+
+    padding: 0 7px;
+
+    box-sizing: border-box;
 }
 
 
@@ -223,7 +297,8 @@
    OUTPUT
    ===================================================== */
 
-.commandLineOutput {
+.commandLineOutput
+{
     flex: 1 1 auto;
 
     min-height: 0;
@@ -233,33 +308,18 @@
 
     resize: none;
 
-    padding: 5px;
+    padding: 8px 20px;
 
     box-sizing: border-box;
 
     background: #fff;
-    color: #000;
+    color: #111;
 
-    border: 1px solid #444;
+    border: 1px solid #bdbdbd;
 
     overflow: auto;
-}
 
-
-/* =====================================================
-   BOTTOM PART
-   ===================================================== */
-
-.commandLineBottom {
-    flex: 0 0 auto;
-
-    width: 100%;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: stretch;
+    font-size: 18px;
 }
 
 
@@ -267,28 +327,73 @@
    CLEAR
    ===================================================== */
 
-.commandLineClear {
+.commandLineClear
+{
     align-self: flex-start;
 
-    margin-top: 15px;
+    margin-top: 10px;
     margin-bottom: 15px;
 
+    height: 49px;
+
+    min-width: 120px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    border: 1px solid #555;
+
+    background: #fff;
+
+    color: #111;
+
     font-size: 18px;
-    min-width: 100px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.commandLineClear:active
+{
+    transform: translateY(1px);
 }
 
 
 /* =====================================================
-   WHITE LINE
+   BOTTOM
    ===================================================== */
 
-.commandLineWhiteLine {
-    flex: 0 0 1px;
+.commandLineBottom
+{
+    flex: 0 0 60px;
 
     width: 100%;
-    height: 1px;
 
-    background: #fff;
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0 8px;
+
+    box-sizing: border-box;
+
+    border-top: 2px solid #fff;
+}
+
+
+/*
+    Стару чорну лінію всередині Bottom
+    більше не показуємо.
+*/
+
+.commandLineBottom .commandLineBlackLine
+{
+    display: none;
 }
 
 
@@ -296,12 +401,81 @@
    CANCEL
    ===================================================== */
 
-.commandLineCancel {
-    align-self: flex-end;
+.commandLineCancel
+{
+    align-self: auto;
 
-    margin-top: 5px;
+    margin: 0;
 
-    min-width: 100px;
+    width: 92px;
+    height: 50px;
 
-    font-size: 18px;
+    min-width: 92px;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    border-radius: 9px;
+
+    border: 1px solid #fff;
+
+    background: #555;
+
+    color: #fff;
+
+    font-size: 17px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.commandLineCancel:active
+{
+    transform: translateY(1px);
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px)
+{
+    .commandLineTitle
+    {
+        font-size: 22px;
+    }
+
+
+    .commandLineInputLabel
+    {
+        font-size: 19px;
+    }
+
+
+    .commandLineOutputHeader
+    {
+        font-size: 19px;
+    }
+
+
+    .commandLineOutputHeader > label:first-child
+    {
+        font-size: 19px;
+    }
+
+
+    .commandLineCyrillic
+    {
+        font-size: 17px;
+    }
+
+
+    .commandLineRequestRow button,
+    .commandLineClear
+    {
+        font-size: 17px;
+    }
 }
