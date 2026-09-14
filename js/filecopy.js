@@ -988,6 +988,22 @@ class FileCopy
         sType
     )
     {
+                if(
+                    typeof AppState ===
+                    "undefined" ||
+                    !AppState.sMyId ||
+                    !AppState.sDeskId
+                    || AppState.connectStatus < 2
+                )
+                {
+                    showMessage(0,
+                        "Unable to file copy.\r\n"
+                        + "Check the connection to the remote device."
+                    );
+
+                    return;
+                }
+
         /*
             --------------------------------------------------
             SEND
@@ -1779,10 +1795,12 @@ class FileCopy
                 "undefined" ||
                 !AppState.sMyId ||
                 !AppState.sDeskId
+                || AppState.connectStatus < 2
             )
             {
-                console.error(
-                    "FileCopy: client IDs are not available."
+                showMessage(0,
+                    "Unable to file copy.\r\n"
+                    + "Check the connection to the remote device."
                 );
 
 
@@ -2111,11 +2129,13 @@ class FileCopy
             "undefined" ||
             !AppState.sDeskId ||
             !AppState.sMyId
+            || AppState.connectStatus < 2
         )
         {
-            console.error(
-                "FileCopy: client IDs are not available."
-            );
+            showMessage(0,
+                    "Unable to file copy.\r\n"
+                    + "Check the connection to the remote device."
+                );
 
             return false;
         }

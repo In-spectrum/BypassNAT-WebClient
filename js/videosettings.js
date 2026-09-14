@@ -534,7 +534,8 @@ function videoSettingsDefaults()
 function videoSettingsApply()
 {
 
-    if(AppState.sDeskId.length < 4
+    if( typeof AppState === "undefined"
+        || AppState.sDeskId.length < 4
         || AppState.sMyId.length < 4
         || AppState.iDeskConnectStatus < 2
         || !AppState.bScreanCapture
