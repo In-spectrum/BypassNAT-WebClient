@@ -1,0 +1,385 @@
+<div
+    id="videoSettingsOverlay"
+    class="videoSettingsOverlay"
+    style="display: none;"
+>
+
+    <div
+        id="videoSettingsWindow"
+        class="videoSettingsWindow"
+    >
+
+        <div class="videoSettingsTitle">          
+
+            <span>- Video quality</span>
+
+        </div>
+
+
+        <div class="videoSettingsContent">
+
+
+            <!-- Stream -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    Stream
+                </div>
+
+                <div class="videoSettingsBox videoSettingsRadioRow">
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoStream"
+                            value="rtmp"
+                            checked
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>RTMP</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoStream"
+                            value="rtsp"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>RTSP</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Frame size -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    Frame size
+                </div>
+
+                <div class="videoSettingsBox videoSettingsRadioRow">
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoFrameSize"
+                            value="original"
+                            checked
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>Original</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoFrameSize"
+                            value="fullhd"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>Full HD</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoFrameSize"
+                            value="hd"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>HD</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- FPS -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    FPS
+                </div>
+
+                <div class="videoSettingsBox videoSliderRow">
+
+                    <input
+                        id="videoSettingsFps"
+                        type="range"
+                        min="1"
+                        max="60"
+                        value="30"
+                    >
+
+                    <span id="videoSettingsFpsValue">
+                        30
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Encoder -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    Encoder h.264
+                </div>
+
+                <div class="videoSettingsBox videoSettingsRadioRow">
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoEncoder"
+                            value="cpu"
+                            checked
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>use CPU</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoEncoder"
+                            value="gpu"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>use GPU</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Encoding speed -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    Encoding speed
+                </div>
+
+                <div class="videoSettingsBox videoSpeedGrid">
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoSpeed"
+                            value="ultrafast"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>ultrafast</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoSpeed"
+                            value="veryfast"
+                            checked
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>veryfast</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoSpeed"
+                            value="medium"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>medium</span>
+
+                    </label>
+
+
+                    <label class="videoRadioOption">
+
+                        <input
+                            type="radio"
+                            name="videoSpeed"
+                            value="slower"
+                        >
+
+                        <span class="videoRadioCircle"></span>
+
+                        <span>slower</span>
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Bitrate -->
+
+            <div class="videoSettingsGroup">
+
+                <div class="videoSettingsGroupTitle">
+                    Bitrate
+                </div>
+
+                <div class="videoSettingsBox videoSliderRow">
+
+                    <input
+                        id="videoSettingsBitrate"
+                        type="range"
+                        min="0.5"
+                        max="10"
+                        step="0.1"
+                        value="2.5"
+                    >
+
+                    <span id="videoSettingsBitrateValue">
+                        2.5 Mbit.
+                    </span>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Options -->
+
+            <div class="videoSettingsOptions">
+
+                <label class="videoCheckboxOption">
+
+                    <input
+                        id="videoSettingsZeroLatency"
+                        type="checkbox"
+                        checked
+                    >
+
+                    <span class="videoCheckboxBox"></span>
+
+                    <span>Zero latency</span>
+
+                </label>
+
+
+                <label class="videoCheckboxOption">
+
+                    <input
+                        id="videoSettingsSoundCapture"
+                        type="checkbox"
+                    >
+
+                    <span class="videoCheckboxBox"></span>
+
+                    <span>Sound capture</span>
+
+                </label>
+
+            </div>
+
+
+
+            <!-- Apply / Default -->
+
+            <div class="videoSettingsActions">
+
+                <button
+                    id="btnVideoSettingsApply"
+                    type="button"
+                >
+                    Apply
+                </button>
+
+
+                <button
+                    id="btnVideoSettingsDefaults"
+                    class="videoSettingsDefaults"
+                    type="button"
+                >
+                    Default propertys
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Bottom -->
+
+        <div class="videoSettingsBottom">
+
+            <button
+                id="btnVideoSettingsCancel"
+                type="button"
+            >
+                Cancel
+            </button>
+
+        </div>
+
+    </div>
+
+</div>

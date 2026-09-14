@@ -1,0 +1,488 @@
+/* =====================================================
+   VIDEO SETTINGS
+   ===================================================== */
+
+.videoSettingsOverlay
+{
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    z-index: 100000;
+}
+
+
+/* =====================================================
+   WINDOW
+   ===================================================== */
+
+.videoSettingsWindow
+{
+    position: relative;
+
+    width: max(50%, 380px);
+    height: calc(100% - 100px);
+
+    display: flex;
+    flex-direction: column;
+
+    box-sizing: border-box;
+
+    background: #808080;
+
+    color: #222;
+
+    border: 2px solid #fff;
+}
+
+
+/* =====================================================
+   TITLE
+   ===================================================== */
+
+.videoSettingsTitle
+{
+    flex: 0 0 60px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    padding: 0 16px;
+
+    box-sizing: border-box;
+
+    background: #000;
+
+    color: #fff;
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.videoSettingsContent
+{
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow-y: auto;
+
+    padding: 26px 7px 10px 7px;
+
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   GROUP
+   ===================================================== */
+
+.videoSettingsGroup
+{
+    width: 100%;
+
+    margin-bottom: 24px;
+}
+
+
+.videoSettingsGroupTitle
+{
+    margin-left: 15px;
+    margin-bottom: 9px;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+.videoSettingsBox
+{
+    width: 100%;
+
+    min-height: 51px;
+
+    padding: 8px 20px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #bdbdbd;
+}
+
+
+/* =====================================================
+   RADIO BUTTONS
+   ===================================================== */
+
+.videoSettingsRadioRow
+{
+    display: flex;
+
+    align-items: center;
+
+    gap: 25px;
+}
+
+
+.videoRadioOption
+{
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    font-size: 19px;
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    cursor: pointer;
+}
+
+
+.videoRadioOption input
+{
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.videoRadioCircle
+{
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    box-sizing: border-box;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    border: 1px solid #ddd;
+}
+
+
+.videoRadioOption input:checked + .videoRadioCircle
+{
+    background: #333;
+
+    border: 4px solid #fff;
+
+    box-shadow: 0 0 0 1px #aaa inset;
+}
+
+
+/* =====================================================
+   SLIDERS
+   ===================================================== */
+
+.videoSliderRow
+{
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+}
+
+
+.videoSliderRow input[type="range"]
+{
+    flex: 1 1 auto;
+
+    min-width: 0;
+
+    cursor: pointer;
+}
+
+
+.videoSliderRow span
+{
+    width: 85px;
+
+    flex: 0 0 85px;
+
+    font-size: 19px;
+    font-weight: 700;
+
+    text-align: left;
+}
+
+
+/* =====================================================
+   ENCODING SPEED
+   ===================================================== */
+
+.videoSpeedGrid
+{
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    row-gap: 12px;
+    column-gap: 20px;
+
+    align-items: center;
+}
+
+
+/* =====================================================
+   CHECKBOXES
+   ===================================================== */
+
+.videoSettingsOptions
+{
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 21px;
+
+    margin-top: 2px;
+    margin-bottom: 24px;
+
+    box-sizing: border-box;
+}
+
+
+.videoCheckboxOption
+{
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    font-size: 19px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.videoCheckboxOption input
+{
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+.videoCheckboxBox
+{
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 34px;
+
+    box-sizing: border-box;
+
+    background: #fff;
+
+    border: 1px solid #ddd;
+
+    border-radius: 3px;
+}
+
+
+.videoCheckboxOption input:checked + .videoCheckboxBox
+{
+    background: #333;
+
+    border: 5px solid #fff;
+
+    box-shadow: 0 0 0 1px #aaa inset;
+}
+
+
+/* =====================================================
+   APPLY / DEFAULT
+   ===================================================== */
+
+.videoSettingsActions
+{
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    padding: 0 7px;
+
+    box-sizing: border-box;
+}
+
+
+.videoSettingsActions button
+{
+    height: 49px;
+
+    min-width: 220px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 8px;
+
+    border: 1px solid #555;
+
+    background: #fff;
+
+    color: #111;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.videoSettingsActions button:active
+{
+    transform: translateY(1px);
+}
+
+
+.videoSettingsDefaults
+{
+    align-self: flex-end;
+
+    min-width: auto !important;
+
+    height: auto !important;
+
+    padding: 0 !important;
+
+    border: none !important;
+
+    background: transparent !important;
+
+    color: #555 !important;
+
+    font-size: 17px !important;
+
+    text-decoration: underline;
+
+    border-radius: 0 !important;
+}
+
+
+/* =====================================================
+   BOTTOM
+   ===================================================== */
+
+.videoSettingsBottom
+{
+    flex: 0 0 60px;
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0 8px;
+
+    box-sizing: border-box;
+
+    border-top: 2px solid #fff;
+}
+
+
+.videoSettingsBottom button
+{
+    width: 92px;
+    height: 50px;
+
+    border-radius: 9px;
+
+    border: 1px solid #fff;
+
+    background: #555;
+
+    color: #fff;
+
+    font-size: 17px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.videoSettingsBottom button:active
+{
+    transform: translateY(1px);
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px)
+{
+    .videoSettingsTitle
+    {
+        font-size: 22px;
+    }
+
+
+    .videoSettingsRadioRow
+    {
+        gap: 15px;
+    }
+
+
+    .videoRadioOption
+    {
+        font-size: 18px;
+    }
+
+
+    .videoSettingsGroupTitle
+    {
+        font-size: 19px;
+    }
+
+
+    .videoSettingsOptions
+    {
+        gap: 15px;
+    }
+
+
+    .videoCheckboxOption
+    {
+        font-size: 17px;
+    }
+}
