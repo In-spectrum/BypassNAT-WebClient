@@ -6,7 +6,6 @@ const btnLogger = document.getElementById("btnLogger");
 const loggerBody = document.getElementById('loggerBody');
 const txtFindClient = document.getElementById("txtFindClient");
 const lstClients = document.getElementById("lstClients");
-const video = document.getElementById("video");
 const playerArea = document.getElementById("playerArea");
 const cbScreenCapture = document.getElementById("cbScreenCapture");
 
@@ -102,9 +101,8 @@ document.getElementById(
     "1236";
 
 document.getElementById(
-    "txtWebRTCPort"
-).value =
-    AppState.sWebRTCPort;
+    "txtVideoPlayerPort"
+).value = AppState.bMoqPlayer ? AppState.sMoqPort : AppState.sWebRTCPort;
 
 
 document.getElementById(
@@ -182,11 +180,11 @@ cbScreenCapture.addEventListener("change", () => {
 
     if(!cbScreenCapture.checked)
     {
-        document.getElementById("idTxtWebRTCPort").style.display = "none";  // сховати
+        document.getElementById("idTxtVideoPlayerPort").style.display = "none";  // сховати
     }
     else
     {
-       document.getElementById("idTxtWebRTCPort").style.display = "flex";  // показати
+       document.getElementById("idTxtVideoPlayerPort").style.display = "flex";  // показати
     }
 
     if(AppState.iDeskConnectStatus > 0)
@@ -446,7 +444,11 @@ function setStatusConnectToDevice(connectedv)
 function fConnectDevice()
 {   
     setStatusConnectToDevice(false);
-    stopPlayer();
+
+    if(AppState.bMoqPlayer)
+        stopMoqPlayer();
+    else
+        stopPlayer();
 
     if(!AppState.sDeskLogin.length || !AppState.sDeskPassword.length || !AppState.sDeskId.length )
         return;
@@ -508,7 +510,10 @@ function fDisconnectDevice()
                 "clipboardRiadWrite"
             ).style.display = "none"; 
 
-    stopPlayer();
+    if(AppState.bMoqPlayer)
+        stopMoqPlayer();
+    else
+        stopPlayer();
 
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
 
@@ -622,6 +627,25 @@ function fClientDisconnect()
     }
 }
 
+function initMouse()
+{        
+    if(AppState.bMoqPlayer)
+    {
+        initMouseForMoqPlayer();
+    }
+    else
+    {
+        const oldVideo = document.getElementById("video");
+        const video = document.createElement("video");
+        video.id = "video";
+        video.autoplay = true;
+        video.playsInline = true;
+        oldVideo.replaceWith(video);
+
+        initMouseForWebRTCPlayer();
+    }
+}
+
 
 video.addEventListener("loadedmetadata", () =>
 {
@@ -651,7 +675,7 @@ playerArea.addEventListener("error", () =>
 {
     //log("Помилка відтворення відео.");
 });
-
+    
 initMouse();
 
 /*
@@ -1619,7 +1643,7 @@ document.getElementById(
 
         const WebRTC_port =
             document.getElementById(
-                "txtWebRTCPort"
+                "txtVideoPlayerPort"
             ).value.trim();
 
         if(WebRTC_port === "")
@@ -1652,7 +1676,15 @@ document.getElementById(
             return;
         }
 
-        AppState.sWebRTCPort = WebRTC_port;
+        if(AppState.bMoqPlayer)
+        {
+            AppState.sMoqPort = WebRTC_port;
+        }
+        else
+        {
+            AppState.sWebRTCPort = WebRTC_port;
+        }
+        
 
         //  log(
         //         "btnConnectClient::sWebRTCPort: " +  AppState.sWebRTCPort
@@ -1710,7 +1742,23 @@ document.getElementById(
 
     //log("app.fStreamStart 1: ");
 
-    const url =
+    let url  = "";
+
+    if(AppState.bMoqPlayer)
+    {
+        url =
+        "https://" +
+        AppState.serverIP +
+        ':' +
+        AppState.sMoqPort + 
+        "/live/" +
+        AppState.sStreamNewUrl;    
+
+        startMoqPlayer(url);
+    }
+    else
+    {
+        url =
         "http://" +
         AppState.serverIP +
         ':' +
@@ -1719,9 +1767,10 @@ document.getElementById(
         AppState.sStreamNewUrl +
         "/whep";                            
 
-    startPlayer(url);
+        startPlayer(url);
+    }    
 
-    //log("app.fStreamStart 10: ");
+    //log("app.fStreamStart 10: " + url);
  }
 
 
@@ -1931,6 +1980,12 @@ function startAppTimer() {
 }
 
 function startThePage() {
+
+    if(AppState.bMoqPlayer)
+    {
+        document.querySelector('label[for="txtVideoPlayerPort"]').textContent = "MoqPlayer Port (for video stream)";
+    }
+
     btnLogger.innerHTML = "▼";
     btnOpen.innerHTML = "◀";
 
@@ -1963,11 +2018,11 @@ function startThePage() {
 
     if(!cbScreenCapture.checked)
     {
-        document.getElementById("idTxtWebRTCPort").style.display = "none";  // сховати
+        document.getElementById("idTxtVideoPlayerPort").style.display = "none";  // сховати
     }
     else
     {
-       document.getElementById("idTxtWebRTCPort").style.display = "flex";  // показати
+       document.getElementById("idTxtVideoPlayerPort").style.display = "flex";  // показати
     }
 
     

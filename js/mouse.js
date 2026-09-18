@@ -3,8 +3,258 @@ let mouseInsidePlayer = false;
 let mouseInsideVideo = false;
 
 
-function initMouse()
+function initMouseForMoqPlayer()
 {
+    const video =
+        document.getElementById("video");
+
+    const playerArea =
+        document.getElementById("playerArea");
+
+
+    if(!video)
+    {
+        log(
+            "Mouse ERROR: video element not found"
+        );
+
+        return;
+    }
+
+
+    if(!playerArea)
+    {
+        log(
+            "Mouse ERROR: playerArea element not found"
+        );
+
+        return;
+    }
+
+
+    /*
+        --------------------------------------------------
+        Вхід в область player
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "mouseenter",
+        function()
+        {
+            mouseInsidePlayer = true;
+
+            /*
+                Не вважаємо автоматично,
+                що курсор знаходиться на кадрі.
+
+                Реальний стан визначається
+                через getMouseCoordinates().
+            */
+
+            mouseInsideVideo = false;
+
+            keyboardCapture =
+                false;
+
+
+            playerArea.focus();
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Вихід з області player
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "mouseleave",
+        function()
+        {
+            mouseInsidePlayer = false;
+
+            mouseInsideVideo = false;
+
+            keyboardCapture = false;
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Рух миші
+        --------------------------------------------------
+    */
+
+    video.addEventListener(
+        "mousemove",
+        function(event)
+        {
+            if(!mouseInsidePlayer)
+                return;
+
+
+            const p =
+                getMouseCoordinates(event);
+
+
+            mouseInsideVideo =
+                (p != null);
+
+
+            keyboardCapture =
+                mouseInsideVideo;
+
+            if(p == null)
+                return;
+
+            onVideoMouseMove(
+                p.x,
+                p.y,
+                p.width,
+                p.height
+            );
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Ліва / права / інші кнопки - DOWN
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "mousedown",
+        function(event)
+        {
+            if(!mouseInsidePlayer)
+                return;
+
+
+            const p =
+                getMouseCoordinates(event);
+
+
+            /*
+                Клік поза фактичним відеокадром
+                ігноруємо.
+            */
+
+            if(p == null)
+                return;
+
+
+            onVideoMouseButton(
+                event.button,
+                true,
+                p.x,
+                p.y,
+                p.width,
+                p.height
+            );
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Ліва / права / інші кнопки - UP
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "mouseup",
+        function(event)
+        {
+            if(!mouseInsidePlayer)
+                return;
+
+
+            const p =
+                getMouseCoordinates(event);
+
+
+            if(p == null)
+                return;
+
+
+            onVideoMouseButton(
+                event.button,
+                false,
+                p.x,
+                p.y,
+                p.width,
+                p.height
+            );
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Колесо
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "wheel",
+        function(event)
+        {
+            if(!mouseInsidePlayer)
+                return;
+
+
+            const p =
+                getMouseCoordinates(event);
+
+
+            /*
+                Якщо колесо над чорним полем,
+                нічого не відправляємо.
+            */
+
+            if(p == null)
+                return;
+
+
+            event.preventDefault();
+
+
+            onVideoMouseWheel(
+                -event.deltaY,
+                p.x,
+                p.y,
+                p.width,
+                p.height
+            );
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    /*
+        --------------------------------------------------
+        Context menu
+        --------------------------------------------------
+    */
+
+    playerArea.addEventListener(
+        "contextmenu",
+        function(event)
+        {
+            event.preventDefault();
+        }
+    );
+}
+
+function initMouseForWebRTCPlayer()
+{
+    const video = document.getElementById("video");
   
     playerArea.addEventListener("mouseenter", () =>
     {
@@ -119,7 +369,7 @@ function initMouse()
         Рух миші.
     */
     video.addEventListener("mousemove", (event) =>
-    {
+    {        
         if (!mouseInsidePlayer)
             return;
 
@@ -150,15 +400,21 @@ function initMouse()
 */
 function getMouseCoordinates(event)
 {
-    const rect =
-        video.getBoundingClientRect();
 
+    const canvasMoqPlayer = AppState.bMoqPlayer ?
+        document.querySelector("#video canvas") : null;
 
-    const frameWidth =
-        video.videoWidth;
+    const rect = canvasMoqPlayer ?
+        canvasMoqPlayer.getBoundingClientRect() :
+         video.getBoundingClientRect();
 
-    const frameHeight =
-        video.videoHeight;
+    const frameWidth = canvasMoqPlayer ?
+        canvasMoqPlayer.width :
+         video.videoWidth;
+
+    const frameHeight = canvasMoqPlayer ?
+        canvasMoqPlayer.height :
+         video.videoHeight;       
 
 
     /*
@@ -171,7 +427,6 @@ function getMouseCoordinates(event)
     {
         return null;
     }
-
 
     const elementWidth =
         rect.width;
@@ -191,7 +446,6 @@ function getMouseCoordinates(event)
             elementWidth / frameWidth,
             elementHeight / frameHeight
         );
-
 
     const displayedWidth =
         frameWidth * scale;
@@ -250,11 +504,9 @@ function getMouseCoordinates(event)
     const y =
         mouseY - offsetY;
 
-
     return {
         x: x,
         y: y,
-
         width: displayedWidth,
         height: displayedHeight
     };

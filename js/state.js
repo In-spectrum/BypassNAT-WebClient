@@ -34,7 +34,7 @@ const AppState =
     , iDeskConnectTime: 0
     , iTimeDeskActive: 0
     , bTimeDeskNoActiveShow: false
-    , bScreanCapture: false
+    , bScreanCapture: true    
 
     
     , sStreamNewUrl: ""
@@ -42,7 +42,10 @@ const AppState =
     , m_iTimeForWatcher: 0
     , bRunStream: false
     , bStreamError: false    
+    //
+    , bMoqPlayer: true 
     , sWebRTCPort: "8889"
+    , sMoqPort: "8892"
 
     , iClipboardTimeCopy: 5
 

@@ -150,17 +150,18 @@ http://127.0.0.1:8080/
         <input
             type="checkbox"
             id="cbScreenCapture"
+            checked
         >
         <span>Screan capture</span>
     </label>
 
 </div>
 
-<div class="formGroup"; id="idTxtWebRTCPort"; style="margin-top: 20px;">
-<label for="txtWebRTCPort">
-    WebRTC Port (for video stream)
+<div class="formGroup"; id="idTxtVideoPlayerPort"; style="margin-top: 20px;">
+<label for="txtVideoPlayerPort">
+    WebRTCPlayer Port (for video stream)
 </label>
-<input id="txtWebRTCPort" type="number">
+<input id="txtVideoPlayerPort" type="number">
 </div>
 
 
@@ -325,7 +326,7 @@ http://127.0.0.1:8080/
 <div id="playerArea" tabindex="0">
 
 
-<video id="video" autoplay playsinline></video>
+<div id="video"></div>
 
 
 <div id="connectionStatus">
@@ -401,6 +402,8 @@ http://127.0.0.1:8080/
 <script src="js/websocket.js"></script>
 <script src="js/reader.js"></script>
 <script src="js/player.js"></script>
+<script src="js/moq-reader.js"></script>
+<script src="js/moq-player.js"></script>
 <script src="js/mouse.js"></script>
 <script src="js/clipboard.js"></script>
 <script src="js/keyboard.js"></script>

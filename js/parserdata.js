@@ -4539,9 +4539,9 @@ const ParserData =
     parseVideoQualityCurent(data)
     {
 
-         this.log(
-                "ParserData::parseVideoQualityCurent 0: "
-            );
+        //  this.log(
+        //         "ParserData::parseVideoQualityCurent 0: "
+        //     );
 
         if(data.length < 4)
         {
