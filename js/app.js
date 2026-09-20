@@ -109,12 +109,26 @@ document.getElementById(
     "txtServerIP"
 ).value =
     "127.0.0.1";
+    //"192.168.146.108";
+    
 
 
 document.getElementById(
     "txtServerPassword"
 ).value =
     "1111";
+
+// document.getElementById(
+//     "txtFindClient"
+// ).value =
+//     "n";
+
+// document.getElementById(
+//     "txtClientPassword"
+// ).value =
+//     "1242";
+
+    
 
 btnLogger.onclick = () => {
 
@@ -631,7 +645,7 @@ function initMouse()
 {        
     if(AppState.bMoqPlayer)
     {
-        initMouseForMoqPlayer();
+        initMouseForMoqPlayer();        
     }
     else
     {
@@ -1532,6 +1546,11 @@ document.getElementById(
     AppState.serverConnectTime = 0;
     AppState.serverConnecting = true;
     startConnectServer();
+    
+
+    // const url = "https://127.0.0.1:8892/live/test";
+
+    // startMoqPlayer(url);
 
 };
 
@@ -1842,7 +1861,7 @@ function startAppTimer() {
             {
                 //log("startAppTimer 5.1:");
 
-                if(AppState.bTimeDeskNoActiveShow)
+                if(AppState.bTimeDeskNoActiveShow && !moqPlayerCertificateDialog)
                 {
                     // log(
                     //         "startAppTimer::fGetActiveClient 5: AppState.bTimeDeskNoActiveShow"
@@ -1890,7 +1909,7 @@ function startAppTimer() {
                 {
                     if(AppState.bScreanCapture && !AppState.bRunStream)
                     {
-                        if(AppState.bStreamError)
+                        if(AppState.bStreamError && !moqPlayerCertificateDialog)
                         {
                             // log(
                             //     "startAppTimer::fGetActiveClient 6: AppState.bStreamError"

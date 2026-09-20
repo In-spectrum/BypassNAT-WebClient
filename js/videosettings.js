@@ -4,13 +4,13 @@
 
 let videoSettingsLoaded = false;
 
-let videoSettingsSizeF = 0;
-let videoSettingsFPS = 30;
+let videoSettingsSizeF = 1;
+let videoSettingsFPS = 25;
 let videoSettingsEncoderV = 0;
-let videoSettingsEncSpeed = 1;
+let videoSettingsEncSpeed = 0;
 let videoSettingsBitrate = 25;
 let videoSettingsLatencyZ = 1;
-let videoSettingsRTSP = false;
+let videoSettingsRTSP = true;
 let videoSettingsSound = 0;
 
 

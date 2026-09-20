@@ -43,7 +43,7 @@ const AppState =
     , bRunStream: false
     , bStreamError: false    
     //
-    , bMoqPlayer: true 
+    , bMoqPlayer: false 
     , sWebRTCPort: "8889"
     , sMoqPort: "8892"
 
