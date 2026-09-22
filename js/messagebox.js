@@ -5,8 +5,7 @@
 
 function showMessage(
     id,
-    sData,
-    parentElement = document.body
+    sData
 )
 {
     /*
@@ -24,15 +23,6 @@ function showMessage(
 
 
     /*
-        Якщо контейнер не переданий —
-        використовуємо body.
-    */
-
-    if(!parentElement)
-        parentElement = document.body;
-
-
-    /*
         Затемнення.
     */
 
@@ -44,7 +34,7 @@ function showMessage(
 
 
     overlay.style.position =
-        "absolute";
+        "fixed";
 
     overlay.style.left =
         "0";
@@ -74,7 +64,7 @@ function showMessage(
 
 
     overlay.style.zIndex =
-        "10000";
+        "2147483647";
 
 
     /*
@@ -213,7 +203,7 @@ function showMessage(
     );
 
 
-    parentElement.appendChild(
+    document.body.appendChild(
         overlay
     );
 }

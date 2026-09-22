@@ -544,7 +544,6 @@ function videoSettingsApply()
     {
         showMessage(0,
             "Unable to apply video settings."
-            , document.getElementById("videoSettingsOverlay")
         );
     }
 

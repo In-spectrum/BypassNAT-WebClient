@@ -417,7 +417,7 @@ function showMoqCertificateDialog(url)
         "rgba(0,0,0,0.88)";
 
     overlay.style.zIndex =
-        "2147483647";
+        "2147483646";
 
     overlay.style.display =
         "flex";

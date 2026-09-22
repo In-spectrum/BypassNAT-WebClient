@@ -211,8 +211,7 @@ function commandLineRequest()
     {
         //console.log("CommandLine: ERROR - not connected to desktop");
         showMessage(0,
-            "ERROR\n\nNot connected to desktop.",
-            document.getElementById("commandLineOverlay")
+            "ERROR\n\nNot connected to desktop."
         );
         return;
     }
@@ -470,8 +469,7 @@ function commandLineKill()
     {
         //console.log("CommandLine: ERROR - not connected to desktop");
         showMessage(0,
-            "ERROR\n\nNot connected to desktop.",
-            document.getElementById("commandLineOverlay")
+            "ERROR\n\nNot connected to desktop."
         );
         return;
     }
