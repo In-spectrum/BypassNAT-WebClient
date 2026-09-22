@@ -284,6 +284,11 @@ const ParserData =
 
             if(data[0] === 0xFF)
             {
+                // this.log(
+                //     "ParserData::nextStep 4.1: " +
+                //     this.toHex(data[1])
+                // );
+
                 switch(data[1])
                 {
 
@@ -813,7 +818,51 @@ const ParserData =
                         break;
                     }
 
+                    // case 0x14:
+                    // {
+                    //     const packet =
+                    //         this.parseSomeData(
+                    //             data
+                    //         );
 
+                    //     if(packet === null)
+                    //         break;
+
+                    //     if(packet.size <= 0)
+                    //         break;
+
+                    //     pos +=
+                    //         packet.size;
+
+                    //     result.push(
+                    //         packet
+                    //     );
+
+                    //     break;
+                    // }
+
+                    case 0x15:
+                    {
+                        const packet =
+                            this.parseMustStreamRestart(
+                                data
+                            );
+
+                        if(packet === null)
+                            break;
+
+                        if(packet.size <= 0)
+                            break;
+
+                        pos +=
+                            packet.size;
+
+                        result.push(
+                            packet
+                        );
+
+                        break;
+                    }
 
 
                     /*
@@ -830,12 +879,12 @@ const ParserData =
                         //     this.toHex(data)
                         // );
 
-                        // this.log(
-                        //     "ParserData::nextStep: unknown TYPE = 0x" +
-                        //     data[1]
-                        //         .toString(16)
-                        //         .padStart(2, "0")
-                        // );
+                        this.log(
+                            "ParserData::nextStep: unknown TYPE = 0x" +
+                            data[1]
+                                .toString(16)
+                                .padStart(2, "0")
+                        );
 
 
                         /*
@@ -3559,6 +3608,410 @@ const ParserData =
 
             data:
                 baData
+        };
+    },
+
+    parseSomeData(data)
+    {
+        if(data.length < 4)
+            return null;
+
+
+        let pos = 0;
+
+
+        const data1Length =
+            data[2];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const data2Length =
+            data[
+                3 +
+                data1Length +
+                pos -
+                1
+            ];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            data2Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const data3Length =
+            data[
+                3 +
+                data1Length +
+                data2Length +
+                pos -
+                1
+            ];
+
+        pos++;
+
+
+        const packetSize =
+            2 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            data2Length +
+            data3Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseSomeData: " +
+                "CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+                size: 0,
+
+                type:
+                    data[1],
+
+                name:
+                    "SOME_DATA",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        pos = 0;
+
+
+        const forIdBytes =
+            data.slice(
+                3,
+                3 +
+                data1Length
+            );
+
+
+        const forId =
+            this.decodeUtf8(
+                forIdBytes
+            );
+
+
+        pos++;
+
+
+        const fromIdBytes =
+            data.slice(
+                3 +
+                data1Length +
+                pos,
+                3 +
+                data1Length +
+                data2Length +
+                pos
+            );
+
+
+        const fromId =
+            this.decodeUtf8(
+                fromIdBytes
+            );
+
+
+        pos++;
+
+
+        const dataBytes =
+            data.slice(
+                3 +
+                data1Length +
+                data2Length +
+                pos,
+                3 +
+                data1Length +
+                data2Length +
+                data3Length +
+                pos
+            );
+
+
+        pos++;
+
+
+        return {
+            size:
+                3 +
+                data1Length +
+                data2Length +
+                data3Length +
+                pos,
+
+            type:
+                data[1],
+
+            name:
+                "SOME_DATA",
+
+            validCRC:
+                true,
+
+            forId:
+                forId,
+
+            fromId:
+                fromId,
+
+            data:
+                dataBytes,
+
+            data1Length:
+                data1Length,
+
+            data2Length:
+                data2Length,
+
+            data3Length:
+                data3Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
+        };
+    },
+
+    parseMustStreamRestart(data)
+    {
+        if(data.length < 4)
+            return null;
+
+
+        let pos = 0;
+
+
+        const data1Length =
+            data[2];
+
+        pos++;
+
+
+        if(
+            data.length <
+            2 +
+            data1Length +
+            pos +
+            1
+        )
+        {
+            return null;
+        }
+
+
+        const packetSize =
+            2 +
+            data1Length +
+            pos +
+            1;
+
+
+        if(
+            data.length <
+            packetSize
+        )
+        {
+            return null;
+        }
+
+
+        const crcDataLength =
+            1 +
+            data1Length +
+            pos;
+
+
+        const crcData =
+            data.slice(
+                1,
+                1 +
+                crcDataLength
+            );
+
+
+        const receivedCRC =
+            data[
+                1 +
+                crcDataLength
+            ];
+
+
+        const calculatedCRC =
+            this.getCRC(
+                crcData,
+                crcData.length
+            );
+
+
+        if(
+            !this.fCRC_isOk(
+                crcData,
+                receivedCRC
+            )
+        )
+        {
+            this.log(
+                "ParserData::parseMustStreamRestart: " +
+                "CRC ПОМИЛКА. " +
+                "отримано=" +
+                receivedCRC +
+                ", розраховано=" +
+                calculatedCRC
+            );
+
+
+            return {
+                size: 0,
+
+                type:
+                    data[1],
+
+                name:
+                    "MUST_STREAM_RESTART",
+
+                validCRC:
+                    false
+            };
+        }
+
+
+        const clientIdBytes =
+            data.slice(
+                3,
+                3 +
+                data1Length
+            );
+
+
+        const clientId =
+            this.decodeUtf8(
+                clientIdBytes
+            );
+
+
+        this.sgControl(
+            "",
+            23,
+            "",
+            ""
+        );
+
+
+        pos++;
+
+
+        return {
+            size:
+                3 +
+                data1Length +
+                pos,
+
+            type:
+                data[1],
+
+            name:
+                "MUST_STREAM_RESTART",
+
+            validCRC:
+                true,
+
+            clientId:
+                clientId,
+
+            clientIdBytes:
+                clientIdBytes,
+
+            data1Length:
+                data1Length,
+
+            receivedCRC:
+                receivedCRC,
+
+            calculatedCRC:
+                calculatedCRC
         };
     },
 

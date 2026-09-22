@@ -742,6 +742,10 @@ function videoSettingsApply()
             "не вдалося відправити пакет"
         );
     }
+    else
+    {
+        fConnectDevice();
+    }
 }
 
 

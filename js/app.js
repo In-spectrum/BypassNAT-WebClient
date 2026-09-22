@@ -118,15 +118,15 @@ document.getElementById(
 ).value =
     "1111";
 
-// document.getElementById(
-//     "txtFindClient"
-// ).value =
-//     "n";
+document.getElementById(
+    "txtFindClient"
+).value =
+    "n";
 
-// document.getElementById(
-//     "txtClientPassword"
-// ).value =
-//     "1242";
+document.getElementById(
+    "txtClientPassword"
+).value =
+    "1242";
 
     
 
@@ -898,6 +898,21 @@ wsClient.slControl =
                     AppState.sMyId = aData;
                     startConnectServer();
                 }
+
+                break;
+            }
+
+            case 23: //перезавантажити плеєр
+            {               
+                    if(AppState.bScreanCapture && !AppState.bRunStream)
+                    {
+                        if(!moqPlayerCertificateDialog)
+                        {
+                            //log("app.slControl 23: ");
+
+                            fConnectDevice();
+                        }
+                    }
 
                 break;
             }

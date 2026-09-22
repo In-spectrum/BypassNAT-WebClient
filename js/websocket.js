@@ -321,6 +321,15 @@ class WebSocketClient
 
                 break;
             }
+            case 23: //перезавантажити плеєр
+            {
+                if(this.slControl)
+                {
+                    this.slControl(sId, 23, sData);
+                }
+
+                break;
+            }
         }
     }
 
