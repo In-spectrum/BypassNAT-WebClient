@@ -4,7 +4,7 @@
 
 let videoSettingsLoaded = false;
 
-let videoSettingsSizeF = 1;
+let videoSettingsSizeF = 0;
 let videoSettingsFPS = 25;
 let videoSettingsEncoderV = 0;
 let videoSettingsEncSpeed = 0;
@@ -197,7 +197,7 @@ function updateEncodingSpeedVisibility()
         return;
 
     encodingSpeedGroup.style.display =
-        gpu.checked ? "none" : "";
+        gpu.checked ? "none" : "";        
 }
 
 
@@ -222,6 +222,20 @@ function showVideoSettings()
 
 
     overlay.style.display = "flex";
+
+    //Ховаємо Frame size
+    const frameSizeGroup =
+        document.querySelector(
+            'input[name="videoFrameSize"]'
+        )?.closest(
+            ".videoSettingsGroup"
+        );
+
+    if(frameSizeGroup)
+    {
+        frameSizeGroup.style.display =
+            "none";
+    }
 }
 
 
@@ -521,7 +535,6 @@ function videoSettingsDefaults()
 
     if(soundCapture)
         soundCapture.checked = false;
-
 
     updateEncodingSpeedVisibility();
 }
