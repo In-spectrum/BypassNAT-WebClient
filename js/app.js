@@ -118,15 +118,15 @@ document.getElementById(
 ).value =
     "1111";
 
-document.getElementById(
-    "txtFindClient"
-).value =
-    "n";
+// document.getElementById(
+//     "txtFindClient"
+// ).value =
+//     "n";
 
-document.getElementById(
-    "txtClientPassword"
-).value =
-    "1242";
+// document.getElementById(
+//     "txtClientPassword"
+// ).value =
+//     "1242";
 
     
 
@@ -877,6 +877,11 @@ wsClient.slControl =
                     if (id === 200 + 11)
                     {
                         //sgControl("", 24, "", "");
+                    }
+
+                    if(id === 100 + 2)
+                    {
+                        fDisconnectDevice();
                     }
                 }
                 break;
