@@ -102,7 +102,10 @@ document.getElementById(
 
 document.getElementById(
     "txtVideoPlayerPort"
-).value = AppState.bMoqPlayer ? AppState.sMoqPort : AppState.sWebRTCPort;
+).value = 
+    AppState.bMoqPlayer ? AppState.sMoqPort 
+        : AppState.bHlsPlayer ? AppState.sHLSPort 
+            : AppState.sWebRTCPort;
 
 
 document.getElementById(
@@ -460,9 +463,17 @@ function fConnectDevice()
     setStatusConnectToDevice(false);
 
     if(AppState.bMoqPlayer)
+    {
         stopMoqPlayer();
+    }
+    else if(AppState.bHlsPlayer)
+    {
+        stopHlsPlayer();
+    }
     else
+    {
         stopPlayer();
+    }
 
     if(!AppState.sDeskLogin.length || !AppState.sDeskPassword.length || !AppState.sDeskId.length )
         return;
@@ -525,9 +536,17 @@ function fDisconnectDevice()
             ).style.display = "none"; 
 
     if(AppState.bMoqPlayer)
+    {
         stopMoqPlayer();
+    }
+    else if(AppState.bHlsPlayer)
+    {
+        stopHlsPlayer();
+    }
     else
+    {
         stopPlayer();
+    }
 
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
 
@@ -642,18 +661,23 @@ function fClientDisconnect()
 }
 
 function initMouse()
-{        
+{
     if(AppState.bMoqPlayer)
     {
-        initMouseForMoqPlayer();        
+        initMouseForMoqPlayer();
     }
     else
     {
-        const oldVideo = document.getElementById("video");
-        const video = document.createElement("video");
+        const oldVideo =
+            document.getElementById("video");
+
+        const video =
+            document.createElement("video");
+
         video.id = "video";
         video.autoplay = true;
         video.playsInline = true;
+
         oldVideo.replaceWith(video);
 
         initMouseForWebRTCPlayer();
@@ -1721,7 +1745,14 @@ document.getElementById(
         }
         else
         {
-            AppState.sWebRTCPort = WebRTC_port;
+            if(AppState.bHlsPlayer)
+            {
+                AppState.sHLSPort = WebRTC_port;
+            }
+            else
+            {
+                AppState.sWebRTCPort = WebRTC_port;
+            }
         }
         
 
@@ -1769,48 +1800,58 @@ document.getElementById(
 }
 
 
- function fStreamStart()
- {
-    // log("app.fStreamStart 0: " +
-    //     AppState.serverIP.length +
-    //     " " + AppState.sWebRTCPort.length +
-    //     " " +  AppState.sStreamNewUrl.length);
-
-    if(!AppState.serverIP.length || !AppState.sWebRTCPort.length || !AppState.sStreamNewUrl.length)
+function fStreamStart()
+{
+    if(
+        !AppState.serverIP.length ||
+        !AppState.sStreamNewUrl.length
+    )
         return;
 
-    //log("app.fStreamStart 1: ");
-
-    let url  = "";
+    let url = "";
 
     if(AppState.bMoqPlayer)
     {
         url =
-        "https://" +
-        AppState.serverIP +
-        ':' +
-        AppState.sMoqPort + 
-        "/live/" +
-        AppState.sStreamNewUrl;    
+            "https://" +
+            AppState.serverIP +
+            ":" +
+            AppState.sMoqPort +
+            "/live/" +
+            AppState.sStreamNewUrl;
 
         startMoqPlayer(url);
+
+        return;
     }
-    else
+
+    if(AppState.bHlsPlayer)
     {
         url =
+            "http://" +
+            AppState.serverIP +
+            ":" +
+            AppState.sHLSPort +
+            "/live/" +
+            AppState.sStreamNewUrl
+            + "/index.m3u8";
+
+        startHlsPlayer(url);
+
+        return;
+    }
+
+    url =
         "http://" +
         AppState.serverIP +
-        ':' +
-        AppState.sWebRTCPort + 
+        ":" +
+        AppState.sWebRTCPort +
         "/live/" +
         AppState.sStreamNewUrl +
-        "/whep";                            
+        "/whep";
 
-        startPlayer(url);
-    }    
-
-    //log("app.fStreamStart 10: " + url);
- }
+    startPlayer(url);
+}
 
 
 function fStreamWatcher()
@@ -2023,6 +2064,11 @@ function startThePage() {
     if(AppState.bMoqPlayer)
     {
         document.querySelector('label[for="txtVideoPlayerPort"]').textContent = "MoqPlayer Port (for video stream)";
+    }
+    else
+    if(AppState.bHlsPlayer)
+    {
+        document.querySelector('label[for="txtVideoPlayerPort"]').textContent = "HLS-Player Port (for video stream)";
     }
 
     btnLogger.innerHTML = "▼";
