@@ -26,6 +26,7 @@ const AppState =
     , serverConnectTime: 0
     , serverConnecting: false
     , sMyId: ""
+    , sKeyDevServer: "xxxxxxxxx"
 
     , sDeskId: ""
     , sDeskLogin: ""

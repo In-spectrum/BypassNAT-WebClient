@@ -310,31 +310,19 @@ const ParserData =
                                 data
                             );
 
-                        // this.log(
-                        //     "ParserData::nextStep 5.4.1: " +
-                        //     this.toHex(packet)
-                        // );
-
-
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos +=
-                                fSetStreamData(a_baData);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -376,24 +364,19 @@ const ParserData =
                         // );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos += fNewId(...);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -437,24 +420,19 @@ const ParserData =
                         // );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos += fGetActiveClient(...);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -496,24 +474,19 @@ const ParserData =
                         //     this.toHex(packet)
                         // );
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos += fMaybeMyLogin(...);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -554,18 +527,19 @@ const ParserData =
                         // );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
-                        if(packet === null)
+                       if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         /*
@@ -598,18 +572,19 @@ const ParserData =
                             );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -636,18 +611,19 @@ const ParserData =
                             );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -670,18 +646,19 @@ const ParserData =
                             );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -719,24 +696,19 @@ const ParserData =
                         // );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos += fMessageStatus(...);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -779,25 +751,19 @@ const ParserData =
                         // );
 
 
-                        /*
-                            null означає,
-                            що весь пакет ще
-                            не отриманий.
-                        */
-
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
-
-
-                        /*
-                            Аналог:
-
-                            a_iPos +=
-                                fVideoQualityCurent(...);
-                        */
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
 
                         pos +=
@@ -818,28 +784,36 @@ const ParserData =
                         break;
                     }
 
-                    // case 0x14:
-                    // {
-                    //     const packet =
-                    //         this.parseSomeData(
-                    //             data
-                    //         );
+                    case 0x14:
+                    {
+                        const packet =
+                            this.parseSomeData(
+                                data
+                            );
 
-                    //     if(packet === null)
-                    //         break;
+                        if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
+                            break;
+                        }
 
-                    //     if(packet.size <= 0)
-                    //         break;
+                        if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
+                            break;
+                        }
 
-                    //     pos +=
-                    //         packet.size;
+                        pos +=
+                            packet.size;
 
-                    //     result.push(
-                    //         packet
-                    //     );
+                        result.push(
+                            packet
+                        );
 
-                    //     break;
-                    // }
+                        break;
+                    }
 
                     case 0x15:
                     {
@@ -849,10 +823,18 @@ const ParserData =
                             );
 
                         if(packet === null)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
                         if(packet.size <= 0)
+                        {
+                            //структура пакета не вірна - переходимо до пошуку нового пакета з FF
+                            pos += 1;
                             break;
+                        }
 
                         pos +=
                             packet.size;
@@ -5153,7 +5135,7 @@ const ParserData =
         )
         {
             this.log(
-                "ParserData::parseVideoQualityCurent: " +
+                "ParserData::parseVideoQualityCurent 15.0: " +
                 "CRC ПОМИЛКА. " +
                 "отримано=" +
                 receivedCRC +

@@ -933,7 +933,7 @@ wsClient.slControl =
 
             case 23: //перезавантажити плеєр
             {               
-                    if(AppState.bScreanCapture && !AppState.bRunStream)
+                    if(AppState.bScreanCapture)
                     {
                         if(!moqPlayerCertificateDialog)
                         {
@@ -1190,7 +1190,7 @@ function sendLogin()
     //     (AppState.sMyId || "<порожній>")
     // );
 
-     const keyDevServer = "";
+     const keyDevServer = AppState.sKeyDevServer;
         // document.getElementById(
         //     "txtDevServerKey"
         // ).value;
@@ -1347,7 +1347,7 @@ function startConnectServer() {
     document.getElementById("serverConnectionText").style.display = "flex";  // показати
     document.getElementById("btnConnectServer").innerHTML = "Server connecting... Stop!";
 
-    const keyDevServer = "";
+    const keyDevServer = AppState.sKeyDevServer;
         // document.getElementById(
         //     "txtDevServerKey"
         // ).value;
