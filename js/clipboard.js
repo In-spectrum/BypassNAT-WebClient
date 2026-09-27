@@ -391,12 +391,12 @@ const Clipboard =
                 повторно не передаємо.
             */
 
-            if(
-                sData === this.sBufferPrev
-            )
-            {
-                return true;
-            }
+            // if(
+            //     sData === this.sBufferPrev
+            // )
+            // {
+            //     return true;
+            // }
 
 
             /*
@@ -415,13 +415,13 @@ const Clipboard =
                 передачі.
             */
 
-            if(
-                bResult
-            )
-            {
-                this.sBufferPrev =
-                    sData;
-            }
+            // if(
+            //     bResult
+            // )
+            // {
+            //     this.sBufferPrev =
+            //         sData;
+            // }
 
 
             return bResult;
@@ -852,8 +852,8 @@ const Clipboard =
                 вже відомим локальному клієнту.
             */
 
-            this.sBufferPrev =
-                sData;
+            // this.sBufferPrev =
+            //     sData;
 
 
             log(

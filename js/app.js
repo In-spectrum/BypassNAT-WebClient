@@ -1596,6 +1596,12 @@ document.getElementById(
 
     // startMoqPlayer(url);
 
+    
+    // const url = "http://127.0.0.1:8889/live/test" +
+    //     "/whep";
+
+    // startPlayer(url);
+
 };
 
 document.getElementById(

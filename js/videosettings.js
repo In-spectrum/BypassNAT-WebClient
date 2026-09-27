@@ -850,7 +850,7 @@ function fVideoQualityCurent(data)
         data[7];
 
 
-    applyVideoSettingsToControls();
+    //applyVideoSettingsToControls();
 }
 
 
