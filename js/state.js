@@ -44,8 +44,8 @@ const AppState =
     , bRunStream: false
     , bStreamError: false    
     //
-    //MoqPlayer - хороше віде та звук - потребує сертифікатів від MediaMTX
-    //WebRTPlayer - хороше віде та звук - відтворює звук від opusenc (тобто аудіо-потік від RTMP-протокала не відтворить)
+    //MoqPlayer - хороше відео та звук - потребує сертифікатів від MediaMTX
+    //WebRTPlayer - хороше відео та звук - відтворює звук від opusenc (тобто аудіо-потік від RTMP-протокала не відтворить)
     //HLSPlayer - значна затримка по відео та звуку
     , bMoqPlayer: false
     , bHlsPlayer: false

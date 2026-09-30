@@ -1,0 +1,405 @@
+/* =====================================================
+   SUPPORT
+   ===================================================== */
+
+.supportOverlay
+{
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.55);
+
+    z-index: 100000;
+}
+
+
+/* =====================================================
+   WINDOW
+   ===================================================== */
+
+.supportWindow
+{
+    position: relative;
+
+    width: 420px;
+    height: min(500px, calc(100% - 60px));
+
+    display: flex;
+    flex-direction: column;
+
+    box-sizing: border-box;
+
+    background: #808080;
+
+    color: #fff;
+
+    border: 2px solid #fff;
+}
+
+
+/* =====================================================
+   TITLE
+   ===================================================== */
+
+.supportTitle
+{
+    flex: 0 0 50px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 15px;
+
+    box-sizing: border-box;
+
+    background: #000;
+
+    color: #fff;
+
+    font-size: 24px;
+    font-weight: 700;
+}
+
+
+.supportBack
+{
+    cursor: pointer;
+}
+
+
+/* =====================================================
+   CONTENT
+   ===================================================== */
+
+.supportContent
+{
+    flex: 1 1 auto;
+
+    min-height: 0;
+    min-width: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+}
+
+
+.supportContentInner
+{
+    width: 100%;
+
+    padding: 25px 12px 20px 12px;
+
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   BANNER
+   ===================================================== */
+
+.supportBanner
+{
+    position: relative;
+
+    width: 100%;
+    max-width: 375px;
+
+    height: auto;
+
+    aspect-ratio: 3 / 1;
+
+    margin: 0 auto;
+
+    background: #fff;
+}
+
+
+.supportBanner img
+{
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: contain;
+}
+
+
+.supportBannerBeta
+{
+    position: absolute;
+
+    right: 5px;
+    bottom: 2px;
+
+    color: #ff0000;
+
+    font-size: 22px;
+    font-weight: 700;
+
+}
+
+
+/* =====================================================
+   PROJECT LINKS
+   ===================================================== */
+
+.supportProjectRow
+{
+    display: flex;
+
+    align-items: baseline;
+
+    width: 100%;
+
+    margin-top: 30px;
+
+    font-size: 20px;
+}
+
+
+.supportProjectRow a
+{
+    color: #0000ee;
+
+    text-decoration: underline;
+
+    white-space: nowrap;
+}
+
+
+.supportProject
+{
+    margin-right: auto;
+
+    font-size: 26px;
+    font-weight: 700;
+}
+
+
+.supportProjectRow a:nth-child(2)
+{
+    margin-right: 20px;
+}
+
+
+/* =====================================================
+   MAIL
+   ===================================================== */
+
+.supportMailRow
+{
+    display: flex;
+
+    align-items: baseline;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-top: 31px;
+
+    font-size: 20px;
+}
+
+
+.supportMailTitle
+{
+    font-size: 21px;
+    font-weight: 700;
+}
+
+
+.supportMail
+{
+    font-size: 20px;
+
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   USED
+   ===================================================== */
+
+.supportUsed
+{
+    margin-top: 27px;
+}
+
+
+.supportUsedTitle
+{
+    margin-bottom: 18px;
+
+    font-size: 22px;
+}
+
+
+.supportLicenseRow
+{
+    display: flex;
+
+    align-items: baseline;
+    justify-content: space-between;
+
+    width: 100%;
+
+    margin-bottom: 20px;
+
+    font-size: 23px;
+}
+
+
+.supportLicenseRow a
+{
+    color: #0000ee;
+
+    font-size: 20px;
+
+    text-decoration: underline;
+
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   BOTTOM
+   ===================================================== */
+
+.supportBottom
+{
+    flex: 0 0 60px;
+
+    width: 100%;
+
+    display: flex;
+
+    justify-content: flex-end;
+    align-items: center;
+
+    padding: 0 7px;
+
+    box-sizing: border-box;
+
+    border-top: 2px solid #fff;
+}
+
+
+.supportBottom button
+{
+    width: 92px;
+    height: 50px;
+
+    border-radius: 9px;
+
+    border: 1px solid #fff;
+
+    background: #555;
+
+    color: #fff;
+
+    font-size: 17px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.supportBottom button:active
+{
+    transform: translateY(1px);
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px)
+{
+    .supportWindow
+    {
+        width: 100%;
+
+        height: min(500px, calc(100% - 40px));
+    }
+
+
+    .supportTitle
+    {
+        font-size: 22px;
+    }
+
+
+    .supportBanner
+    {
+        width: 100%;
+        max-width: 375px;
+
+        height: auto;
+
+        aspect-ratio: 3 / 1;
+    }
+
+
+    .supportProjectRow
+    {
+        font-size: 18px;
+    }
+
+
+    .supportProject
+    {
+        font-size: 23px;
+    }
+
+
+    .supportMailRow
+    {
+        font-size: 18px;
+    }
+
+
+    .supportMailTitle
+    {
+        font-size: 19px;
+    }
+
+
+    .supportMail
+    {
+        font-size: 18px;
+    }
+
+
+    .supportUsedTitle
+    {
+        font-size: 20px;
+    }
+
+
+    .supportLicenseRow
+    {
+        font-size: 20px;
+    }
+
+
+    .supportLicenseRow a
+    {
+        font-size: 18px;
+    }
+}

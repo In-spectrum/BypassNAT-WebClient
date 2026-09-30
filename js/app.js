@@ -37,7 +37,11 @@ document.querySelectorAll(".settingsSection .blockTitle").forEach(title =>
     if(!section)
         return;
 
-    if(section.id === "commandLineSection")
+    if(
+        section.id === "commandLineSection" ||
+        section.id === "videoSettingsSection" ||
+        section.id === "supportSection"
+    )
         return;
 
     title.addEventListener("click", () =>
@@ -112,7 +116,6 @@ document.getElementById(
     "txtServerIP"
 ).value =
     "127.0.0.1";
-    //"192.168.146.108";
     
 
 
@@ -120,16 +123,6 @@ document.getElementById(
     "txtServerPassword"
 ).value =
     "1111";
-
-// document.getElementById(
-//     "txtFindClient"
-// ).value =
-//     "n";
-
-// document.getElementById(
-//     "txtClientPassword"
-// ).value =
-//     "1242";
 
     
 
@@ -1591,17 +1584,6 @@ document.getElementById(
     AppState.serverConnecting = true;
     startConnectServer();
     
-
-    // const url = "https://127.0.0.1:8892/live/test";
-
-    // startMoqPlayer(url);
-
-    
-    // const url = "http://127.0.0.1:8889/live/test" +
-    //     "/whep";
-
-    // startPlayer(url);
-
 };
 
 document.getElementById(
@@ -2118,6 +2100,7 @@ function startThePage() {
 
     
     initializeCommandLine();
+    initializeSupport();
 
     showMessage(
         0,
