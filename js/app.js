@@ -116,6 +116,7 @@ document.getElementById(
     "txtServerIP"
 ).value =
     "127.0.0.1";
+    //"192.168.146.108";
     
 
 
@@ -123,6 +124,16 @@ document.getElementById(
     "txtServerPassword"
 ).value =
     "1111";
+
+// document.getElementById(
+//     "txtFindClient"
+// ).value =
+//     "n";
+
+// document.getElementById(
+//     "txtClientPassword"
+// ).value =
+//     "1242";
 
     
 
@@ -801,29 +812,33 @@ wsClient.slControl =
             }   
             case 5:
             {
-                const option =
+
+                if(AppState.sMyId !== sId)
+                {
+                    const option =
                     document.createElement("option");
 
 
-                /*
-                    Відображається логін клієнта.
-                */
+                    /*
+                        Відображається логін клієнта.
+                    */
 
-                option.textContent =
-                    aData;
+                    option.textContent =
+                        aData;
 
 
-                /*
-                    Зберігаємо його ID.
-                */
+                    /*
+                        Зберігаємо його ID.
+                    */
 
-                option.value =
-                    sId;
+                    option.value =
+                        sId;
 
-                option.dataset.connected = "true";
+                    option.dataset.connected = "true";
 
-                addClient(option);
+                    addClient(option);
 
+                }
                 break;
             }   
             case 8:
@@ -1584,6 +1599,17 @@ document.getElementById(
     AppState.serverConnecting = true;
     startConnectServer();
     
+
+    // const url = "https://127.0.0.1:8892/live/test";
+
+    // startMoqPlayer(url);
+
+    
+    // const url = "http://127.0.0.1:8889/live/test" +
+    //     "/whep";
+
+    // startPlayer(url);
+
 };
 
 document.getElementById(
