@@ -417,8 +417,14 @@ class FileCopy
         receiveRow.style.alignItems =
             "center";
 
+        receiveRow.style.width =
+            "100%";
+
         receiveRow.style.gap =
             "10px";
+
+        receiveRow.style.boxSizing =
+            "border-box";
 
 
         /*
@@ -442,7 +448,10 @@ class FileCopy
 
 
         path.style.flex =
-            "1";
+            "1 1 auto";
+
+        path.style.minWidth =
+            "0";
 
 
         path.style.height =
@@ -483,6 +492,12 @@ class FileCopy
 
         receive.style.minWidth =
             "110px";
+
+        receive.style.flex =
+            "0 0 110px";
+
+        receive.style.boxSizing =
+            "border-box";
 
 
         receive.style.height =
@@ -1380,79 +1395,181 @@ class FileCopy
 
     async selectSendFile()
     {
+        /*
+            DESKTOP:
+            File System Access API
+        */
         if(
-            !window.showOpenFilePicker
+            window.showOpenFilePicker
         )
         {
-            this.showError(
-                "File System Access API is not supported by this browser."
-            );
-
-            return false;
-        }
-
-
-        try
-        {
-            const aHandles =
-                await window.showOpenFilePicker();
-
-
-            if(
-                !aHandles ||
-                aHandles.length === 0
-            )
+            try
             {
-                return false;
-            }
+                const aHandles =
+                    await window.showOpenFilePicker();
 
 
-            this.m_oSendFileHandle =
-                aHandles[0];
+                if(
+                    !aHandles ||
+                    aHandles.length === 0
+                )
+                {
+                    return false;
+                }
 
 
-            console.log(
-                "FileCopy: Open picker OK."
-            );
+                this.m_oSendFileHandle =
+                    aHandles[0];
 
 
-            console.log(
-                "FileCopy: selected file name =",
-                this.m_oSendFileHandle.name
-            );
-
-
-            return true;
-        }
-        catch(error)
-        {
-            if(
-                error &&
-                error.name ===
-                    "AbortError"
-            )
-            {
                 console.log(
-                    "FileCopy: Open picker cancelled."
+                    "FileCopy: Open picker OK."
                 );
 
+
+                console.log(
+                    "FileCopy: selected file name =",
+                    this.m_oSendFileHandle.name
+                );
+
+
+                return true;
+            }
+            catch(error)
+            {
+                if(
+                    error &&
+                    error.name ===
+                        "AbortError"
+                )
+                {
+                    console.log(
+                        "FileCopy: Open picker cancelled."
+                    );
+
+                    return false;
+                }
+
+
+                console.error(
+                    "FileCopy: Open picker error:",
+                    error
+                );
+
+
+                this.showError(
+                    "Unable to select the file."
+                );
+
+
                 return false;
             }
-
-
-            console.error(
-                "FileCopy: Open picker error:",
-                error
-            );
-
-
-            this.showError(
-                "Unable to select the file."
-            );
-
-
-            return false;
         }
+
+
+        /*
+            MOBILE:
+            обычный HTML file picker
+        */
+        return new Promise(
+            (resolve) =>
+            {
+                const input =
+                    document.createElement(
+                        "input"
+                    );
+
+
+                input.type =
+                    "file";
+
+
+                input.style.display =
+                    "none";
+
+
+                document.body.appendChild(
+                    input
+                );
+
+
+                input.onchange =
+                    () =>
+                    {
+                        const file =
+                            input.files &&
+                            input.files.length > 0
+                                ?
+                                input.files[0]
+                                :
+                                null;
+
+
+                        if(!file)
+                        {
+                            input.remove();
+
+                            resolve(false);
+
+                            return;
+                        }
+
+
+                        this.m_oSendFile =
+                            file;
+
+
+                        this.m_oSendFileHandle =
+                            null;
+
+
+                        this.m_iFileSize =
+                            file.size;
+
+
+                        this.m_sNameFile =
+                            file.name;
+
+
+                        this.m_sPathFile =
+                            "";
+
+
+                        console.log(
+                            "FileCopy: Mobile file selected."
+                        );
+
+
+                        console.log(
+                            "FileCopy: NameFile =",
+                            this.m_sNameFile
+                        );
+
+
+                        console.log(
+                            "FileCopy: FileSize =",
+                            this.m_iFileSize
+                        );
+
+
+                        input.remove();
+
+                        resolve(true);
+                    };
+
+
+                input.oncancel =
+                    () =>
+                    {
+                        input.remove();
+
+                        resolve(false);
+                    };
+
+
+                input.click();
+            }
+        );
     }
 
 
@@ -1473,6 +1590,45 @@ class FileCopy
 
     async openSendFile()
     {
+        /*
+            MOBILE:
+            File вже отриманий через <input type="file">
+        */
+        if(
+            this.m_oSendFile
+        )
+        {
+            this.m_iFileSize =
+                this.m_oSendFile.size;
+
+            this.m_sNameFile =
+                this.m_oSendFile.name;
+
+            this.m_sPathFile =
+                "";
+
+            console.log(
+                "FileCopy: send file opened."
+            );
+
+            console.log(
+                "FileCopy: NameFile =",
+                this.m_sNameFile
+            );
+
+            console.log(
+                "FileCopy: FileSize =",
+                this.m_iFileSize
+            );
+
+            return true;
+        }
+
+
+        /*
+            DESKTOP:
+            File System Access API
+        */
         if(
             !this.m_oSendFileHandle
         )
@@ -2224,20 +2380,16 @@ class FileCopy
 
     async selectReceiveFile()
     {
+        /*
+            DESKTOP:
+            File System Access API
+        */
         if(
-            !window.showSaveFilePicker
+            window.showSaveFilePicker
         )
         {
-            this.showError(
-                "File System Access API is not supported by this browser."
-            );
-
-            return false;
-        }
-
-
-        try
-        {
+            try
+            {
             /*
                 --------------------------------------------------
                 SAVE AS
@@ -2247,12 +2399,12 @@ class FileCopy
                 m_sNameFile.
             */
 
-            this.m_oReceiveFileHandle =
-                await window.showSaveFilePicker(
-                {
-                    suggestedName:
-                        this.m_sNameFile
-                });
+                this.m_oReceiveFileHandle =
+                    await window.showSaveFilePicker(
+                    {
+                        suggestedName:
+                            this.m_sNameFile
+                    });
 
 
             /*
@@ -2261,48 +2413,76 @@ class FileCopy
                 --------------------------------------------------
             */
 
-            console.log(
-                "FileCopy: Save picker OK."
-            );
-
-
-            console.log(
-                "FileCopy: local save file name =",
-                this.m_oReceiveFileHandle.name
-            );
-
-
-            return true;
-        }
-        catch(error)
-        {
-            if(
-                error &&
-                error.name ===
-                    "AbortError"
-            )
-            {
                 console.log(
-                    "FileCopy: Save picker cancelled."
+                    "FileCopy: Save picker OK."
                 );
+
+
+                console.log(
+                    "FileCopy: local save file name =",
+                    this.m_oReceiveFileHandle.name
+                );
+
+
+                return true;
+            }
+            catch(error)
+            {
+                if(
+                    error &&
+                    error.name ===
+                        "AbortError"
+                )
+                {
+                    console.log(
+                        "FileCopy: Save picker cancelled."
+                    );
+
+                    return false;
+                }
+
+
+                console.error(
+                    "FileCopy: Save picker error:",
+                    error
+                );
+
+
+                this.showError(
+                    "Unable to select the destination file."
+                );
+
 
                 return false;
             }
-
-
-            console.error(
-                "FileCopy: Save picker error:",
-                error
-            );
-
-
-            this.showError(
-                "Unable to select the destination file."
-            );
-
-
-            return false;
         }
+
+
+        /*
+            MOBILE:
+            Файл буде сформований у Blob
+            та завантажений браузером після
+            завершення передачі.
+        */
+
+        this.m_oReceiveFileHandle =
+            null;
+
+
+        this.m_oReceiveWritable =
+            null;
+
+
+        this.m_oReceiveChunks =
+            [];
+
+
+        console.log(
+            "FileCopy: Mobile receive mode."
+        );
+
+
+        return true;
     }
 
 
@@ -2320,44 +2500,40 @@ class FileCopy
 
     async openReceiveFile()
     {
+        /*
+            MOBILE:
+            Файл накопичується у масиві chunks.
+        */
         if(
             !this.m_oReceiveFileHandle
         )
         {
-            this.showError(
-                "Destination file is not selected."
+            this.m_oReceiveChunks =
+                [];
+
+            this.m_oReceiveWritable =
+                null;
+
+            console.log(
+                "FileCopy: Mobile receive file opened."
             );
 
-            return false;
-        }
-
-
-        /*
-            Якщо файл вже відкритий —
-            повторно не відкриваємо.
-        */
-
-        if(
-            this.m_oReceiveWritable
-        )
-        {
             return true;
         }
 
 
+        /*
+            DESKTOP:
+            File System Access API
+        */
         try
         {
-            console.log(
-                "FileCopy: opening receive file..."
-            );
-
-
             this.m_oReceiveWritable =
                 await this.m_oReceiveFileHandle.createWritable();
 
 
             console.log(
-                "FileCopy: receive file opened."
+                "FileCopy: Receive file opened."
             );
 
 
@@ -2376,7 +2552,7 @@ class FileCopy
 
 
             this.showError(
-                "Cannot open file for writing."
+                "Cannot open destination file."
             );
 
 
@@ -2407,35 +2583,20 @@ class FileCopy
         }
     )
     {
-
         if(
             iFileSize === 0
         )
         {
             await this.stop();
 
-
-             showMessage(
-                    0,
-                    "Error.\n\nFile transfer failed.\nInvalid file path."
-                );        
-
-            return false;
-        }
-
-        if(
-            !this.m_oReceiveWritable
-        )
-        {
-            console.error(
-                "FileCopy: receive file is not opened."
+            showMessage(
+                0,
+                "Error.\n\nFile transfer failed.\nInvalid file path."
             );
 
             return false;
         }
 
-
-        //const t2 = performance.now();
 
         let data =
             baData;
@@ -2468,78 +2629,43 @@ class FileCopy
             0;
 
 
+        /*
+            --------------------------------------------------
+            MOBILE
+            --------------------------------------------------
+        */
+
         if(
-            sFilePath ===
-            "stopCopy"
+            !this.m_oReceiveFileHandle
         )
         {
-            await this.stop();
-        }
-        else
-        {
-            /*
-                --------------------------------------------------
-                WRITE
-                --------------------------------------------------
-
-                Записуємо chunk безпосередньо
-                у вказану позицію.
-            */
-
-            //const t3 = performance.now();
-
-            try
+            if(
+                !this.m_oReceiveChunks
+            )
             {
-                await this.m_oReceiveWritable.write(
-                    {
-                        type:
-                            "write",
-
-                        position:
-                            iPosition,
-
-                        data:
-                            data
-                    }
-                );
-            }
-            catch(error)
-            {
-                console.error(
-                    "FileCopy: write receive file error:",
-                    error
-                );
-
-
-                return false;
+                this.m_oReceiveChunks =
+                    [];
             }
 
-            this.m_iFileSize = iFileSize;
 
-            //const t4 = performance.now();
+            this.m_oReceiveChunks.push(
+                {
+                    position:
+                        iPosition,
+
+                    data:
+                        data.slice()
+                }
+            );
+
+
+            this.m_iFileSize =
+                iFileSize;
+
 
             const iReceived =
                 iPosition +
                 data.length;
-
-
-            //const t5 = performance.now();
-
-            // console.log(
-            //     "WRITE:",
-
-            //     "data",
-            //     (t3 - t2).toFixed(2),
-
-            //     "write",
-            //     (t4 - t3).toFixed(2),
-
-            //     "packet",
-            //     (t5 - t4).toFixed(2),
-
-            //     "totall",
-            //     (t5 - t2).toFixed(2)
-            // );    
 
 
             const percent =
@@ -2558,7 +2684,8 @@ class FileCopy
                 percent
             );
 
-             if(
+
+            if(
                 iReceived <
                 iFileSize &&
                 this.m_bCopying
@@ -2575,6 +2702,8 @@ class FileCopy
                     this.m_bCopying
                 )
                 {
+                    await this.saveMobileReceiveFile();
+
                     await this.stop();
 
 
@@ -2583,14 +2712,195 @@ class FileCopy
                         "File received successfully."
                     );
                 }
-                else
+            }
+
+
+            return true;
+        }
+
+
+        /*
+            --------------------------------------------------
+            DESKTOP
+            --------------------------------------------------
+        */
+
+        if(
+            !this.m_oReceiveWritable
+        )
+        {
+            console.error(
+                "FileCopy: receive file is not opened."
+            );
+
+            return false;
+        }
+
+
+        try
+        {
+            await this.m_oReceiveWritable.write(
                 {
-                    console.log(
-                        "FileCopy: writeReceiveFile Fin. Writing STOPED"
-                    );
+                    type:
+                        "write",
+
+                    position:
+                        iPosition,
+
+                    data:
+                        data
                 }
+            );
+        }
+        catch(error)
+        {
+            console.error(
+                "FileCopy: write receive file error:",
+                error
+            );
+
+            return false;
+        }
+
+
+        this.m_iFileSize =
+            iFileSize;
+
+
+        const iReceived =
+            iPosition +
+            data.length;
+
+
+        const percent =
+            iFileSize > 0
+                ?
+                (
+                    iReceived *
+                    100
+                ) /
+                iFileSize
+                :
+                100;
+
+
+        this.setProgress(
+            percent
+        );
+
+
+        if(
+            iReceived <
+            iFileSize &&
+            this.m_bCopying
+        )
+        {
+            this.sendGetFileRequest(
+                sFilePath,
+                iReceived
+            );
+        }
+        else
+        {
+            if(
+                this.m_bCopying
+            )
+            {
+                await this.stop();
+
+
+                showMessage(
+                    0,
+                    "File received successfully."
+                );
             }
         }
+
+
+        return true;
+    }
+
+    async saveMobileReceiveFile()
+    {
+        if(
+            !this.m_oReceiveChunks ||
+            this.m_oReceiveChunks.length === 0
+        )
+        {
+            return false;
+        }
+
+
+        this.m_oReceiveChunks.sort(
+            (a, b) =>
+                a.position -
+                b.position
+        );
+
+
+        const aParts =
+            this.m_oReceiveChunks.map(
+                item =>
+                    item.data
+            );
+
+
+        const blob =
+            new Blob(
+                aParts
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const a =
+            document.createElement(
+                "a"
+            );
+
+
+        a.href =
+            url;
+
+
+        a.download =
+            this.m_sNameFile ||
+            "download";
+
+
+        a.style.display =
+            "none";
+
+
+        document.body.appendChild(
+            a
+        );
+
+
+        a.click();
+
+
+        a.remove();
+
+
+        setTimeout(
+            () =>
+            {
+                URL.revokeObjectURL(
+                    url
+                );
+            },
+            1000
+        );
+
+
+        this.m_oReceiveChunks =
+            [];
+
 
         return true;
     }
