@@ -297,95 +297,244 @@ function initTouchForVideoPlayer(video, playerArea)
         return;
 
     let activeTouchId = null;
+    let secondTouchId = null;
     let lastPosition = null;
+    let lastTwoFingerY = null;
+    let touchMode = null; // "single" або "scroll"
+    let leftButtonPressed = false;
+    let pendingPressTimer = null;
 
-    // Вимикаємо прокручування та масштабування жестами в області плеєра.
-    //playerArea.style.touchAction = "none";
+    const PRESS_DELAY = 50;
+    const SCROLL_THRESHOLD = 3;
+
+    function findTouch(touches, id)
+    {
+        return Array.from(touches).find(
+            touch => touch.identifier === id
+        );
+    }
+
+    function getTouchPosition(touch)
+    {
+        return touch ? getMouseCoordinates(touch) : null;
+    }
+
+    function releaseLeftButton(position)
+    {
+        mouseLeftPressing = false;
+        timeMouseLeftPressing = 0;
+
+        if (!leftButtonPressed || !position)
+            return;
+
+        onVideoMouseButton(
+            0, false,
+            position.x, position.y,
+            position.width, position.height
+        );
+
+        leftButtonPressed = false;
+
+    }
+
+    function cancelPendingPress()
+    {
+        
+        timeMouseLeftPressing = 0;
+        mouseLeftPressing = false;
+        
+        if (pendingPressTimer !== null)
+        {
+            clearTimeout(pendingPressTimer);
+            pendingPressTimer = null;
+        }
+
+    }
+
+    function startLeftButton(position)
+    {
+        if (leftButtonPressed || !position)
+            return;
+
+        onVideoMouseButton(
+            0, true,
+            position.x, position.y,
+            position.width, position.height
+        );
+
+        leftButtonPressed = true;
+        mouseLeftPressing = true;
+        timeMouseLeftPressing = 0;
+        mouseLeftPrevPoint = position;
+    }
+
+    function finishTouch()
+    {
+        cancelPendingPress();
+
+        if (touchMode === "single")
+            releaseLeftButton(lastPosition);
+
+        activeTouchId = null;
+        secondTouchId = null;
+        lastPosition = null;
+        lastTwoFingerY = null;
+        touchMode = null;
+
+        mouseInsideVideo = false;
+        keyboardCapture = false;
+    }
 
     playerArea.addEventListener("touchstart", function(event)
     {
-        // Не обробляємо другий палець, поки активний перший.
-        if (activeTouchId !== null)
-            return;
-
-        let selectedTouch = null;
-        let selectedPosition = null;
-
-        for (const touch of Array.from(event.changedTouches))
-        {
-            const p = getMouseCoordinates(touch);
-
-            if (p !== null)
-            {
-                selectedTouch = touch;
-                selectedPosition = p;
-                break;
-            }
-        }
-
-        // Дотик поза фактичним відеокадром ігноруємо.
-        if (!selectedTouch || !selectedPosition)
-            return;
-
         event.preventDefault();
 
-        activeTouchId = selectedTouch.identifier;
-        lastPosition = selectedPosition;
+        const touches = Array.from(event.touches);
 
-        mouseInsidePlayer = true;
-        mouseInsideVideo = true;
-        keyboardCapture = true;
+        // Починаємо новий жест.
+        if (activeTouchId === null)
+        {
+            const touch = touches.find(
+                item => getTouchPosition(item) !== null
+            );
 
-        playerArea.focus();
+            if (!touch)
+                return;
 
-        mouseLeftPressing = true;
-        timeMouseLeftPressing = 0;
-        mouseLeftPrevPoint = lastPosition;
+            const p = getTouchPosition(touch);
 
-        // Натискання лівої кнопки миші.
-        onVideoMouseButton(
-            0,
-            true,
-            selectedPosition.x,
-            selectedPosition.y,
-            selectedPosition.width,
-            selectedPosition.height
-        );
+            activeTouchId = touch.identifier;
+            lastPosition = p;
+            touchMode = "single";
+
+            mouseInsidePlayer = true;
+            mouseInsideVideo = true;
+            keyboardCapture = true;
+
+            playerArea.focus();
+
+            // Невелика затримка дозволяє розпізнати
+            // жест двома пальцями до натискання кнопки.
+            pendingPressTimer = setTimeout(function()
+            {
+                pendingPressTimer = null;
+
+                if (touchMode === "single")
+                    startLeftButton(lastPosition);
+            }, PRESS_DELAY);
+
+            return;
+        }
+
+        // Другий палець: переходимо в режим прокручування.
+        if (touchMode === "single" && secondTouchId === null)
+        {
+            const secondTouch = touches.find(
+                item => item.identifier !== activeTouchId &&
+                        getTouchPosition(item) !== null
+            );
+
+            if (!secondTouch)
+                return;
+
+            cancelPendingPress();
+
+            // Якщо кнопка вже була натиснута,
+            // відпускаємо її перед початком прокручування.
+            releaseLeftButton(lastPosition);
+
+            secondTouchId = secondTouch.identifier;
+            touchMode = "scroll";
+
+            const first = findTouch(touches, activeTouchId);
+            const second = findTouch(touches, secondTouchId);
+
+            if (!first || !second)
+                return;
+
+            lastTwoFingerY = (first.clientY + second.clientY) / 2;
+        }
     }, { passive: false });
 
-    // Рух пальця передаємо як рух курсора.
     playerArea.addEventListener("touchmove", function(event)
     {
         if (activeTouchId === null)
             return;
 
-        const touch = Array.from(event.changedTouches).find(
-            item => item.identifier === activeTouchId
-        );
+        event.preventDefault();
+
+        const touches = Array.from(event.touches);
+
+        // Режим двопальцевого прокручування.
+        if (touchMode === "scroll")
+        {
+            const first = findTouch(touches, activeTouchId);
+            const second = findTouch(touches, secondTouchId);
+
+            if (!first || !second)
+                return;
+
+            const centerY = (first.clientY + second.clientY) / 2;
+
+            if (lastTwoFingerY === null)
+            {
+                lastTwoFingerY = centerY;
+                return;
+            }
+
+            const delta = lastTwoFingerY - centerY;
+
+            if (Math.abs(delta) >= SCROLL_THRESHOLD)
+            {
+                const p = getTouchPosition(first) || lastPosition;
+
+                if (p)
+                {
+                    // Додатне delta — рух пальців угору.
+                    // Від'ємне delta — рух пальців униз.
+                    onVideoTouchScroll(
+                        delta,
+                        p.x,
+                        p.y,
+                        p.width,
+                        p.height
+                    );
+                }
+
+                lastTwoFingerY = centerY;
+            }
+
+            return;
+        }
+
+        // Звичайний рух одним пальцем.
+        const touch = findTouch(touches, activeTouchId);
 
         if (!touch)
             return;
 
-        event.preventDefault();
-
-        const p = getMouseCoordinates(touch);
+        const p = getTouchPosition(touch);
 
         if (!p)
             return;
+
+        if (//pendingPressTimer !== null &&
+            lastPosition &&
+            (
+                Math.abs(p.x - lastPosition.x) > 5 ||
+                Math.abs(p.y - lastPosition.y) > 5
+            ))
+        {
+            cancelPendingPress();
+            startLeftButton(lastPosition);
+        }
 
         lastPosition = p;
 
         mouseInsideVideo = true;
         keyboardCapture = true;
 
-        if(     Math.abs(mouseLeftPrevPoint.x - lastPosition.x) > 5
-            ||  Math.abs(mouseLeftPrevPoint.y - lastPosition.y) > 5
-        )
-        {
-            timeMouseLeftPressing = 0;
-            mouseLeftPressing = false;
-        }
-        
+        mouseLeftPrevPoint = p;
 
         onVideoMouseMove(
             p.x,
@@ -400,41 +549,34 @@ function initTouchForVideoPlayer(video, playerArea)
         if (activeTouchId === null)
             return;
 
-        playerArea.style.touchAction = "flex";
-
-        const touch = Array.from(event.changedTouches).find(
-            item => item.identifier === activeTouchId
-        );
-
-        if (!touch)
-            return;
-
         event.preventDefault();
 
-        timeMouseLeftPressing = 0;
-        mouseLeftPressing = false;
+        const ended = Array.from(event.changedTouches);
 
-        // Якщо палець уже поза кадром, використовуємо останні координати.
-        const p = getMouseCoordinates(touch) || lastPosition;
-
-        if (p)
+        // Завершився жест двома пальцями.
+        if (touchMode === "scroll")
         {
-            // Відпускання лівої кнопки миші.
-            onVideoMouseButton(
-                0,
-                false,
-                p.x,
-                p.y,
-                p.width,
-                p.height
+            const secondEnded = ended.some(
+                touch => touch.identifier === secondTouchId
             );
+
+            const firstEnded = ended.some(
+                touch => touch.identifier === activeTouchId
+            );
+
+            if (secondEnded || firstEnded)
+                finishTouch();
+
+            return;
         }
 
-        activeTouchId = null;
-        lastPosition = null;
+        // Завершився дотик одним пальцем.
+        const firstEnded = ended.some(
+            touch => touch.identifier === activeTouchId
+        );
 
-        mouseInsideVideo = false;
-        keyboardCapture = false;
+        if (firstEnded)
+            finishTouch();
     }
 
     playerArea.addEventListener(
@@ -449,6 +591,35 @@ function initTouchForVideoPlayer(video, playerArea)
         { passive: false }
     );
 }
+
+/*
+    Обробка прокручування двома пальцями.
+
+    delta > 0 — пальці рухаються вгору.
+    delta < 0 — пальці рухаються вниз.
+
+    Тут додай власну команду відправлення на сервер.
+*/
+function onVideoTouchScroll(delta, x, y, width, height)
+{
+    // TODO: додати відправлення команди на сервер.
+    // delta — величина переміщення в CSS-пікселях.
+    // x, y — координати всередині відеокадру.
+    // width, height — розмір відображеного кадру.
+
+    // Наприклад, для налагодження:
+    // console.log("Touch scroll:", delta, x, y);
+
+    
+    onVideoMouseWheel(
+            delta,
+            x,
+            y,
+            width,
+            height
+        );    
+}
+
 
 /*
     Повертає координати відносно фактичного відеокадру.

@@ -115,8 +115,8 @@ document.getElementById(
 document.getElementById(
     "txtServerIP"
 ).value =
-    //"127.0.0.1";
-    "192.168.216.108";
+    "127.0.0.1";
+    //"192.168.47.102";
     
 
 
@@ -125,15 +125,15 @@ document.getElementById(
 ).value =
     "1111";
 
-document.getElementById(
-    "txtFindClient"
-).value =
-    "n";
+// document.getElementById(
+//     "txtFindClient"
+// ).value =
+//     "n";
 
-document.getElementById(
-    "txtClientPassword"
-).value =
-    "1242";
+// document.getElementById(
+//     "txtClientPassword"
+// ).value =
+//     "1242";
 
     
 
@@ -2016,7 +2016,7 @@ function startAppTimer() {
             {
                 if(mouseLeftPressing )
                 {
-                    if(timeMouseLeftPressing >= 2)
+                    if(timeMouseLeftPressing >= 1)
                     {
                         mouseLeftPressing = false;
                         timeMouseLeftPressing = 0;
