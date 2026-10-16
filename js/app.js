@@ -115,8 +115,8 @@ document.getElementById(
 document.getElementById(
     "txtServerIP"
 ).value =
-    "127.0.0.1";
-    //"192.168.146.108";
+    //"127.0.0.1";
+    "192.168.216.108";
     
 
 
@@ -125,15 +125,15 @@ document.getElementById(
 ).value =
     "1111";
 
-// document.getElementById(
-//     "txtFindClient"
-// ).value =
-//     "n";
+document.getElementById(
+    "txtFindClient"
+).value =
+    "n";
 
-// document.getElementById(
-//     "txtClientPassword"
-// ).value =
-//     "1242";
+document.getElementById(
+    "txtClientPassword"
+).value =
+    "1242";
 
     
 
@@ -2009,6 +2009,61 @@ function startAppTimer() {
                AppState.iClipboardTimeCopy++;
             }
             
+            //емуляція кліка правої кнопки мишки
+            //перевікра, довготривалий клік на сенсорний єкран, щоб визвати контекстне меню
+            if( AppState.bScreanCapture 
+                && AppState.bRunStream)
+            {
+                if(mouseLeftPressing )
+                {
+                    if(timeMouseLeftPressing >= 2)
+                    {
+                        mouseLeftPressing = false;
+                        timeMouseLeftPressing = 0;
+                        const normalizedX = mouseLeftPrevX; 
+                        const normalizedY = mouseLeftPrevY;
+
+                        const packetD =
+                            Protocol.createMouseEvents(                
+                                AppState.sMyId,
+                                AppState.sDeskId,
+                                1,
+                                false,
+                                1,
+                                normalizedX,
+                                normalizedY
+                            );                           
+
+                        if (packetD != null)
+                        {
+                            wsClient.send(packetD);
+                        }
+
+                        const packetU =
+                            Protocol.createMouseEvents(
+                                AppState.sMyId,
+                                AppState.sDeskId,
+                                2,
+                                false,
+                                0,
+                                normalizedX,
+                                normalizedY
+                            );
+
+                        if (packetU != null)
+                        {
+                            wsClient.send(packetU);
+                        }
+                    }
+                    
+                    timeMouseLeftPressing++;
+                } 
+            }
+            else{                
+                mouseLeftPressing = false;
+                timeMouseLeftPressing = 0;
+            }
+                
             
         }
 
@@ -2068,7 +2123,7 @@ function startAppTimer() {
 
                 searchClient();
             }
-        }
+        }       
 
     }, 1000);
 }
