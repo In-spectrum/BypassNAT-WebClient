@@ -2183,15 +2183,15 @@ function startThePage() {
     initializeCommandLine();
     initializeSupport();
 
-    showMessage(
-        0,
-        "This application is intended for remote device control.\n\n" +
-        "No one can use this application to control your device\n" +
-        "or view your desktop.\n\n" +
-        "File and clipboard data are only exchanged\n" +
-        "with your consent.\n\n" +
-        "This web-client will not appear\nin the device finder for connections."
-    );
+    // showMessage(
+    //     0,
+    //     "This application is intended for remote device control.\n\n" +
+    //     "No one can use this application to control your device\n" +
+    //     "or view your desktop.\n\n" +
+    //     "File and clipboard data are only exchanged\n" +
+    //     "with your consent.\n\n" +
+    //     "This web-client will not appear\nin the device finder for connections."
+    // );
     
     startAppTimer();
     log("Програму запущено.");
