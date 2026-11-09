@@ -32,7 +32,7 @@
     position: relative;
 
     width: 420px;
-    height: min(500px, calc(100% - 60px));
+    height: min(530px, calc(100% - 60px));
 
     display: flex;
     flex-direction: column;
@@ -335,7 +335,7 @@
     {
         width: 100%;
 
-        height: min(500px, calc(100% - 40px));
+        height: min(530px, calc(100% - 40px));
     }
 
 
