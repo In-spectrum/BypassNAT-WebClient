@@ -4,6 +4,7 @@ const main = document.getElementById("main");;
 const logger = document.getElementById("logger");
 const btnLogger = document.getElementById("btnLogger");
 const loggerBody = document.getElementById('loggerBody');
+const cbDevServer = document.getElementById("cbDevServer");
 const txtFindClient = document.getElementById("txtFindClient");
 const lstClients = document.getElementById("lstClients");
 const playerArea = document.getElementById("playerArea");
@@ -110,7 +111,6 @@ document.getElementById(
     AppState.bMoqPlayer ? AppState.sMoqPort 
         : AppState.bHlsPlayer ? AppState.sHLSPort 
             : AppState.sWebRTCPort;
-
 
 document.getElementById(
     "txtServerIP"
@@ -1342,7 +1342,39 @@ function handleServerData(data)
     }
 }
 
+cbDevServer.addEventListener("change", () => {
 
+    if(cbDevServer.checked)
+    {
+        document.getElementById(
+            "grServerPassword"
+        ).style.display = "none";        
+
+        document.getElementById(
+            "grServerIP"
+        ).style.display = "none";        
+
+        document.getElementById(
+            "grServerPort"
+        ).style.display = "none";
+
+    }
+    else
+    {
+        document.getElementById(
+            "grServerPassword"
+        ).style.display = "flex";
+
+        document.getElementById(
+            "grServerIP"
+        ).style.display = "flex";        
+
+        document.getElementById(
+            "grServerPort"
+        ).style.display = "flex";
+    }
+
+});
 
 /*
     --------------------------------------------------
@@ -1361,12 +1393,11 @@ function startConnectServer() {
         // ).value;
 
     const ip =
-        document.getElementById(
-            "txtServerIP"
-        ).value.trim();
-
+        cbDevServer.checked ? AppState.sDevServerIP
+        : document.getElementById("txtServerIP").value.trim();
 
     const port =
+        cbDevServer.checked ? "1268" :
         document.getElementById(
             "txtServerPort"
         ).value.trim();

@@ -27,6 +27,7 @@ const AppState =
     , serverConnecting: false
     , sMyId: ""
     , sKeyDevServer: "xxxxxxxxx"
+    , sDevServerIP: "bypassnatclient.duckdns.org"
 
     , sDeskId: ""
     , sDeskLogin: ""
@@ -57,11 +58,17 @@ const AppState =
     , iClipboardTimeCopy: 5
 
     , isValidIPv4(ip) {
+
+        if(ip == "localhost")
+            return true;
+
         const parts = ip.trim().split(".");
 
-        if (parts.length !== 4) {
+        if (parts.length == 0) {
             return false;
         }
+
+        return true;
 
         return parts.every(part => {
             if (!/^\d+$/.test(part)) {

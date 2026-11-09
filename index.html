@@ -63,7 +63,20 @@ http://127.0.0.1:8080/
 
 <div class="blockContent">
 
-<div class="formGroup">
+<div class="deviceMode" style="margin-bottom: 15px;">
+
+    <label class="checkboxOption">
+        <input
+            type="checkbox"
+            id="cbDevServer"
+        >
+        <span>use the development server</span>
+    </label>
+
+</div>
+
+
+<div class="formGroup" id="grServerPassword">
     <label for="txtServerPassword">
         Server Password
     </label>
@@ -79,7 +92,7 @@ http://127.0.0.1:8080/
 
 
 
-<div class="formGroup">
+<div class="formGroup" id="grServerIP">
 <label for="txtServerIP">
     Server IP
 </label>
@@ -88,7 +101,7 @@ http://127.0.0.1:8080/
 
 
 
-<div class="formGroup">
+<div class="formGroup" id="grServerPort">
 <label for="txtServerPort">
     Server Port
 </label>
