@@ -1387,6 +1387,7 @@ cbDevServer.addEventListener("change", () => {
         ).style.display = "flex";
     }
 
+    fDisconnectServer();
 });
 
 /*
@@ -1590,6 +1591,24 @@ function startConnectServer() {
 
 }
 
+function fDisconnectServer()
+{
+    fDisconnectDevice();
+
+    AppState.serverConnectTime = 0;
+    AppState.serverConnecting = false;
+    document.getElementById("btnConnectServer").innerHTML = "Server connect";
+
+    if (wsClient.socket) {
+        wsClient.disconnect();
+    }
+
+    // log(
+    //     "fDisconnectServer 10: "
+    // );
+
+}
+
 
 function setupPasswordButton(buttonId, inputId) {
 
@@ -1622,18 +1641,9 @@ document.getElementById(
 )
 .onclick = function()
 {
-
     if(AppState.serverConnected || AppState.serverConnecting)
     {
-        fDisconnectDevice();
-
-        AppState.serverConnectTime = 0;
-        AppState.serverConnecting = false;
-        document.getElementById("btnConnectServer").innerHTML = "Server connect";
-
-        if (wsClient.socket) {
-            wsClient.disconnect();
-        }
+        fDisconnectServer();
 
         return;
     }
