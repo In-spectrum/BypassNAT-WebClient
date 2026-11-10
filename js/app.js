@@ -125,6 +125,11 @@ document.getElementById(
 ).value =
     "1111";
 
+document.getElementById(
+        "txtDevServerKey"
+    ).value =
+        AppState.sKeyDevServer;
+
 // document.getElementById(
 //     "txtFindClient"
 // ).value =
@@ -1198,10 +1203,10 @@ function sendLogin()
     //     (AppState.sMyId || "<порожній>")
     // );
 
-     const keyDevServer = AppState.sKeyDevServer;
-        // document.getElementById(
-        //     "txtDevServerKey"
-        // ).value;
+     const keyDevServer =
+        document.getElementById(
+            "txtDevServerKey"
+        ).value;
 
     const serverPassword =
         document.getElementById(
@@ -1347,6 +1352,10 @@ cbDevServer.addEventListener("change", () => {
     if(cbDevServer.checked)
     {
         document.getElementById(
+            "grServerKey"
+        ).style.display = "flex";
+
+        document.getElementById(
             "grServerPassword"
         ).style.display = "none";        
 
@@ -1361,6 +1370,10 @@ cbDevServer.addEventListener("change", () => {
     }
     else
     {
+        document.getElementById(
+            "grServerKey"
+        ).style.display = "none";
+
         document.getElementById(
             "grServerPassword"
         ).style.display = "flex";
@@ -1387,10 +1400,10 @@ function startConnectServer() {
     document.getElementById("serverConnectionText").style.display = "flex";  // показати
     document.getElementById("btnConnectServer").innerHTML = "Server connecting... Stop!";
 
-    const keyDevServer = AppState.sKeyDevServer;
-        // document.getElementById(
-        //     "txtDevServerKey"
-        // ).value;
+    const keyDevServer =
+        document.getElementById(
+            "txtDevServerKey"
+        ).value;
 
     const ip =
         cbDevServer.checked ? AppState.sDevServerIP
@@ -2178,6 +2191,11 @@ function startThePage() {
     document.getElementById("deviceConnectionText").style.display = "none";  // сховати
 
     setupPasswordButton(
+        "btnShowServerKey",
+        "txtDevServerKey"
+    );
+
+    setupPasswordButton(
         "btnShowServerPassword",
         "txtServerPassword"
     );
@@ -2191,6 +2209,13 @@ function startThePage() {
         "btnShowClientPassword",
         "txtClientPassword"
     );
+
+    if(!cbDevServer.checked)
+    {
+        document.getElementById(
+            "grServerKey"
+        ).style.display = "none";
+    }
 
     btnLogger.style.display = "none";
     btnLogger.onclick();
